@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="email_template_data_notify_carrier_balance_1" model="mail.template">
+            <field name="name">Notify If Carrier Balance is not Enough(Shipstation)</field>
+            <field name="subject">Carrier Balance Not Enough</field>
+            <field name="email_to">${(ctx.get('email_to')) | safe}</field>
+            <field name="model_id" ref="shipstation_delivery.model_shipstation_accounts"/>
+            <field name="user_signature" eval="False"/>
+            <field name="body_html"><![CDATA[
+                    <p>You need to update balance on the below carriers.</p>
+                    <table style="font-family: arial, sans-serif;border: 1px solid #dddddd;border-collapse: collapse;width:100%;">
+                    <tr>
+                            <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Account</th>
+                            <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Carrier</th>
+                            <th style="border: 1px solid #dddddd;text-align: left;padding: 8px;">Balance</th>
+                    </tr>
+                    % for record in ctx.get('carrier_data'):
+                          <tr style="border: 1px solid #dddddd;text-align: left;padding: 8px;">
+                            <td style="border: 1px solid #dddddd;text-align: left;padding: 8px;">${record.get('account')}</td>
+                            <td style="border: 1px solid #dddddd;text-align: left;padding: 8px;">${record.get('carrier')}</td>
+                            <td style="border: 1px solid #dddddd;text-align: left;padding: 8px;">${record.get('balance')}</td>
+                          </tr>
+                    % endfor
+                    </table>
+                ]]>
+            </field>
+        </record>
+    </data>
+</odoo>

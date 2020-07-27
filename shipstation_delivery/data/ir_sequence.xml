@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_shipstation_api_history" model="ir.sequence">
+            <field name="name">Shipstation API History Sequence</field>
+            <field name="code">shipstation.api.history</field>
+            <field name="padding">6</field>
+            <field name="prefix">LOG</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

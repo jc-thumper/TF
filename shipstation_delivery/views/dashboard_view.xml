@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<!-- Dashboard -->
+		<!-- https://www.w3schools.com/w3css/tryit.asp?filename=tryw3css_templates_analytics&stacked=h -->
+		<record id="dashboard" model="ir.actions.client">
+			<field name="name">Dashboard</field>
+			<field name="tag">shipstation_dashboard</field>
+		</record>
+
+		<record id="ir_actions_server_shipstation_dashboard" model="ir.actions.server">
+			<field name="name">Shipstation: Dashboard</field>
+			<field name="model_id" ref="shipstation_delivery.model_shipstation_accounts" />
+			<field name="state">code</field>
+			<field name="code">action = model.action_dashboard_redirect()</field>
+		</record>
+
+		<menuitem id="menu_dashboard" name="Dashboard" sequence="1"
+			action="shipstation_delivery.ir_actions_server_shipstation_dashboard" parent="shipstation_delivery.menu_shipstation_root" />
+	</data>
+</odoo>

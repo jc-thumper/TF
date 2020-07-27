@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>           
+        <record id="carrier_add_funds_form" model="ir.ui.view">
+            <field name="name">Add Funds</field>
+            <field name="model">carrier.add.funds</field>
+            <field name="arch" type="xml">
+                <form string="Add Funds">
+                	<group>
+	                	<field name='amount' />
+                	</group>
+					<footer>
+						<button string="Process" class="oe_highlight" type="object" name="process_add_funds"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel" />
+                    </footer>
+               </form>
+            </field>
+        </record>
+        
+		<record id="action_carrier_add_funds" model="ir.actions.act_window">
+         	<field name="name">Add Funds</field>
+         	<field name="type">ir.actions.act_window</field>
+         	<field name="res_model">carrier.add.funds</field>
+         	<field name="view_mode">form</field>
+         	<field name="target">new</field>
+         </record>
+    </data>
+</openerp>

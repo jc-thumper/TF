@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<record id="view_shipstation_marketplace_form" model="ir.ui.view">
+			<field name="name">shipstation.marketplace.form</field>
+			<field name="model">shipstation.marketplace</field>
+			<field name="arch" type="xml">
+				<form string="ShipStation Marketplace" create="false" edit="false">
+					<sheet>
+						<div class="oe_title">
+							<label for="name" string="Marketplace Name" />
+							<h1>
+								<field name="name" class="" placeholder="Marketplace Name" />
+							</h1>
+						</div>
+						<group string="Informations" >
+							<group>
+								<field name="marketplace_id" />
+								<field name="can_refresh" />
+								<field name="supports_custom_mappings" />
+							</group>
+							<group>
+								<field name="supports_custom_statues" />
+								<field name="can_confirm_shipments" />
+							</group>
+						</group>
+					</sheet>
+				</form>
+			</field>
+		</record>
+
+		<record id="view_shipstation_marketplace_tree" model="ir.ui.view">
+			<field name="name">shipstation.marketplace.tree</field>
+			<field name="model">shipstation.marketplace</field>
+			<field name="arch" type="xml">
+				<tree string="ShipStation Marketplace" create="false" edit="false">
+					<field name="name" />
+					<field name="marketplace_id" />
+					<field name="can_refresh" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="action_shipstation_marketplaces" model="ir.actions.act_window">
+			<field name="name">ShipStation Marketplaces</field>
+			<field name="type">ir.actions.act_window</field>
+			<field name="res_model">shipstation.marketplace</field>
+			<field name="view_mode">tree,form</field>
+			<field name="context"></field>
+			<field name="help" type="html">
+				<p>
+					Lists the marketplaces that can be integrated with ShipStation using Import opeations by clicking on shipstation icon on Dashboard
+				</p>
+			</field>
+		</record>
+
+		<menuitem name="Marketplaces" parent="menu_shipstation_settings"
+			action="action_shipstation_marketplaces" id="menu_action_shipstation_marketplaces"
+			sequence="20" />
+	</data>
+</odoo>

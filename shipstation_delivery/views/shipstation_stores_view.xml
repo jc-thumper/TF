@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_shipstation_store_form" model="ir.ui.view">
+            <field name="name">shipstation.store.form</field>
+            <field name="model">shipstation.store</field>
+            <field name="arch" type="xml">
+                <form string="ShipStation Stores" create="false">
+                    <header>
+                        <button name="update_store_info" string="Update In Shipstation"
+                                type="object" class="btn-success"/>
+                        <button name="deactive_store" string="Deactive In Shipstation"
+                                type="object" class="btn-danger" attrs="{'invisible': [('active','=', False)]}"/>
+                        <button name="reactive_store" string="Reactivate In Shipstation"
+                                type="object" class="btn-success" attrs="{'invisible': [('active','=', True)]}"/>
+                        <button name="refresh_store" string="Refresh Store"
+                                type="object" class="btn-primary" attrs="{'invisible': [('active','=', False)]}"/>
+                        <button name="get_store_refresh_status" string="Get Store Refresh Status"
+                                type="object" class="btn-primary" attrs="{'invisible': [('active','=', False)]}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Store Name"/>
+                            <h1>
+                                <field name="name" placeholder="Store Name"/>
+                            </h1>
+                            <div name="options">
+                                <div>
+                                    <field name="active" readonly="1"/>
+                                    <label for="active"/>
+                                </div>
+                                <div>
+                                    <field name="auto_refresh"/>
+                                    <label for="auto_refresh"/>
+                                </div>
+                            </div>
+                        </div>
+                        <group>
+                            <field name="last_refresh_attempt" readonly="1"/>
+                            <field name="marketplace_id" required="1"/>
+                            <field name="account_id" readonly="1"/>
+                            <field name="integration_url"/>
+                            <field name="support_custom_statues" invisible="1"/>
+                        </group>
+                        <notebook>
+                            <page string="Settings" attrs="{'invisible': [('support_custom_statues','=', False)]}">
+                                <p class="oe_grey">
+                                    This marketplace supports custom order statuses and
+                                    shipstation would
+                                    like to know what those statuses mean. Tell us
+                                    how to to match
+                                    up your statuses to ours in these entries.
+                                </p>
+                                <p class="oe_grey">
+                                    You can separate multiple statuses with commas. For
+                                    instance, if you have two statuses ("New", "In Process") that
+                                    should be considered "Awaiting Shipment", enter them as: New,
+                                    In Process.
+                                </p>
+                                <group string="Your Order Statuses" col="3">
+                                    <field name="awaiting_payment"/>
+                                    <field name="awaiting_shipment"/>
+                                    <field name="shipped"/>
+                                    <field name="cancelled"/>
+                                    <field name="on_hold"/>
+                                </group>
+                            </page>
+                            <page string="Branding">
+                                <group string="Branded Pages General Settings">
+                                    <group>
+                                        <field name="company_name"/>
+                                        <field name="phone"/>
+                                        <field name="email"/>
+                                        <field name="public_email"/>
+                                        <field name="website"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_shipstation_store_tree" model="ir.ui.view">
+            <field name="name">shipstation.store.tree</field>
+            <field name="model">shipstation.store</field>
+            <field name="arch" type="xml">
+                <tree string="ShipStation Stores" create="false">
+                    <field name="name"/>
+                    <field name="active"/>
+                    <field name="account_id"/>
+                    <field name="auto_refresh"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_shipstation_store_search" model="ir.ui.view">
+            <field name="name">shipstation.store.search</field>
+            <field name="model">shipstation.store</field>
+            <field name="arch" type="xml">
+                <search string="ShipStation Stores">
+                    <field name="marketplace_id"/>
+                    <field name="account_id"/>
+                    <field name="auto_refresh"/>
+                    <filter string="Active/Inactive Stores" domain="['|', ('active', '=', True),('active', '=', False)]"
+                            name="active_inactive_store"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Account" name="account" domain="[]" context="{'group_by':'account_id'}"/>
+                        <filter string="Marketplace" name="marketplace" domain="[]" context="{'group_by':'marketplace_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_shipstation_stores" model="ir.actions.act_window">
+            <field name="name">ShipStation Stores</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shipstation.store</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_active_inactive_store' : 1}</field>
+            <field name="help" type="html">
+                <p>
+                    Retrieve the list of installed stores on the account using Import
+                    opeations by clicking on shipstation icon on Dashboard
+                </p>
+            </field>
+        </record>
+
+        <menuitem name="Stores" parent="menu_shipstation_settings"
+                  action="action_shipstation_stores" id="menu_action_shipstation_stores"
+                  sequence="30"/>
+    </data>
+</odoo>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="shipstation_delivery.dashboard_main">
+        <div class="o_shipstation">
+            <div class="container-fluid o_shipstation_dashboard">
+                <t t-call="shipstation_delivery.dashboard_navigation" />
+                <div class="dashboard_operation"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="shipstation_delivery.ship_operation">
+        <div class="row ship_operation">
+            <div class="col-12 o_box">
+                <div class="col-md-12">
+	                <a href="#" class="o_dashboard_action" name="shipstation_delivery.action_import_export_operation" title="Perform Shipstation Operation">
+						<img class="img img-responsive center-block" src="/shipstation_delivery/static/src/image/ss-flat-logo-registered-blue_large_.png"/>
+	                </a>                
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <t t-name="shipstation_delivery.dashboard_navigation">
+        <div class="row o_shipstation_common">
+            <div class="col-12 o_box">
+                 <a href="#" class="o_inner_box o_dashboard_action" name="shipstation_delivery.action_shipstation_orders" title="Go to Shipstation Orders">
+                    <div class="o_inner_box o_primary">
+                        <i class="fa fa-opera fa-3x"></i><br/>
+                        Orders
+                    </div>
+                </a>
+                <a href="#" class="o_inner_box o_dashboard_action" name="shipstation_delivery.action_shipstation_product" title="Go to Shipstation Products">
+                    <div class="o_inner_box o_primary">
+                        <i class="fa fa-product-hunt fa-3x"></i><br/>
+                        Products
+                    </div>
+                </a>
+                <a href="#" class="o_inner_box o_dashboard_action" name="shipstation_delivery.action_shipstation_carriers" title="Go to Shipstation Carrier">
+                    <div class="o_inner_box o_primary">
+                        <i class="fa fa-truck fa-3x"></i><br/>
+                        Carrier
+                    </div>
+                </a>
+                <a href="#" class="o_inner_box o_dashboard_action" name="shipstation_delivery.action_shipstation_stores" title="Go to Shipstation Store">
+                    <div class="o_inner_box o_primary">
+                        <i class="fa fa-user-circle fa-3x"></i><br/>
+                        Stores
+                    </div>
+                </a>
+                <a href="#" class="o_inner_box o_dashboard_action" name="shipstation_delivery.action_shipstation_accounts" title="Go to Shipstation Accounts">
+                    <div class="o_inner_box o_primary">
+                        <i class="fa fa-user-circle fa-3x"></i><br/>
+                        Accounts
+                    </div>
+                </a>
+                <a href="#" class="o_inner_box o_dashboard_action" name="shipstation_delivery.action_shipstation_marketplaces" title="Go to Marketplaces">
+                    <div class="o_inner_box o_primary">
+                        <i class="fa fa-globe fa-3x"></i><br/>
+                        Marketplaces
+                    </div>
+                </a>
+                <!--<a href="#" class="o_box_item o_dashboard_action" name="shipstation_delivery.action_shipstation_warehouse" title="Go to Shipstation Warehouse">-->
+                    <!--<div class="o_inner_box o_primary">-->
+                        <!--<i class="fa fa-warehouse fa-3x"></i><br/>-->
+                        <!--Warehouses-->
+                    <!--</div>-->
+                <!--</a>-->
+                <!--<div t-if="widget.data.carrier_count" class="o_inner_box o_main o_box_item" title="Go to Shipstation Carriers" t-name='carrier_box'>-->
+                    <!--<a href="#" class="o_dashboard_action" name="shipstation_delivery.action_shipstation_carriers">-->
+                        <!--<div class="o_highlight"><t t-esc="widget.data.carrier_count"/></div>-->
+                        <!--Shipstation Carrier-->
+                    <!--</a>-->
+                    <!--<t t-set="vignette_nbr" t-value="vignette_nbr + 1"/>-->
+                <!--</div>-->
+<!--                 <t t-if="widget.groups.system"> -->
+<!--                     <t t-set="apps" t-value="{ -->
+<!--                         'website_crm':              {'icon': 'fa-file-text-o', 'help': _('Add a contact form to your Contact Us page.')}, -->
+<!--                         'website_sale':             {'icon': 'fa-shopping-cart', 'help': _('Sell online to reach new customers.')}, -->
+<!--                         'website_blog':             {'icon': 'fa-rss-square', 'help': _('Build up a community with an efficient content strategy.')}, -->
+<!--                         'website_hr_recruitment':   {'icon': 'fa-suitcase', 'help': _('Promote your job announces to attract new talents.')}, -->
+<!--                         'website_event':            {'icon': 'fa-ticket', 'help': _('Promote your events, manage attendance and sell tickets.')}, -->
+<!--                         'im_livechat':              {'icon': 'fa-comments-o', 'help': _('Chat with your visitors in real time.')}, -->
+<!--                     }"/> -->
+<!--                 </t> -->
+<!--                 <t t-if="! widget.groups.system"><t t-set="apps" t-value="{}"/></t> -->
+                <t t-set="vignette_max" t-value="6"/>
+                <t t-set="vignette_nbr" t-value="1"/>
+	            <!--<div class="o_inner_box o_main o_box_item" title="Confirm orders when you get paid." t-name='unpaid_orders_box'>-->
+	                <!--<a href="#" class="o_dashboard_action" name="action_unpaid_orders_ecommerce">-->
+	                    <!--<div class="o_highlight"><t t-esc="widget.dashboards_data.sales.summary.order_unpaid_count"/></div>-->
+	                    <!--Unpaid Orders-->
+	                <!--</a>-->
+	                <!--<t t-set="vignette_nbr" t-value="vignette_nbr + 1"/>-->
+	            <!--</div>   -->
+<!--                 <t t-foreach="apps" t-as="app"> -->
+<!--                     <t t-set="app_data" t-value="widget.dashboards_data.apps_data[app]"/> -->
+<!--                     <t t-set="app_dashboard" t-value="apps[app]"/> -->
+<!--                     <t t-if="vignette_nbr &lt; vignette_max &amp;&amp; widget.hidden_apps.indexOf(app_data['id']) == -1 &amp;&amp; app_data['state'] == 'uninstalled'"> -->
+<!--                         <t t-set="vignette_nbr" t-value="vignette_nbr + 1"/> -->
+<!--                         <a href="#" class="o_box_item o_dashboard_action_form" -->
+<!--                                 name="Apps" -->
+<!--                                 data-res_model="ir.module.module" -->
+<!--                                 t-att-data-res_id="app_data['id']" -->
+<!--                                 t-att-title="app_dashboard['help']"> -->
+<!--                             <div class="o_inner_box o_apps"> -->
+<!--                                 <div class="o_apps_show"> -->
+<!--                                     <i t-attf-class="fa #{app_dashboard['icon']} fa-3x"></i><br/> -->
+<!--                                     <t t-esc="app_data['shortdesc']"/> -->
+<!--                                 </div> -->
+<!--                                 <div class="o_apps_hidden"> -->
+<!--                                     <i class="fa fa-plus-circle fa-3x"></i><br/> -->
+<!--                                     Add this feature -->
+<!--                                 </div> -->
+<!--                                 <i class="o_apps_hidden o_dashboard_hide_panel fa fa-close" t-att-data-module_id="app_data['id']" title="Remove this suggestion from dashboard"/> -->
+<!--                             </div> -->
+<!--                         </a> -->
+<!--                     </t> -->
+<!--                 </t> -->
+            </div>
+        </div>
+    </t>
+
+    <t t-name="shipstation_delivery.DateRangeButtons">
+        <div class="btn-group btn-group-sm o_date_range_buttons pull-right">
+            <!--<button class="btn btn-sm btn-default js_date_range active" data-date="week">Week</button>-->
+            <!--<button class="btn btn-sm btn-default js_date_range" data-date="month">Month</button>-->
+        </div>
+    </t>
+</templates>
+    
+
+    

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_delivery_carrier_form" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.view</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='destination']" position='before'>
+                <page string="Configuration" name="shipstation_configurations"
+                      attrs="{'invisible': [('delivery_type', '!=', 'shipstation_ts')]}">
+                    <group>
+                        <group>
+                            <field name="shipstation_store_id"
+                                   attrs="{'required': [('delivery_type', '=', 'shipstation_ts')]}"/>
+                            <field name="shipstation_account_id" invisible="1"/>
+                            <field name="carrier_code" invisible="1"/>
+                            <field name="shipstation_carrier_id" domain="[('account_id','=', shipstation_account_id)]"
+                                   attrs="{'required': [('delivery_type', '=', 'shipstation_ts')]}"/>
+                            <field name="shipstation_service_id" domain="[('carrier_id.code','=', carrier_code)]"
+                                   attrs="{'required': [('delivery_type', '=', 'shipstation_ts')]}"/>
+                            <field name="shipstation_package_id" domain="[('carrier_id', '=', shipstation_carrier_id)]"
+                                   attrs="{'required': [('delivery_type', '=', 'shipstation_ts')]}"/>
+                        </group>
+                        <group string="Insurance Options">
+                            <field name="shipstation_insurance_provider" />
+                            <!--<field name="use_chipest_carrier_from_multiple"-->
+                            <!--attrs="{'required': [('delivery_type', '=', 'shipstation_ts')]}"/>-->
+                            <!--<field name="shipstation_service_ids" widget="many2many_tags" domain="[('carrier_id.account_id','=', shipstation_account_id)]"-->
+                            <!--attrs="{'required': [('use_chipest_carrier_from_multiple', '=', True)], 'invisible': [('use_chipest_carrier_from_multiple', '=', False)]}"/>-->
+
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

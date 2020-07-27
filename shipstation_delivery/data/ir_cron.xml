@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="notify_carrier_balance_shipstation" model="ir.cron">
+            <field name="name">Notify Carrier Balance (Shipstation)</field>
+            <field name="model_id" ref="model_shipstation_accounts"/>
+            <field name="state">code</field>
+            <field name="code">model.notify_carrier_balance_shipstation()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">0</field>
+        </record>
+
+        <record id="auto_order_import_shipstation" model="ir.cron">
+            <field name="name">Auto Order Import (Shipstation)</field>
+            <field name="model_id" ref="model_shipstation_accounts"/>
+            <field name="state">code</field>
+            <field name="code">model.auto_import_orders_cron()</field>
+            <field name='interval_number'>1</field>
+            <field name='interval_type'>days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">0</field>
+        </record>
+    </data>
+</odoo>

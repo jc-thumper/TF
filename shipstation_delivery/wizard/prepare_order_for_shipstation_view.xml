@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="prepare_order_form_view" model="ir.ui.view">
+            <field name="name">prepare.order.form</field>
+            <field name="model">prepare.order</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group col="4">
+                        <field name="account_id" required="1"/>
+                        <field name="store_id" domain="[('account_id','=',account_id)]"/>
+                    </group>
+                    <footer>
+                        <button name="do_prepare" type="object" string="Prepare"
+                                class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_prepare_order" model="ir.actions.act_window">
+            <field name="name">Prepare For Shipstation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">prepare.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="prepare_order_form_view"/>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_sales_order_filter" model="ir.ui.view">
+            <field name="name">sale.order.list.select</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='customer']" position="before">
+                    <filter string="Shipstation Account" name="ss_account" domain="[]"
+                            context="{'group_by':'shipstation_account_id'}"/>
+                    <filter string="Shipstation Store" name="ss_store" domain="[]"
+                            context="{'group_by':'shipstation_store_id'}"/>
+                </xpath>
+                <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
+                    <filter string="Prepared For Shipstation" name="prepared_for_ss"
+                            domain="[('prepared_for_shipstation','=',True)]"/>
+                    <filter string="Not Prepared For Shipstation" name="not_prepared_for_ss"
+                            domain="[('prepared_for_shipstation','=',False)]"/>
+                    <separator/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_order_tree" model="ir.ui.view">
+            <field name="name">sale.order.tree</field>
+            <field name="model">sale.order</field>
+            <field name="priority">100</field>
+            <field name="arch" type="xml">
+                <tree string="Shipstation Orders" decoration-bf="message_needaction==True"
+                      decoration-muted="state=='cancel'">
+                    <field name="message_needaction" invisible="1"/>
+                    <field name="name" string="Order Number"/>
+                    <field name="date_order"/>
+                    <field name="partner_id"/>
+                    <field name="user_id"/>
+                    <field name="shipstation_store_id"/>
+                    <field name="shipstation_account_id"/>
+                    <field name="amount_total" sum="Total Tax Included"/>
+                    <field name="state"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="invoice_status" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_order_form" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <data>
+                    <notebook position="inside">
+                        <page string="Shipstation" attrs="{'invisible':[('shipstation_account_id','=',False)]}">
+                            <group>
+                                <group>
+                                    <field name="shipstation_order_id" readonly="True"/>
+                                    <field name="shipstation_store_id"/>
+                                    <field name="shipstation_account_id"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </data>
+            </field>
+        </record>
+
+        <record id="action_shipstation_quotations" model="ir.actions.act_window">
+            <field name="name">Quotations</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('shipstation_order_id','!=',False),('state','in',('draft','sent','cancel'))]</field>
+            <field name="view_id" ref="view_order_tree"></field>
+            <field name="search_view_id" ref="sale.view_sales_order_filter"/>
+        </record>
+
+        <record id="action_shipstation_orders" model="ir.actions.act_window">
+            <field name="name">Orders</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">
+                [('shipstation_order_id','!=',False), ('state', 'not in', ('draft', 'sent', 'cancel'))]
+            </field>
+            <field name="view_id" ref="view_order_tree"></field>
+            <field name="search_view_id" ref="sale.view_sales_order_filter"/>
+        </record>
+
+        <menuitem id="menu_shipstation_order_main" name="Orders"
+                  parent="menu_shipstation_root" sequence="10"/>
+
+        <menuitem name="Quotations" parent="menu_shipstation_order_main"
+                  action="action_shipstation_quotations" id="menu_action_shipstation_quotations"
+                  sequence="10"/>
+
+        <menuitem name="Orders" parent="menu_shipstation_order_main"
+                  action="action_shipstation_orders" id="menu_action_shipstation_orders"
+                  sequence="20"/>
+    </data>
+</odoo>

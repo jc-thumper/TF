@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_shipstation_warehouse_form" model="ir.ui.view">
+            <field name="name">shipstation.warehouse.form</field>
+            <field name="model">shipstation.warehouse</field>
+            <field name="arch" type="xml">
+                <form string="ShipStation Warehouse" create="false">
+                    <header>
+                        <!--TODO: Need to implement update warehouse and delete warehouse process-->
+                        <!--<button name="update_warehouse" string="Update Warehouse" type="object" class="btn-primary"/>-->
+                        <!--<button name="delete_warehouse" string="Delete Warehouse" type="object" class="btn-primary"/>-->
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Warehouse Name"/>
+                            <h1>
+                                <field name="name" placeholder="carrier Name" readonly="1"/>
+                            </h1>
+                            <div name="options">
+                                <div>
+                                    <field name="is_default" readonly="1"/>
+                                    <label for="is_default"/>
+                                </div>
+                            </div>
+                        </div>
+                        <group>
+                            <field name="shipstation_id" readonly="1" />
+                            <field name="account_id" readonly="1"/>
+                            <field name="warehouse_id" required="1" />
+                            <field name="origin_address_id" />
+                            <field name="return_address_id" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_shipstation_warehouse_tree" model="ir.ui.view">
+            <field name="name">shipstation.warehouse.tree</field>
+            <field name="model">shipstation.warehouse</field>
+            <field name="arch" type="xml">
+                <tree string="ShipStation Warehouse" create="false">
+                    <field name="name" />
+                    <field name="shipstation_id"/>
+                    <field name="is_default"/>
+                    <field name="account_id"/>
+                    <field name="warehouse_id"/>
+                    <field name="origin_address_id"/>
+                    <field name="return_address_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_shipstation_warehouse_search" model="ir.ui.view">
+            <field name="name">shipstation.warehouse.search</field>
+            <field name="model">shipstation.warehouse</field>
+            <field name="arch" type="xml">
+                <search string="ShipStation Warehouse">
+                    <field name="shipstation_id"/>
+                    <field name="warehouse_id"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Account" name="account" domain="[]" context="{'group_by':'account_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_shipstation_warehouse" model="ir.actions.act_window">
+            <field name="name">ShipStation Warehouse</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shipstation.warehouse</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p>
+                    Retrieve the list of configured warehouse on the account using Import
+                    opeations by clicking on shipstation icon on Dashboard
+                </p>
+            </field>
+        </record>
+
+        <menuitem name="Warehouses" parent="menu_shipstation_settings"
+                  action="action_shipstation_warehouse" id="menu_action_shipstation_warehouses"
+                  sequence="60"/>
+    </data>
+</odoo>

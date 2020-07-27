@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_partner_form_shipstation" model="ir.ui.view">
+            <field name="name">res.partner.shipstation.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id"
+                   ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page name='shipstation_madeup' string='Shipstation'>
+                        <group>
+                            <field name="shipstation_customer_id" />
+
+                        </group>
+                        <group name='marketplace_usernames' string="Marketplace Usernames">
+                            <field name="marketplace_usernames_ids" readonly='1' nolabel='1'>
+                                <tree>
+                                    <field name="customer_user_id" />
+                                    <field name="marketplace_id" />
+                                    <field name="user_name" />
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="import_export_operation_form" model="ir.ui.view">
+            <field name="name">Import/Export Operation</field>
+            <field name="model">import.export.operation</field>
+            <field name="arch" type="xml">
+                <form string="Import/Export">
+                	<group>
+	                	<field name='account_ids' string="Account(s)" widget="many2many_tags" options="{'no_create':True,'no_create_edit': True}"/>
+                	</group>
+                	<group>
+                		<group string="Import">
+                			<field name="get_marketplaces" />
+                			<field name="get_stores" />
+							<field name="get_carrier" />
+							<field name="get_carrier_services" />
+                            <field name="get_customer" />
+							<field name="get_warehouse" />
+							<field name="get_product" />
+							<field name="get_order" />
+                		</group>
+                	</group>
+					<footer>
+						<button string="Process" class="oe_highlight" type="object" name="process_operation"/>
+                        <button string="Cancel" class="oe_highlight" special="cancel" />
+                    </footer>
+               </form>
+            </field>
+        </record>
+
+		<record id="action_import_export_operation" model="ir.actions.act_window">
+         	<field name="name">Import/Export Operations</field>
+         	<field name="type">ir.actions.act_window</field>
+         	<field name="res_model">import.export.operation</field>
+         	<field name="view_mode">form</field>
+         	<field name="target">new</field>
+         </record>
+    </data>
+</openerp>

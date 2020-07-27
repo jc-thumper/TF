@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Assets -->
+    <template id="assets_backend" inherit_id="web.assets_backend"
+              name="Shipstation Dashboard Assets">
+        <xpath expr="//link[last()]" position="after">
+            <link rel="stylesheet" type="text/scss"
+                  href="/shipstation_delivery/static/src/less/shipstation_backend_dashboard.scss"/>
+        </xpath>
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/shipstation_delivery/static/src/js/dashboard.js"/>
+        </xpath>
+    </template>
+</odoo>

@@ -104,7 +104,7 @@ class ResPartner(models.Model):
         prepared_vals = {
             'name': name,
             'is_company': False,  # TODO : Need to manage the company
-            'customer': True,
+            # 'customer': True,
             'street': street,
             'street2': street2,
             'city': city,
@@ -133,7 +133,11 @@ class ResPartner(models.Model):
                 ('phone', '=', phone)]
             partner = self.search(domain, limit=1)
             if partner:
-                partner.write({'customer': True, 'shipstation_customer_id': customer_id, 'is_shipstation_partner': True})
+                partner.write({
+                    # 'customer': True,
+                    'shipstation_customer_id': customer_id,
+                    'is_shipstation_partner': True,
+                })
             else:
                 partner = self.create(prepared_vals)
         return partner

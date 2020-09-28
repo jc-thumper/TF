@@ -18,6 +18,7 @@
     'depends': ['sale'],
     'data': [
         'views/assets.xml',
+        'views/sale_order_view.xml',
     ],
     'demo': [],
     'installable': True,

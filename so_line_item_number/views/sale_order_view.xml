@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form_inherit_so_line_item_number" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.so.line.item.number</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='order_line']/tree" position="inside">
+                <field name="parent_product_id" invisible="1" />
+                <field name="item_number" invisible="1" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_workcenter_view_inherit_workcenter_user_restriction" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form.inherit.workcenter.user.restriction</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_view" />
+        <field name="arch" type="xml">
+            <field name="company_id" position="after">
+                <field name="user_ids" widget="many2many_tags" options="{'no_create': True}" />
+            </field>
+        </field>
+    </record>
+
+</odoo>

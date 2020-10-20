@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mail_follow_view_inherit" model="ir.ui.view">
+        <field name="name">mail.wizard.invite.inherit</field>
+        <field name="model">mail.wizard.invite</field>
+        <field name="inherit_id" ref="mail.mail_wizard_invite_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='add_followers']" position="attributes">
+                <attribute name="context">{'apply_mode':'direct'}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

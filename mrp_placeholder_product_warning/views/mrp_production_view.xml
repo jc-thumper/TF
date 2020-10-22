@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_production_form_view_inherit_placeholder_warning" model="ir.ui.view">
+        <field name="name">mrp.production.form.inherit.mrp.placeholder.product.warning</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view" />
+        <field name="arch" type="xml">
+            <button name="action_confirm" position="attributes">
+                <attribute name="context">{'show_placeholder_product_warning': True}</attribute>
+            </button>
+        </field>
+    </record>
+
+</odoo>

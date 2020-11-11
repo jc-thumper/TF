@@ -15,7 +15,7 @@
     'description': "Auto follow restriction for partners",
     'author': 'Confianz IT',
     'website': 'https://www.confianzit.com',
-    'depends': ['mail'],
+    'depends': ['mail', 'account', 'mrp'],
     'data': [
         'wizard/follower_wizard_inherit.xml',
     ],

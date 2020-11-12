@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_move_payment_inherit" model="ir.ui.view">
+        <field name="name">account.move.form</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='button_cancel']" position="after">
+                <button name="create_and_open_payment" id="account_invoice_stripe_payment_btn" type="object"
+                    class="oe_highlight"
+                    attrs="{'invisible': ['|', '|', ('state', '!=', 'posted'), ('invoice_payment_state', '!=', 'not_paid'), ('type', 'not in', ('out_invoice', 'out_refund'))]}"
+                    string="Open Stripe Payment" groups="account.group_account_invoice" />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

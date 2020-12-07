@@ -12,9 +12,9 @@ class MrpProduction(models.Model):
 
         orders_to_confirm = self.env['mrp.production']
         for order in self:
-            if order.move_raw_ids.filtered(lambda r: 'Placeholder' in r.product_id.name):
+            if order.move_raw_ids.filtered(lambda r: 'Placeholder' in r.product_id.name or not r.product_id.active):
                 if show_warning:
-                    raise UserError("Please update the product Placeholder before marking this MO as to do.")
+                    raise UserError("Please update the PLACEHOLDER/ARCV product before marking this MO as to do.")
             else:
                 orders_to_confirm |= order
 

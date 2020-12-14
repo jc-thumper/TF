@@ -7,7 +7,7 @@ class ProductTemplate(models.Model):
     _inherit = "product.template"
 
     def write(self, vals):
-        if not vals.get('active', False):
+        if not vals.get('active', True):
             self.env['mrp.bom'].sudo().search([('product_tmpl_id', 'in', self.ids)]).write({'active': False})
         return super(ProductTemplate, self).write(vals)
 
@@ -26,7 +26,7 @@ class ProductProduct(models.Model):
         return result
 
     def write(self, vals):
-        if not vals.get('active', False):
+        if not vals.get('active', True):
             self.mapped('orderpoint_ids').write({'active': False})
             self.env['mrp.bom'].sudo().search([('product_id', 'in', self.ids)]).write({'active': False})
 

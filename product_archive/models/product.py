@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 class ProductTemplate(models.Model):
@@ -26,6 +27,11 @@ class ProductProduct(models.Model):
         return result
 
     def write(self, vals):
+        product_available = self._product_available()
+        for product in self:
+            if product_available.get(product.id, {}).get('qty_available', 0):
+                raise UserError("Action cannot be performed as Product %s has stock available." % (product.display_name))
+
         if not vals.get('active', True):
             self.mapped('orderpoint_ids').write({'active': False})
             self.env['mrp.bom'].sudo().search([('product_id', 'in', self.ids)]).write({'active': False})

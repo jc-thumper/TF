@@ -38,5 +38,9 @@ class ProductProduct(models.Model):
 
         return super(ProductProduct, self).write(vals)
 
+    def unlink(self):
+        self.env['mrp.bom'].sudo().search([('product_id', 'in', self.ids)]).write({'active': False})
+        return super(ProductProduct, self).unlink()
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

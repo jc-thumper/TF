@@ -50,8 +50,8 @@ class ProductTemplate(models.Model):
                     if sale_ok:
                         if not any(item in routes for item in ['Buy', 'Manufacture']):
                             raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
-                        if standard_price >= lst_price:
-                            raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                        # if standard_price >= lst_price:
+                        #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
                     else:
                         if lst_price > 0:
                             raise UserError(_('Warning ! \n Sales Price must be $0.00'))
@@ -95,8 +95,8 @@ class ProductTemplate(models.Model):
                     if res.sale_ok:
                         if not any(item in routes for item in ['Buy', 'Manufacture']):
                             raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
-                        if res.standard_price >= res.list_price:
-                            raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                        # if res.standard_price >= res.list_price:
+                        #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
                     else:
                         if res.lst_price > 0:
                             raise UserError(_('Warning ! \n Sales Price must be $0.00'))
@@ -146,8 +146,8 @@ class Product(models.Model):
                     if res.sale_ok:
                         if not any(item in routes for item in ['Buy', 'Manufacture']):
                             raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
-                        if res.standard_price >= res.lst_price:
-                            raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                        # if res.standard_price >= res.lst_price:
+                        #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
                     else:
                         if res.lst_price > 0:
                             raise UserError(_('Warning ! \n Sales Price must be $0.00'))
@@ -204,8 +204,8 @@ class Product(models.Model):
                     if sale_ok:
                         if not any(item in routes for item in ['Buy', 'Manufacture']):
                             raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
-                        if standard_price >= lst_price:
-                            raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                        # if standard_price >= lst_price:
+                        #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
                     else:
                         if lst_price > 0:
                             raise UserError(_('Warning ! \n Sales Price must be $0.00'))

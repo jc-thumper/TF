@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="shopify_payment_gateway_form_view" model="ir.ui.view">
+            <field name="name">shopify_payment_gateway_form_view</field>
+            <field name="model">shopify.payment.gateway.ts</field>
+            <field name="arch" type="xml">
+                <form string="Shopify Payment Gateway" create="false" edit="false">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Shopify Payment Gateway Name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="mk_instance_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="shopify_payment_gateway_tree_view" model="ir.ui.view">
+            <field name="name">shopify_payment_gateway_tree_view</field>
+            <field name="model">shopify.payment.gateway.ts</field>
+            <field name="arch" type="xml">
+                <tree string="Shopify Payment Gateway" create="false">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="mk_instance_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_shopify_payment_gateway" model="ir.actions.act_window">
+            <field name="name">Payment Gateway</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.payment.gateway.ts</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Top menu item -->
+        <menuitem name="Shopify" id="menu_shopify" parent="base_marketplace.menu_marketplace" sequence="42" groups="base_marketplace.group_base_marketplace_manager"/>
+
+        <menuitem id="menu_shopify_fraud_orders" name="Fraud Orders" parent="shopify.menu_shopify" sequence="13" action="action_marketplace_fraud_orders"/>
+<!--        <menuitem id="menu_shopify_payouts" name="Payouts" parent="shopify.menu_shopify" sequence="14" action="action_shopify_payout"/>-->
+        <menuitem id="menu_shopify_product_tags" name="Tags" parent="shopify.menu_shopify" sequence="15" action="action_shopify_tags"/>
+        <menuitem id="menu_shopify_product_collections" name="Collections" parent="shopify.menu_shopify" sequence="20"/>
+        <menuitem id="menu_shopify_product_automated_collections" name="Automated Collections" parent="shopify.menu_shopify_product_collections" sequence="20"
+                  action="action_shopify_automated_collection_ts"/>
+        <menuitem id="menu_shopify_product_manual_collections" name="Manual Collections" parent="shopify.menu_shopify_product_collections" sequence="20"
+                  action="action_shopify_manual_collection_ts"/>
+
+        <!-- Configuration -->
+        <menuitem id="menu_shopify_configuration" name="Configuration" parent="menu_shopify" sequence="100" groups="base_marketplace.group_base_marketplace_manager"/>
+        <menuitem id="menu_shopify_location" name="Locations" parent="shopify.menu_shopify_configuration" sequence="10" action="action_shopify_location"
+                  groups="base_marketplace.group_base_marketplace_manager"/>
+        <menuitem id="menu_shopify_payment_gateway" name="Payment Gateways" parent="shopify.menu_shopify_configuration" sequence="15" action="action_shopify_payment_gateway"
+                  groups="base_marketplace.group_base_marketplace_manager"/>
+    </data>
+</odoo>
+

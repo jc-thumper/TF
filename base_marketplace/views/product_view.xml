@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_only_form_view" model="ir.ui.view">
+        <field name="name">product.template.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page name="mk_listing" string="Listing">
+                    <field name="mk_listing_ids" widget="one2many_list" context="{'show_attribute': False}" readonly="1">
+                        <tree string="Listing">
+                            <field name="mk_instance_image" widget="image" string=" " options='{"size": [20, 20]}'/>
+                            <field name="mk_instance_id"/>
+                            <field name="name"/>
+                            <field name="product_tmpl_id"/>
+                            <field name="listing_item_ids" string="Items"/>
+                            <field name="is_listed" readonly="1"/>
+                            <field name="is_published" readonly="1"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

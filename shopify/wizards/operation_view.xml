@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="mk_operation_export_form_view" model="ir.ui.view">
+            <field name="name">marketplace.operation.export.form.view</field>
+            <field name="model">mk.operation</field>
+            <field name="inherit_id" ref="base_marketplace.mk_operation_export_form_view"/>
+            <field name="arch" type="xml">
+                <field name="is_update_order_status" position="after">
+                    <field name="is_export_collection" attrs="{'invisible':[('marketplace','!=','shopify')]}" widget="boolean_toggle"/>
+                    <field name="is_update_collection" attrs="{'invisible':[('marketplace','!=','shopify')]}" widget="boolean_toggle"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="mk_operation_import_form_view" model="ir.ui.view">
+            <field name="name">marketplace.operation.export.form.view</field>
+            <field name="model">mk.operation</field>
+            <field name="inherit_id" ref="base_marketplace.mk_operation_import_form_view"/>
+            <field name="arch" type="xml">
+                <field name="mk_listing_id" position="after">
+                    <field name="import_collections" attrs="{'invisible':[('marketplace','!=','shopify')]}" widget="boolean_toggle"/>
+                </field>
+                <footer position="before">
+                    <p colspan="2" class="alert alert-warning" role="alert" attrs="{'invisible':[('import_collections','!=',True)]}" >
+                        <b>
+                            <ul>
+                                <li>
+                                    Make sure you import all <b>Listings</b> before <b>Import Collections</b>.
+                                </li>
+                            </ul>
+                        </b>
+                    </p>
+                </footer>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="cancel_in_shopify_form_view" model="ir.ui.view">
+            <field name="name">mk.cancel.order.form.view</field>
+            <field name="model">mk.cancel.order</field>
+            <field name="arch" type="xml">
+                <form string="Cancel In Shopify">
+                    <group string="Refund payments" attrs="{'invisible' : [('shopify_refund_payment_lines', '=', ())]}">
+                        <field name="shopify_refund_payment_lines" nolabel="1">
+                            <tree string="Refund Payments" editable="top" create="false" delete="false">
+                                <field name="product_id" readonly="1" force_save="1"/>
+                                <field name="available_qty" readonly="1" force_save="1"/>
+                                <field name="price_unit" readonly="1" force_save="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="to_refund_qty"/>
+                                <field name="refund_price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="price_subtotal" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="currency_id" invisible="1" force_save="1"/>
+                            </tree>
+                        </field>
+                        <field name="shopify_remaining_shipping_amount" invisible="1"/>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="refund_payment_total">
+                            <field name="shopify_amount_subtotal" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="shopify_shipping_amount" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="shopify_tax_amount" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="shopify_amount_total" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="True" force_save="1"/>
+                            <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                <label for="shopify_manual_refund_amount"/>
+                            </div>
+                            <field name="shopify_manual_refund_amount" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary'
+                                   options="{'currency_field': 'currency_id'}" readonly="1" force_save="1"/>
+                        </group>
+                        <div class="oe_clear"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="shopify_restock_type"
+                                   attrs="{'required' : [('shopify_amount_subtotal','!=', 0)], 'invisible' : ['|', ('shopify_refund_payment_lines','=', False),
+                                    ('shopify_amount_subtotal','=', 0)]}"/>
+                            <field name="is_create_refund" string="Create Credit Note in Odoo"
+                                   attrs="{'invisible' : ['|','|',('shopify_refund_payment_lines', '=', ()), ('create_refund_option_visible', '=', False), ('shopify_amount_subtotal','=', 0)]}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="currency_id" invisible="1" force_save="1"/>
+                            <field name="shopify_cancel_reason" required="1"/>
+                            <field name="create_refund_option_visible" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="shopify_is_notify_customer"/>
+                        </group>
+                    </group>
+                    <group string="Credit Note Info" attrs="{'invisible' : [('is_create_refund','=', False)]}">
+                        <group>
+                            <field name="refund_description" attrs="{'required' : [('is_create_refund','=', True)], 'invisible' : [('is_create_refund','=', False)]}"/>
+                            <field name="date_invoice" attrs="{'required' : [('is_create_refund','=', True)]}"/>
+                        </group>
+                        <group>
+                            <field name="payment_journal_id" attrs="{'required' : [('is_create_refund','=', True)]}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Cancel Order" class="oe_highlight" type="object" name="cancel_and_refund_in_shopify"/>
+                        <button string="Keep Order" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="refund_in_shopify_form_view" model="ir.ui.view">
+            <field name="name">mk.cancel.order.form.view</field>
+            <field name="model">mk.cancel.order</field>
+            <field name="arch" type="xml">
+                <form string="Refund In Shopify">
+                    <div class="alert alert-info info_icon" role="alert" attrs="{'invisible' : [('shopify_refund_payment_lines', '!=', ())]}">
+                        <span class="fa fa-lightbulb-o">
+                        </span>
+                        It seems all items is already refunded in shopify. If you have remaining amount that still pending to refund then you have to do that from shopify.
+                    </div>
+                    <group string="Refund payments" attrs="{'invisible' : [('shopify_refund_payment_lines', '=', ())]}">
+                        <field name="shopify_refund_payment_lines" nolabel="1">
+                            <tree string="Refund Payments" editable="top" create="false" delete="false">
+                                <field name="product_id" readonly="1" force_save="1"/>
+                                <field name="available_qty" readonly="1" force_save="1"/>
+                                <field name="price_unit" readonly="1" force_save="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="to_refund_qty"/>
+                                <field name="refund_price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="price_subtotal" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="currency_id" invisible="1" force_save="1"/>
+                            </tree>
+                        </field>
+                        <field name="shopify_remaining_shipping_amount" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <group class="oe_subtotal_footer oe_right" colspan="2" name="refund_payment_total">
+                            <field name="shopify_amount_subtotal" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="shopify_shipping_amount" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="shopify_tax_amount" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                            <field name="shopify_amount_total" widget='monetary' options="{'currency_field': 'currency_id'}" readonly="True" force_save="1"/>
+                            <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                                <label for="shopify_manual_refund_amount"/>
+                            </div>
+                            <field name="shopify_manual_refund_amount" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary'
+                                   options="{'currency_field': 'currency_id'}" readonly="1" force_save="1"/>
+                        </group>
+                        <div class="oe_clear"/>
+                    </group>
+                    <group attrs="{'invisible' : [('shopify_refund_payment_lines', '=', ())]}">
+                        <group>
+                            <field name="shopify_restock_type"
+                                   attrs="{'required' : [('shopify_amount_subtotal','!=', 0)], 'invisible' : ['|', ('shopify_refund_payment_lines','=', False),
+                                    ('shopify_amount_subtotal','=', 0)]}"/>
+                            <field name="create_refund_option_visible" invisible="1"/>
+                            <field name="refund_description" attrs="{'required' : [('is_create_refund','=', True)]}"/>
+                            <field name="is_create_refund" string="Create Credit Note in Odoo"
+                                   attrs="{'invisible' : ['|','|',('shopify_refund_payment_lines', '=', ()), ('create_refund_option_visible', '=', False), ('shopify_amount_subtotal','=', 0)]}"/>
+                        </group>
+                        <group>
+                            <field name="shopify_is_notify_customer"/>
+                        </group>
+                    </group>
+                    <group string="Credit Note Info" attrs="{'invisible' : [('is_create_refund','=', False)]}">
+                        <group>
+                            <field name="date_invoice" attrs="{'required' : [('is_create_refund','=', True)]}"/>
+                        </group>
+                        <group>
+                            <field name="payment_journal_id" attrs="{'required' : [('is_create_refund','=', True)]}"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Refund Order" class="oe_highlight" type="object" name="do_refund_in_shopify"
+                                attrs="{'invisible' : [('shopify_refund_payment_lines', '=', ())]}"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

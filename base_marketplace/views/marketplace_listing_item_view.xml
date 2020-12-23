@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="mk_listing_item_form_view" model="ir.ui.view">
+            <field name="name">mk.listing.item.form.view</field>
+            <field name="model">mk.listing.item</field>
+            <field name="arch" type="xml">
+                <form string="Listing" create="0" edit="1">
+                    <header>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button class="oe_stat_button o_stat_text o_value" name="action_change_listing_item_price"
+                                    type="object" icon="fa-money" string="Change Sale Price">
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label class="oe_edit_only" for="name" string="Item Name"/>
+                            <h1>
+                                <field name="name" placeholder="Listing Item Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="product_id" readonly="1"/>
+                                <field name="default_code"/>
+                                <field name="barcode" />
+                                <field name="mk_listing_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="mk_instance_id" readonly="1"/>
+                                <field name="marketplace" invisible="1"/>
+                                <field name="is_listed" readonly="1"/>
+                                <field name="mk_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Information" name="other_info">
+                                <group>
+                                    <group>
+                                        <field name="sequence"/>
+                                    </group>
+                                    <group>
+                                        <field name="item_create_date" readonly="1"/>
+                                        <field name="item_update_date" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Product Images" name="product_images">
+                                <group>
+                                    <field name="image_ids" class="o_website_sale_image_list" context="{'default_name': name, 'default_mk_listing_item_id': id}" nolabel="1">
+                                        <kanban string="Product Images" class="o_attachments_previews">
+                                            <field name="id"/>
+                                            <field name="name"/>
+                                            <field name="image"/>
+                                            <templates>
+                                                <t t-name="kanban-box">
+                                                    <div class="o_attachment oe_kanban_global_click o_website_sale_image_card">
+                                                        <div class="o_attachment_wrap">
+                                                            <div class="o_image_box">
+                                                                <div class="o_attachment_image"
+                                                                     t-attf-style="background-image:url({{kanban_image('mk.listing.image', 'image', record.id.raw_value)}});"/>
+                                                                <div t-attf-class="o_image_overlay" t-att-title="record.name.value"/>
+                                                                <div class="o_website_sale_image_card_title" t-att-title="record.name.value">
+                                                                    <field name="name"/>
+                                                                </div>
+                                                            </div>
+
+                                                            <t t-set="size" t-value="[record.image.value][0]"/>
+                                                            <t t-set="size_status" t-value="'normal'"
+                                                               t-if="size.indexOf('Bytes') !== -1 or ( size.indexOf('Kb') !== -1 and size[2]=='.')"/>
+                                                            <t t-set="size_status" t-value="'warning'" t-elif="( size.indexOf('Kb') !== -1 and size[3]=='.')"/>
+                                                            <t t-set="size_status" t-value="'danger'" t-else=""/>
+                                                            <t t-set="message" t-value="'Acceptable file size'" t-if="size_status == 'normal'"></t>
+                                                            <t t-set="message" t-value="'Huge file size. The image should be optimized/reduced.'"
+                                                               t-elif="size_status == 'warning'"></t>
+                                                            <t t-set="message" t-value="'Optimization required! Reduce the image size or increase your compression settings.'"
+                                                               t-else=""></t>
+
+                                                            <span t-attf-class="o_website_sale_image_card_size badge badge-#{size_status}" t-att-title="message">
+                                                                <t t-esc="record.image.value"/>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </templates>
+                                        </kanban>
+                                    </field>
+                                </group>
+                            </page>
+                            <page string="Inventory" name="inventory">
+                                <group>
+                                    <group name="inventory_1">
+                                        <field name="export_qty_type"/>
+                                        <field name="export_qty_value"/>
+                                    </group>
+                                    <group name="inventory_2">
+
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="mk_listing_item_tree_view" model="ir.ui.view">
+            <field name="name">mk.listing.item.tree.view</field>
+            <field name="model">mk.listing.item</field>
+            <field name="arch" type="xml">
+                <tree string="Listing Items" create="0" edit="0" decoration-success="is_listed">
+                    <field name='sequence' widget='handle'/>
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="default_code"/>
+                    <field name="sale_price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <button name="action_change_listing_item_price" type="object" icon="fa-money" title="Change Sale Price" aria-label="Change Sale Price" class="float-right"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="mk_id"/>
+                    <field name="mk_listing_id"/>
+                    <field name="is_listed"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_marketplace_listing_items_all" model="ir.actions.act_window">
+            <field name="name">Listing Items</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mk.listing.item</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <record id="marketplace_listing_search_view" model="ir.ui.view">
+            <field name="name">mk.listing.item.search.view</field>
+            <field name="model">mk.listing.item</field>
+            <field name="arch" type="xml">
+                <search string="Listing Items">
+                    <field name="name" string="Name"/>
+                    <field name="mk_listing_id" string="Listing"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_listing_items_from_listing" model="ir.actions.act_window">
+            <field name="name">Listing Items</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mk.listing.item</field>
+            <field name="context">{'search_default_mk_listing_id': [active_id], 'default_mk_listing_id': active_id}
+            </field>
+            <field name="search_view_id" ref="marketplace_listing_search_view"/>
+            <field name="view_ids"
+                   eval="[(5, 0, 0),
+                          (0, 0, {'view_mode': 'tree', 'view_id': ref('mk_listing_item_tree_view')}),
+                          (0, 0, {'view_mode': 'form', 'view_id': ref('mk_listing_item_form_view')})]"/>
+        </record>
+    </data>
+</odoo>

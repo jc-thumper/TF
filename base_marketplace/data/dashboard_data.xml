@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="action_marketplace_dashboard" model="ir.actions.act_url">
+            <field name="name">Marketplace Dashboard</field>
+            <field name="url">/</field>
+            <field name="target">self</field>
+        </record>
+
+        <record id="action_mk_general_dashboard" model="ir.actions.act_url">
+            <field name="name">Marketplace Dashboard</field>
+            <field name="url">/</field>
+            <field name="target">self</field>
+        </record>
+    </data>
+</odoo>

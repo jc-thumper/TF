@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Sequences for Marketplace Log -->
+        <record id="seq_marketplace_log" model="ir.sequence">
+            <field name="name">Marketplace Log Detail</field>
+            <field name="code">mk.log</field>
+            <field name="prefix">LOG-</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <!-- Sequence For Queue Job -->
+        <record id="seq_marketplace_queue_job" model="ir.sequence">
+            <field name="name">Marketplace Queue Job</field>
+            <field name="code">mk.queue.job</field>
+            <field name="prefix">Q-</field>
+            <field name="padding">6</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

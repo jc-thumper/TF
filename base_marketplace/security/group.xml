@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Marketplace Multi Company Access Rule -->
+    	<record model="ir.rule" id="mk_instance_multi_company_rule">
+	        <field name="name">Marketplace multi-company</field>
+	        <field name="model_id" ref="model_mk_instance"/>
+	        <field name="global" eval="True"/>
+	        <field name="domain_force">['|',('company_id','=',False), ('company_id', 'child_of', [user.company_id.id])]</field>
+	    </record>
+
+        <!-- Marketplace Listing Multi Company Access Rule -->
+        <record model="ir.rule" id="mk_listing_multi_company_rule">
+	        <field name="name">Marketplace Listing multi-company</field>
+	        <field name="model_id" ref="model_mk_listing"/>
+	        <field name="global" eval="True"/>
+	        <field name="domain_force">['|',('mk_instance_id.company_id','=',False), ('mk_instance_id.company_id', 'child_of', [user.company_id.id])]</field>
+	    </record>
+
+        <!-- Marketplace Listing Items Multi Company Access Rule -->
+        <record model="ir.rule" id="mk_listing_item_rule">
+	        <field name="name">Marketplace Listing Item multi-company</field>
+	        <field name="model_id" ref="model_mk_listing_item"/>
+	        <field name="global" eval="True"/>
+	        <field name="domain_force">['|',('mk_instance_id.company_id','=',False), ('mk_instance_id.company_id', 'child_of', [user.company_id.id])]</field>
+	    </record>
+
+        <!-- Marketplace Access Categories -->
+		<record model="ir.module.category" id="module_base_marketplace">
+            <field name="name">Marketplace</field>
+            <field name="description">Marketplace User Access Right</field>
+            <field name="sequence">100</field>
+        </record>
+
+        <!-- Marketplace Access Groups -->
+        <record model="res.groups" id="group_base_marketplace">
+            <field name="name">User</field>
+	        <field name="implied_ids" eval="[(4,ref('sales_team.group_sale_manager')),(4,ref('stock.group_tracking_lot')),(4,ref('account.group_account_invoice'))]"/>
+            <field name="category_id" ref="module_base_marketplace"/>
+        </record>
+
+        <record model="res.groups" id="group_base_marketplace_manager">
+            <field name="name">Manager</field>
+            <field name="category_id" ref="module_base_marketplace"/>
+	        <field name="implied_ids" eval="[(4, ref('group_base_marketplace'))]"/>
+			<field name="users" eval="[(4, ref('base.user_root')),(4, ref('base.user_admin'))]"/>
+        </record>
+	</data>
+</odoo>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_backend" name="marketplace assets" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/base_marketplace/static/src/js/systray_activity_menu.js"/>
+
+            <!--Chart Libraries-->
+            <script type="text/javascript" src="/base_marketplace/static/src/js/lib/apexcharts.min.js"/>-->
+
+            <!--Dashboards-->
+            <script type="text/javascript" src="/base_marketplace/static/src/js/dashboard.js"/>
+
+            <link rel="stylesheet" href="/base_marketplace/static/src/css/dashboard.css"/>
+        </xpath>
+    </template>
+
+    <template id="base_marketplace.base_marketplace_search_template_date_filter">
+        <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+            <span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"/>
+            <t t-if="options['date'].get('string') and options['date'].get('filter') != 'custom'">
+                <t t-esc="options['date']['string']"/>
+            </t>
+            <t t-if="options['date'].get('filter') == 'custom'">
+                <t t-if="options['date'].get('date')">Date:
+                    <span class="js_format_date">
+                        <t t-esc="options['date']['date']"/>
+                    </span>
+                </t>
+                <t t-if="options['date'].get('date_from')">
+                    <b>From:</b>
+                    <span class="js_format_date">
+                        <t t-esc="options['date']['date_from']"/>
+                    </span>
+                    <span class="o_reports_date_to">
+                        <b>To:</b>
+                        <span class="js_format_date">
+                            <t t-esc="options['date']['date_to']"/>
+                        </span>
+                    </span>
+                </t>
+            </t>
+        </a>
+        <div class="dropdown-menu o_filters_menu" role="menu">
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="Today" data-filter="today">Today</a>
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="This Month" data-filter="this_month">This Month</a>
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="This Quarter" data-filter="this_quarter">This Quarter</a>
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="This Year" data-filter="this_year">This Year</a>
+            <div role="separator" class="dropdown-divider"/>
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="Last Month" data-filter="last_month">Last Month</a>
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="Last Quarter" data-filter="last_quarter">Last Quarter</a>
+            <a role="menuitem" class="dropdown-item js_mk_report_date_filter" title="Last Year" data-filter="last_year">Last Year</a>
+            <div role="separator" class="dropdown-divider"></div>
+            <div class="o_mk_dashboard_search" data-filter='custom_filter_date'>
+                <t t-if="options['date'].get('date_from') != None">
+                    <label class="custom-date" for="date_from">Start Date :</label>
+                    <div class="form-group custom-date">
+                        <div class='o_datepicker js_mk_reports_datetimepicker' t-att-data-default-value="options['date']['date_from']">
+                            <input type='text' class="o_datepicker_input" name="date_from"/>
+                            <span class="o_datepicker_button"/>
+                        </div>
+                    </div>
+                </t>
+                <label class="custom-date" for="date_to" t-if="options['date'].get('date_to') != None">End Date :</label>
+                <label class="custom-date" for="date_to" t-if="options['date'].get('date') != None">Date :</label>
+                <div class="form-group custom-date">
+                    <div class='o_datepicker js_mk_reports_datetimepicker' t-att-data-default-value="options['date'].get('date_to') or options['date'].get('date')">
+                        <input type='text' class="o_datepicker_input" name="date_to"/>
+                        <span class="o_datepicker_button"/>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary js_mk_report_date_filter" data-filter="custom">Apply</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="base_marketplace.search_template">
+        <div class="btn-group o_dropdown" t-if="options.get('date') != None">
+            <div class="col-xs-12 col-md-6">
+                <t t-call="base_marketplace.base_marketplace_search_template_date_filter"/>
+            </div>
+        </div>
+    </template>
+</odoo>
+
+

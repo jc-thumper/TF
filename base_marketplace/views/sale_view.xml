@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="markeplace_sale_order_form_view" model="ir.ui.view">
+        <field name="name">marketplace.sale.order.form.view</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Marketplace Detail" attrs="{'invisible':[('mk_instance_id','=',False)]}">
+                    <group name="main_group">
+                        <group name="sub_group1">
+                            <field name="mk_instance_id" readonly="1"/>
+                            <field name="mk_id" readonly="1"/>
+                        </group>
+                        <group name="sub_group2">
+                            <field name="mk_order_number" readonly="1"/>
+                            <field name="canceled_in_marketplace" readonly="1" invisible="1"/>
+                            <field name="marketplace" invisible="1" />
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button type="object" name="open_sale_order_in_marketplace" class="oe_stat_button" icon='fa-eye' string="Show in Marketplace"
+                        attrs="{'invisible': [('mk_id','=',False)]}"/>
+            </div>
+        </field>
+    </record>
+
+    <record id="markeplace_sale_order_tree_view" model="ir.ui.view">
+        <field name="name">marketplace.sale.order.tree.view</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <tree string="Markeplace Orders"
+                  decoration-success="updated_in_marketplace==True"
+                  decoration-muted="state=='cancel'"
+                  decoration-info="state in ('sale', 'done')"
+                  decoration-bf="message_unread == True" create="0" edit="1">
+                <field name="message_unread" invisible="1"/>
+                <field name="name"/>
+                <field name="date_order"/>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <field name="updated_in_marketplace"/>
+                <field name="amount_total" sum="Total Tax Included"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_marketplace_quotation" model="ir.actions.act_window">
+        <field name="name">Quotations</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="domain">[('mk_id','!=',False),('state','in',('draft','sent','cancel'))]</field>
+        <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+    </record>
+
+    <record id="action_marketplace_orders" model="ir.actions.act_window">
+        <field name="name">Sales Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="search_view_id" ref="sale.sale_order_view_search_inherit_sale"/>
+        <field name="context">{}</field>
+        <field name="domain">[('mk_id', '!=', False), ('state', 'not in', ('draft', 'sent', 'cancel'))]</field>
+    </record>
+
+    <record id="action_marketplace_orders_kanban" model="ir.actions.act_window">
+        <field name="name">Marketplace Sale Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="markeplace_sale_order_tree_view"/>
+        <field name="domain">[('mk_instance_id','=',active_id)]</field>
+    </record>
+</odoo>

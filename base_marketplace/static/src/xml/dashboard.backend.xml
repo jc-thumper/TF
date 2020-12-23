@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates id="template" xml:space="preserve">
+    <t t-name="base_marketplace.DashboardMain">
+        <div class="">
+            <div class="container-fluid">
+                <t t-call="base_marketplace.dashboard_header"/>
+                <div class="o_ts_dashboard_content"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_marketplace.top_product_table">
+        <!-- Top Performing table starts -->
+        <div class="col-lg-4 col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top 10 Performing Products</h5>
+                </div>
+                <div class="table-border-style">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr class="table-active">
+                                    <th>#</th>
+                                    <th>Product Name</th>
+                                    <th style="text-align:right;">Qty Sold</th>
+                                    <th style="text-align:right;">Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-set="product_list" t-value="widget.data.best_sellers"/>
+                                <t t-set="ctr" t-value="1"/>
+                                <t t-foreach="product_list" t-as="product">
+                                    <a href="#" data-oe-model="product.template" t-att-data-oe-id="product['id']">
+                                        <tr>
+                                            <th scope="row"><t t-esc="ctr"/></th>
+                                            <td>
+                                                <a t-attf-href="/web#id=#{product['id']}&amp;model=product.template&amp;view_type=form">
+                                                    <t t-esc="product['name']"/>
+                                                </a>
+                                            </td>
+                                            <td style="text-align:right;"><t t-esc="product['qty']"/></td>
+                                            <td style="text-align:right;"><t t-esc="widget.render_monetary_field(product['sales'], widget.data.currency_id)"/></td>
+                                        </tr>
+                                    </a>
+                                    <t t-set="ctr" t-value="ctr + 1"/>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Top Performing table ends -->
+    </t>
+
+    <t t-name="base_marketplace.dashboard_tiles">
+        <div class="row">
+            <div class="col-xl-3 col-md-6">
+                <div class="card bg-c-blue order-card">
+                    <div class="card-body">
+                        <div class="row align-items-center m-b-0">
+                            <div class="col">
+                                <h6 class="m-b-20 text-white">Total Orders</h6>
+                                <h3 class="text-white"><t t-esc="widget.data.summary.total_orders"/></h3>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-shopping-cart text-white"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-c-green order-card">
+                    <div class="card-body">
+                        <div class="row align-items-center m-b-0">
+                            <div class="col">
+                                <h6 class="m-b-20 text-white">Revenue</h6>
+                                <h3 class="text-white"><t t-esc="widget.render_monetary_field(widget.data.summary.total_sales, widget.data.currency_id)"/></h3>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-money text-white"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-c-yellow order-card">
+                    <div class="card-body">
+                        <div class="row align-items-center m-b-0">
+                            <div class="col">
+                                <h6 class="m-b-20 text-white">Pending Shipments</h6>
+                                <h3 class="text-white"><t t-esc="widget.data.summary.pending_shipments"/></h3>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-truck text-white"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="card bg-c-pink order-card">
+                    <div class="card-body">
+                        <div class="row align-items-center m-b-0">
+                            <div class="col">
+                                <h6 class="m-b-20 text-white">Average Order Value</h6>
+                                <h3 class="text-white"><t t-esc="widget.render_monetary_field(widget.data.summary.avg_order_value, widget.data.currency_id)"/></h3>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fa fa-calculator text-white"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_marketplace.top_category_chart">
+        <div class="col-lg-4 col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top 5 Performing Categories</h5>
+                </div>
+                <div class="card-block" style="height:345px;">
+                    <div class="row justify-content-center m-t-15">
+                        <div id="category_pie_chart" style="margin: 0px auto !important;"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_marketplace.instance_wise_general_selling">
+        <div class="row">
+            <div class="col-lg-8 col-md-12">
+                <div class="card">
+                    <div class="card-block" style="height:415px;display: block;">
+                        <div id="bar_chart" style="margin: 0px auto !important;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Marketplace wise Revenue</h5>
+                    </div>
+                    <div class="card-block" style="height:345px;">
+                        <div class="row justify-content-center m-t-15">
+                            <div id="mk_revenue_pieChart" style="margin: 0px auto !important;"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="base_marketplace.dashboard_body">
+        <!-- order-card start -->
+        <t t-call="base_marketplace.dashboard_tiles"/>
+        <!-- order-card end -->
+
+        <!-- Total Selling and Top Country start -->
+        <div class="row" id="total_selling">
+            <div class="col-lg-8 col-md-12">
+                <div class="card">
+                    <div class="card-block" style="height:415px;display: block;">
+                        <div id="chart" style="margin: 0px auto !important;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Top 5 Performing Countries</h5>
+                    </div>
+                    <div class="card-block" style="height:345px;">
+                        <div class="row justify-content-center m-t-15">
+                            <div id="pieChart" style="margin: 0px auto !important;"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Total Selling and Top Country  end -->
+
+        <!-- Instance wise selling start -->
+        <t t-if="widget.data.is_general_dashboard">
+            <t t-call="base_marketplace.instance_wise_general_selling"/>
+        </t>
+        <!-- Instance wise selling end -->
+
+        <!-- Top product and Top Category start -->
+        <div class="row" id="product_categ_chart">
+            <t t-call="base_marketplace.top_product_table"/>
+            <t t-call="base_marketplace.top_category_chart"/>
+        </div>
+        <!-- Top product and Top Category end -->
+    </t>
+
+    <t t-name="base_marketplace.dashboard_header">
+        <div class="row">
+            <br/>
+        </div>
+    </t>
+
+    <t t-name="base_marketplace.buttons">
+        <t t-foreach="buttons" t-as="button">
+            <button type="button" class="btn btn-primary" t-att-action="button.action"><t t-esc="button.name"/></button>
+        </t>
+    </t>
+</templates>

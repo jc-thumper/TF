@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Sequences for Shopify Payout -->
+        <record id="seq_shopify_payout" model="ir.sequence">
+            <field name="name">Shopify Payout Sequence</field>
+            <field name="code">shopify.payout</field>
+            <field name="prefix">PAYOUT-</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="shopify_location_form_view" model="ir.ui.view">
+            <field name="name">shopify_location_form_view</field>
+            <field name="model">shopify.location.ts</field>
+            <field name="arch" type="xml">
+                <form string="Shopify Location" create="false">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" placeholder="Shopify Location Name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="shopify_location_id" readonly="1"/>
+                                <field name="partner_id" widget="res_partner_many2one" readonly="1"
+                                       context="{'show_address': 1, 'show_vat': True}"
+                                       options="{'always_reload': True}"/>
+                                <field name="mk_instance_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="is_default_location" readonly="1"/>
+                                <field name="warehouse_id" required="1"/>
+                                <field name="location_id" required="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="shopify_location_tree_view" model="ir.ui.view">
+            <field name="name">shopify_location_tree_view</field>
+            <field name="model">shopify.location.ts</field>
+            <field name="arch" type="xml">
+                <tree string="Shopify Location">
+                    <field name="name"/>
+                    <field name="warehouse_id"/>
+                    <field name="is_default_location"/>
+                    <field name="location_id"/>
+                    <field name="mk_instance_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_shopify_location" model="ir.actions.act_window">
+            <field name="name">Location</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.location.ts</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p>
+
+                </p>
+            </field>
+        </record>
+
+        <record id="action_shopify_location_dashboard_ts" model="ir.actions.act_window">
+            <field name="name">Locations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.location.ts</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('mk_instance_id','=',active_id)]</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="shopify_collection_ts_form_view" model="ir.ui.view">
+            <field name="name">shopify_collection_ts_form_view</field>
+            <field name="model">shopify.collection.ts</field>
+            <field name="arch" type="xml">
+                <form string="Shopify Account">
+                    <header>
+                        <button name="sync_automate_collection_product" type="object" string="Sync Products"
+                                class="oe_highlight" attrs="{'invisible': [('collection_type', '!=', 'automated')]}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_collection_products" type="object"
+                                    icon="fa-product-hunt" class="oe_stat_button"
+                                    attrs="{'invisible': [('product_count', '&lt;=', 0)]}">
+                                <field string="Products" name="product_count" widget="statinfo"/>
+                            </button>
+                            <button class="oe_stat_button o_stat_text o_value text-danger" name="shopify_published"
+                                    type="object" icon="fa-globe" string="Unpublished"
+                                    attrs="{'invisible': ['|',('exported_in_shopify','=',False),('is_available_in_website','=',True)]}">
+                            </button>
+                            <button class="oe_stat_button o_stat_text o_value text-success" name="shopify_published"
+                                    type="object" icon="fa-globe" string="Published"
+                                    attrs="{'invisible': ['|',('exported_in_shopify','=',False),('is_available_in_website','=',False)]}">
+                            </button>
+                        </div>
+                        <field name="image" widget="image" class="oe_avatar"/>
+                        <div class="oe_title">
+                            <label class="oe_edit_only" for="name" string="Collection Name"/>
+                            <h1>
+                                <field name="name" placeholder="Collection Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="mk_instance_id" required="1" domain="[('state','=','confirmed')]"/>
+                                <field name="shopify_collection_id" readonly="1"/>
+                                <field name="is_disjunctive"
+                                       attrs="{'invisible': [('collection_type', '!=', 'automated')]}"/>
+                                <field name="collection_type" invisible="1"/>
+                                <field name="exported_in_shopify" invisible="1"/>
+                                <field name="is_available_in_website" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="shopify_update_date" readonly="1"/>
+                                <field name="shopify_publish_date" readonly="1"/>
+                                <field name="mk_listing_ids" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description"/>
+                            </page>
+                            <page string="Conditions" attrs="{'invisible': [('collection_type', '!=', 'automated')]}">
+                                <field name="collection_condition_ids">
+                                    <tree editable="bottom">
+                                        <field name="column" required="1"/>
+                                        <field name="relation" required="1"/>
+                                        <field name="condition" required="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Products" attrs="{'invisible': [('collection_type', '=', 'automated')]}">
+                                <field name="mk_listing_ids" domain="[('is_listed','=',True),('mk_instance_id','=',mk_instance_id)]">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="product_tmpl_id"/>
+                                        <field name="mk_instance_id"/>
+                                        <field name="number_of_variants_in_mk"/>
+                                        <field name="is_listed" readonly="1"/>
+                                        <field name="is_published" readonly="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Configuration">
+                                <group>
+                                    <group>
+                                        <field name="handle"/>
+                                        <field name="template_suffix"/>
+                                    </group>
+                                    <group>
+                                        <field name="published_scope"/>
+                                        <field name="sort_order"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="shopify_collection_ts_tree_view" model="ir.ui.view">
+            <field name="name">shopify_collection_ts_tree_view</field>
+            <field name="model">shopify.collection.ts</field>
+            <field name="arch" type="xml">
+                <tree string="Shopify Account">
+                    <field name="name"/>
+                    <field name="published_scope"/>
+                    <field name="mk_instance_id" readonly="1"/>
+                    <field name="sort_order"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_shopify_automated_collection_ts" model="ir.actions.act_window">
+            <field name="name">Automated Collection</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.collection.ts</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('collection_type','=','automated')]</field>
+            <field name="context">{'default_collection_type':'automated'}</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <record id="action_shopify_manual_collection_ts" model="ir.actions.act_window">
+            <field name="name">Manual Collection</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.collection.ts</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('collection_type','=','manual')]</field>
+            <field name="context">{'default_collection_type':'manual'}</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <record id="action_shopify_automated_collection_dashboard_ts" model="ir.actions.act_window">
+            <field name="name">Collection</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.collection.ts</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('mk_instance_id','=',active_id)]</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <!-- Collection Button in action menu -->
+        <record id="model_shopify_collection_export_update" model="ir.actions.server">
+            <field name="name">Export/Update Collection in Shopify</field>
+            <field name="model_id" ref="shopify.model_shopify_collection_ts"/>
+            <field name="binding_model_id" ref="shopify.model_shopify_collection_ts"/>
+            <field name="state">code</field>
+            <field name="code">
+                records.export_update_collection_to_shopify_ts()
+            </field>
+        </record>
+    </data>
+</odoo>

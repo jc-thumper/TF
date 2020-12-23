@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+
+    <t t-name="mail.systray.MarketplaceMenu.Previews">
+        <t t-if="_.isEmpty(marketplaces)">
+            <div class="dropdown-item-text text-center o_no_activity">
+                <span>No Marketplace Instance Found.</span>
+            </div>
+        </t>
+        <t t-foreach="marketplaces" t-as="marketplace">
+            <div class="o_mail_preview" t-att-data-res_model="marketplace.model" t-att-data-model_name="marketplace.name" t-att-data-id="marketplace.id">
+                <div class="o_mail_preview_image o_mail_preview_app">
+                    <img t-attf-src="data:image/*;base64,{{marketplace.icon}}" t-att-alt="marketplace.name"/>
+                </div>
+                <div class="o_preview_info">
+                    <div class="o_preview_title">
+                        <span class="o_preview_name">
+                            <t t-esc="marketplace.name"/>
+                        </span>
+                        <div t-if="marketplace.actions" class="o_mail_activity_action_buttons">
+                            <t t-foreach="marketplace.actions" t-as="action">
+                                <button type="button"
+                                        t-att-title="action.name"
+                                        t-att-class="'o_mail_activity_action btn btn-link fa ' + action.icon"
+                                        t-att-data-action_xmlid="action.action_xmlid"
+                                        t-att-data-res_model="marketplace.model"
+                                        t-att-data-model_name="marketplace.name">
+                                </button>
+                            </t>
+                        </div>
+                    </div>
+                    <button t-if="marketplace.mk_order_count" type="button" class="btn btn-link o_activity_filter_button mr16" t-att-data-res_model="marketplace.model"
+                            t-att-data-model_name="marketplace.name">
+                        <t t-esc="marketplace.mk_order_count"/>
+                        Orders
+                    </button>
+                    <button t-if="marketplace.mk_listing_count" type="button" class="btn btn-link o_activity_filter_button mr16" t-att-data-res_model="marketplace.model"
+                            t-att-data-model_name="marketplace.name">
+                        <t t-esc="marketplace.mk_listing_count"/>
+                        Listing
+                    </button>
+                    <button t-if="marketplace.mk_total_revenue" type="button" class="btn btn-link o_activity_filter_button mr16" t-att-data-res_model="marketplace.model"
+                            t-att-data-model_name="marketplace.name">
+                        <t t-esc="marketplace.mk_total_revenue"/>
+                        Revenue
+                    </button>
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="base_marketplace.SystrayItem">
+        <li class="o_mail_systray_item">
+            <a class="dropdown-toggle o-no-caret" data-toggle="dropdown" data-display="static" aria-expanded="false" title="Marketplaces" href="#" role="button">
+                <i class="fa fa-shopping-bag" role="img" aria-label="Marketplaces"/>
+                <span class="badge badge-pill"/>
+            </a>
+            <div class="o_mail_systray_dropdown dropdown-menu dropdown-menu-right" role="menu">
+                <div class="o_mail_systray_dropdown_items"/>
+            </div>
+        </li>
+    </t>
+
+</templates>

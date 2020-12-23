@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="shopify_tags_view_tree" model="ir.ui.view">
+            <field name="name">shopify.tags.tree</field>
+            <field name="model">shopify.tags.ts</field>
+            <field name="arch" type="xml">
+                <tree string="Shopify Tags" editable="bottom">
+                    <field name="name"/>
+                    <field name="sequence"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_shopify_tags" model="ir.actions.act_window">
+            <field name="name">Shopify Tags</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.tags.ts</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+    </data>
+</odoo>	

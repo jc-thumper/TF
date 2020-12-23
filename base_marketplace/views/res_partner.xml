@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="action_marketplace_customer_kanban" model="ir.actions.act_window">
+            <field name="name">Customers</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="base.view_partner_tree"/>
+            <field name="domain">[('mk_instance_ids','in',active_ids)]</field>
+        </record>
+    </data>
+</odoo>

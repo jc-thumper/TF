@@ -1,0 +1,18 @@
+.o_kanban_view.o_kanban_ungrouped.o_kanban_dashboard.shopify_kanban {
+  .o_kanban_record {
+    width: 420px;
+  }
+}
+
+.o_kanban_card_content {
+  .button_view {
+    font-size: 13px;
+  }
+
+  .button_data, .button_data_new {
+    background: #333333;
+    border-radius: 15px;
+    border: 0;
+    padding: 5px 15px;
+  }
+}

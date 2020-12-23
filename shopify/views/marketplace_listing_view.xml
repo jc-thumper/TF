@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="shopify_mk_listing_form_view" model="ir.ui.view">
+            <field name="name">shopify.marketplace.listing.form.view</field>
+            <field name="model">mk.listing</field>
+            <field name="inherit_id" ref="base_marketplace.mk_listing_form_view"/>
+            <field name="arch" type="xml">
+                <page name="product_images" position="after">
+                    <page string="Configuration" attrs="{'invisible':[('marketplace','!=','shopify')]}">
+                        <group>
+                            <group>
+                                <field name="inventory_management"/>
+                                <field name="continue_selling"/>
+                            </group>
+                            <group>
+                                <field name="is_taxable"/>
+                            </group>
+                        </group>
+                    </page>
+                    <page string="Other Details" attrs="{'invisible':[('marketplace','!=','shopify')]}">
+                        <group>
+                            <group>
+                                <field name="fulfillment_service" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="number_of_variants_in_mk" readonly="1"/>
+                            </group>
+                        </group>
+                    </page>
+                </page>
+                <field name="is_listed" position="after">
+                    <field name="tag_ids" widget="many2many_tags" attrs="{'invisible':[('marketplace','!=','shopify')]}"/>
+                </field>
+            </field>
+        </record>
+<!--
+        <record id="shopify_product_template_form_view" model="ir.ui.view">
+            <field name="name">shopify_product_template_form_view</field>
+            <field name="model">shopify.product.template.ts</field>
+            <field name="arch" type="xml">
+                <form string="Shopify Product Template" create="0" edit="1">
+                    <header>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="%(shopify.shopify_product_variant_action)d" type="action"
+                                    icon="fa-sitemap" class="oe_stat_button"
+                                    attrs="{'invisible': [('variant_count', '&lt;=', 1)]}">
+                                <field string="Variants" name="variant_count" widget="statinfo"/>
+                            </button>
+                            <button class="oe_stat_button o_stat_text o_value text-danger" name="shopify_published"
+                                    type="object" icon="fa-globe"
+                                    attrs="{'invisible': ['|',('exported_in_shopify','=',False),('is_available_in_website','=',True)]}"
+                                    string="Unpublished">
+                            </button>
+                            <button class="oe_stat_button o_stat_text o_value text-success" name="shopify_published"
+                                    type="object" icon="fa-globe"
+                                    attrs="{'invisible': ['|',('exported_in_shopify','=',False),('is_available_in_website','=',False)]}"
+                                    string="Published">
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label class="oe_edit_only" for="name" string="Product Name"/>
+                            <h1>
+                                <field name="name" placeholder="Shopify Product Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="product_tmpl_id" readonly="1"/>
+                                <field name="shopify_tmpl_id" readonly="1"/>
+                                <field name="exported_in_shopify" readonly="1"/>
+
+                                <field name="tag_ids" widget="many2many_tags"/>
+                            </group>
+                            <group>
+                                <field name="mk_instance_id" readonly="1"/>
+                                <field name="shopify_create_date" readonly="1"/>
+                                <field name="shopify_update_date" readonly="1"/>
+                                <field name="shopify_publish_date" readonly="1"/>
+                                <field name="shopify_product_category_id"/>
+                                <field name="is_available_in_website" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description">
+                                <field name="description"/>
+                            </page>
+                            <page string="Variants" attrs="{'invisible': [('variant_count', '&lt;=', 1)]}">
+                                <field name="shopify_product_variant_ids"/>
+                            </page>
+                            <page string="Product Images">
+                                <group>
+                                    &lt;!&ndash;<field name="shopify_image_ids" mode="kanban" nolabel="1">
+                                        <kanban class="o_res_partner_kanban">
+                                            <templates>
+                                                <field name="image"/>
+                                                <t t-name="kanban-box">
+                                                    <div class="oe_kanban_global_click" style="width: 10%;">
+                                                        <a t-if="!read_only_mode" type="delete"
+                                                           class="fa fa-times pull-right"/>
+                                                        <div class="o_kanban_image "
+                                                             style="box-shadow: 2px 2px 10px #888888;">
+                                                            <img t-if="record.image.raw_value"
+                                                                 t-att-src="'data:image/png;base64,'+record.image.raw_value"
+                                                                 style="heigh:50px;width:50px;"/>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </templates>
+                                        </kanban>
+                                    </field>&ndash;&gt;
+
+                                    <field name="shopify_image_ids" class="o_website_sale_image_list"
+                                           context="{'default_name': name, 'default_mk_listing_id': active_id}"
+                                           nolabel="1">
+                                        <kanban string="Product Images" class="o_attachments_previews">
+                                            <field name="id"/>
+                                            <field name="name"/>
+                                            <field name="image"/>
+                                            <templates>
+                                                <t t-name="kanban-box">
+                                                    <div class="o_attachment oe_kanban_global_click o_website_sale_image_card">
+                                                        <div class="o_attachment_wrap">
+                                                            <div class="o_image_box">
+                                                                <div class="o_attachment_image"
+                                                                     t-attf-style="background-image:url({{kanban_image('shopify.product.image.ts', 'image', record.id.raw_value)}});"/>
+                                                                <div t-attf-class="o_image_overlay"
+                                                                     t-att-title="record.name.value"/>
+                                                                <div class="o_website_sale_image_card_title"
+                                                                     t-att-title="record.name.value">
+                                                                    <field name="name"/>
+                                                                </div>
+                                                            </div>
+
+                                                            <t t-set="size" t-value="[record.image.value][0]"/>
+                                                            <t t-set="size_status" t-value="'normal'"
+                                                               t-if="size.indexOf('Bytes') !== -1 or ( size.indexOf('Kb') !== -1 and size[2]=='.')"/>
+                                                            <t t-set="size_status" t-value="'warning'"
+                                                               t-elif="( size.indexOf('Kb') !== -1 and size[3]=='.')"/>
+                                                            <t t-set="size_status" t-value="'danger'" t-else=""/>
+                                                            <t t-set="message" t-value="'Acceptable file size'"
+                                                               t-if="size_status == 'normal'"/>
+                                                            <t t-set="message"
+                                                               t-value="'Huge file size. The image should be optimized/reduced.'"
+                                                               t-elif="size_status == 'warning'"/>
+                                                            <t t-set="message"
+                                                               t-value="'Optimization required! Reduce the image size or increase your compression settings.'"
+                                                               t-else=""/>
+
+                                                            <span t-attf-class="o_website_sale_image_card_size badge badge-#{size_status}"
+                                                                  t-att-title="message">
+                                                                <t t-esc="record.image.value"/>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </templates>
+                                        </kanban>
+                                    </field>
+                                </group>
+                            </page>
+                            <page string="Configuration">
+                                <group>
+                                    <group>
+                                        <field name="inventory_management"/>
+                                        <field name="continue_selling"/>
+                                    </group>
+                                    <group>
+                                        <field name="is_taxable"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Other Details">
+                                <group>
+                                    <group>
+                                        <field name="fulfillment_service" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="number_of_variants_in_mk" readonly="1"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="shopify_product_template_tree_view" model="ir.ui.view">
+            <field name="name">shopify_product_template_tree_view</field>
+            <field name="model">shopify.product.template.ts</field>
+            <field name="arch" type="xml">
+                <tree string="Shopify Product" create="0" edit="0" decoration-success="exported_in_shopify">
+                    <field name="name"/>
+                    <field name="product_tmpl_id"/>
+                    <field name="mk_instance_id"/>
+                    <field name="number_of_variants_in_mk"/>
+                    <field name="exported_in_shopify" readonly="1"/>
+                    <field name="is_available_in_website" readonly="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_shopify_product_template" model="ir.actions.act_window">
+            <field name="name">Shopify Product Template</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.product.template.ts</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+
+        <record id="action_shopify_product_template_dashboard" model="ir.actions.act_window">
+            <field name="name">Shopify Product Template</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">shopify.product.template.ts</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="shopify_product_template_tree_view"/>
+            <field name="domain">[('mk_instance_id','=',active_id)]</field>
+        </record>-->
+    </data>
+</odoo>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="invoice_marketplace_form_inherit" model="ir.ui.view">
+            <field name="name">invoice.marketplace.form.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                    <field name="mk_instance_id" invisible="1"/>
+                    <field name="is_refunded_in_mk" invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_marketplace_invoice_kanban" model="ir.actions.act_window">
+            <field name="name">Marketplace Invoices</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('mk_instance_id','=',active_id)]</field>
+        </record>
+    </data>
+</odoo>

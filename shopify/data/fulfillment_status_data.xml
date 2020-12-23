@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Fulfillment Status -->
+        <record id="shopify_order_status_shipped" model="shopify.order.status">
+            <field name="name">Shipped</field>
+            <field name="status">shipped</field>
+        </record>
+        <record id="shopify_order_status_partial" model="shopify.order.status">
+            <field name="name">Partial</field>
+            <field name="status">partial</field>
+        </record>
+        <record id="shopify_order_status_unshipped" model="shopify.order.status">
+            <field name="name">Un-shipped</field>
+            <field name="status">unshipped</field>
+        </record>
+        <record id="shopify_order_status_any" model="shopify.order.status">
+            <field name="name">Any</field>
+            <field name="status">any</field>
+        </record>
+    </data>
+</odoo>

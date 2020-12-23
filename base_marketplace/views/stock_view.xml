@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_marketplace_shipment_kanban" model="ir.actions.act_window">
+            <field name="name">Marketplace Shipments</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">stock.picking</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('mk_instance_id','=',active_id)]</field>
+        </record>
+    </data>
+</odoo>

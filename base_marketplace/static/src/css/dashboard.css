@@ -1,0 +1,356 @@
+[class^=ti-] {
+    font-family: themify;
+    speak: none;
+    font-style: normal;
+    font-weight: 400;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.ti-shopping-cart:before {
+    content: "\e60d";
+}
+
+*, ::after, ::before {
+    box-sizing: border-box;
+}
+
+.o_ts_dashboard_content p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.o_ts_dashboard_content h2, h6 {
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-top: 0;
+}
+
+.o_ts_dashboard_content h2 {
+    font-size: 3rem;
+}
+
+.o_ts_dashboard_content h3 {
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.o_ts_dashboard_content h6 {
+    font-size: 1rem;
+}
+
+.o_ts_dashboard_content .col-md-6, .col-xl-3 {
+    position: relative;
+    width: 100%;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, .125);
+}
+
+.o_ts_dashboard_content .text-right {
+    text-align: right !important;
+}
+
+:focus {
+    outline: 0;
+}
+
+.o_ts_dashboard_content h6.m-b-20 {
+    font-size: 18px;
+    color: white;
+}
+
+.card {
+    border-radius: 5px;
+    box-shadow: 0 1px 2.94px .06px rgba(4, 26, 55, .16);
+    border: none;
+    margin-bottom: 15px;
+    transition: all .3s ease-in-out;
+}
+
+.card .card-block {
+    padding: 25px;
+}
+
+.card .card-block p {
+    line-height: 1.4;
+}
+
+.card:hover {
+    box-shadow: 0 0 25px -5px #9e9c9e;
+}
+
+.o_ts_dashboard_content .m-b-0 {
+    margin-bottom: 0;
+}
+
+.o_ts_dashboard_content .m-b-20 {
+    margin-bottom: 20px;
+}
+
+.f-left {
+    float: left;
+}
+
+.f-right {
+    float: right;
+}
+
+.bg-c-blue {
+    background: linear-gradient(45deg, #357ab7, #469eec);
+}
+
+.bg-c-mint {
+    background: linear-gradient(45deg, #2ed8b6, #59e0c5);
+}
+
+.bg-c-green {
+    background: linear-gradient(45deg, #5cb85d, #6fde71);
+}
+
+.bg-c-yellow {
+    background: linear-gradient(45deg, #f0ad4f, #f6be70);
+}
+
+.bg-c-pink {
+    background: linear-gradient(45deg, #d95550, #f6514b);
+}
+
+.order-card {
+    color: #fff;
+}
+
+.order-card i {
+    font-size: 45px;
+}
+
+/*statustic and process start*/
+.card .card-header {
+    background-color: transparent;
+    border-bottom: none;
+    padding: 25px 25px;
+}
+
+.card .card-header .card-header-left {
+    display: inline-block;
+}
+
+.card .card-header .card-header-right {
+    border-radius: 0 0 0 7px;
+    right: 10px;
+    top: 18px;
+    display: inline-block;
+    float: right;
+    padding: 7px 0;
+    position: absolute;
+}
+
+.card .card-header .card-header-right i {
+    margin: 0 11px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #8c8c8c;
+    line-height: 2;
+}
+
+.card .card-header .card-header-right i.icofont.icofont-spinner-alt-5 {
+    display: none;
+}
+
+.card .card-header span {
+    display: block;
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.card .card-header + .card-block,
+.card .card-header + .card-block-big {
+    padding-top: 0;
+}
+
+.card .card-header h5 {
+    margin-bottom: 0;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 10px;
+    line-height: 1.4;
+    font-size: 16px;
+    color: #666;
+}
+
+.card-header ~ .tab-icon .tab-with-img .sub-title i {
+    right: 10px;
+}
+
+.card.version .card-header .card-header-right {
+    background-color: #fff;
+    top: 8px;
+    cursor: pointer;
+}
+
+.card.card-load {
+    position: relative;
+    overflow: hidden;
+}
+
+.ng-tns-c5-1 {
+    color: white;
+}
+
+.line_chart {
+    height: 400px;
+    width: 100%;
+}
+
+.color_box {
+    display: inline-block;
+    margin: 5px 5px 0 0;
+    border: 1px solid white;
+    box-shadow: 0 0 0 1px #E5E5E5;
+    width: 20px;
+    height: 15px;
+}
+
+.list-unstyled li {
+    cursor: pointer;
+    display: inline;
+}
+
+.swal-wide {
+    width: 35% !important;
+}
+
+.box select {
+    border-radius: 6px;
+    background-color: #7b7aad;
+    color: white;
+    padding: 0px 0px 1px 20px;
+    width: 143px;
+    height: 30px;
+    border: none;
+    font-size: 15px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    -webkit-appearance: button;
+    appearance: button;
+    outline: none;
+}
+
+.box::before {
+    border-radius: 6px;
+    content: "\f13a";
+    font-family: FontAwesome;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 21%;
+    height: 119%;
+    text-align: center;
+    font-size: 18px;
+    line-height: 33px;
+    color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+}
+
+.box:hover::before {
+    color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.box select option {
+    padding: 30px;
+}
+
+.ts_item_chart_box {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+.ts_chart_body {
+    position: absolute;
+    top: 50px;
+    left: 8px;
+    right: 8px;
+    bottom: 38px;
+}
+
+/*Styles for List view in Dashboard*/
+.theme-color div {
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-block;
+    margin: 5px 8px 5px 0;
+    box-shadow: .4px .9px 3px 0 rgba(0, 0, 0, .33);
+    overflow: hidden;
+    width: 45px;
+    height: 40px;
+}
+
+.theme-color div .head {
+    display: block;
+    position: relative;
+}
+
+.theme-color div .head {
+    height: 10px;
+}
+
+.readonly_mode {
+    pointer-events: none;
+}
+
+.pallet_hide {
+    display: none;
+}
+
+.table_rounded_border {
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    border: solid 1px #f9f9f9;
+}
+
+/*Apex Charts styles*/
+#chart {
+    max-width: 1153px;
+    margin: 35px auto;
+    opacity: 0.9;
+}
+
+#timeline-chart .apexcharts-toolbar {
+    opacity: 1;
+    border: 0;
+}
+
+.apexcharts-gridlines-horizontal .apexcharts-gridline:last-child {
+    display: none;
+}
+
+.o_mk_dashboard_search {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.o_mk_dashboard_search .o_mk_dashboard_select {
+    min-width: 100px;
+}
+
+/*Override bootstrap style*/
+.o_ts_dashboard_content .card-body {
+    background-color: rgba(255, 255, 255, 0) !important;
+}

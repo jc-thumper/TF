@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="mk_queue_job_line_form_view" model="ir.ui.view">
+            <field name="name">mk.queue.job.line.form.view</field>
+            <field name="model">mk.queue.job.line</field>
+            <field name="arch" type="xml">
+                <form create="0" edit="0">
+                    <header>
+                        <field name="state" widget="statusbar" />
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="mk_instance_id"/>
+                                <field name="mk_id"/>
+                                <field name="queue_id"/>
+                            </group>
+                            <group>
+                                <field name="create_date"/>
+                                <field name="processed_date"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Log Lines">
+                                <field name="log_line_ids" />
+                            </page>
+                            <page string="Data" name="data">
+                                <group>
+                                    <field name="data_to_process" widget="ace" options="{'mode': 'python'}" nolabel="1"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="mk_queue_job_line_search_view" model="ir.ui.view">
+            <field name="name">mk.queue.job.line.search.view</field>
+            <field name="model">mk.queue.job.line</field>
+            <field name="arch" type="xml">
+                <search string="Queue Lines">
+                    <field name="name" filter_domain="[('name', 'ilike', self)]"/>
+                    <field name="mk_id"/>
+                    <field name="mk_instance_id"/>
+
+                    <separator/>
+                    <filter string="Draft/To Process" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Processed" name="processed" domain="[('state', '=', 'processed')]"/>
+                    <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                    <filter string="Failed" name="failed" domain="[('state', '=', 'failed')]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="Instance" name="group_by_instance" context="{'group_by': 'mk_instance_id'}"/>
+                        <filter string="State" name="group_by_state" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="mk_queue_job_line_tree_view" model="ir.ui.view">
+            <field name="name">mk.queue.job.line.tree.view</field>
+            <field name="model">mk.queue.job.line</field>
+            <field name="arch" type="xml">
+                <tree string="Queue Lines" decoration-muted="state == 'cancelled'" decoration-danger="state == 'failed'" decoration-success="state == 'processed'" create="0" edit="0">
+                    <field name="name"/>
+                    <field name="mk_id"/>
+                    <field name="queue_id"/>
+                    <field name="create_date"/>
+                    <field name="processed_date"/>
+                    <field name="state"/>
+                    <button name="do_retry_failed" type="object" icon="fa-refresh" title="Retry" aria-label="Retry" class="float-right"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_queue_job_line_all" model="ir.actions.act_window">
+            <field name="name">Queue Lines</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mk.queue.job.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('queue_id','=',active_id)]</field>
+            <field name="context">{}</field>
+            <field name="help" type="html">
+                <p>
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

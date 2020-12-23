@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="shopify_mk_listing_item_form_view" model="ir.ui.view">
+            <field name="name">shopify.mk.listing.item.form.view</field>
+            <field name="model">mk.listing.item</field>
+            <field name="inherit_id" ref="base_marketplace.mk_listing_item_form_view"/>
+            <field name="arch" type="xml">
+                <field name="sequence" position="after">
+                    <field name="inventory_item_id" attrs="{'invisible':[('marketplace','!=','shopify')]}"/>
+                </field>
+                <group name="inventory_2" position="inside">
+                    <field name="inventory_management" attrs="{'invisible':[('marketplace','!=','shopify')]}"/>
+                    <field name="continue_selling" attrs="{'invisible':[('marketplace','!=','shopify')]}"/>
+                </group>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="shopify_markeplace_sale_order_form_view" model="ir.ui.view">
+            <field name="name">shopify.marketplace.sale.order.form.view</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <field name="mk_order_number" position="after">
+                    <field name="shopify_financial_status" readonly="1" attrs="{'invisible':[('marketplace', '!=', 'shopify')]}"/>
+                    <field name="fulfillment_status" readonly="1" attrs="{'invisible':[('marketplace', '!=', 'shopify')]}"/>
+                </field>
+                <group name="main_group" position="after">
+                    <group string="Fraud Analysis" attrs="{'invisible':['|',('fraud_analysis_ids','in',['',[],False]),('marketplace', '!=', 'shopify')]}">
+                        <field name="fraud_analysis_ids" nolabel="1" readonly="1">
+                            <tree>
+                                <field name="name"/>
+                                <field name="message"/>
+                                <field name="recommendation"/>
+                                <field name="score"/>
+                                <field name="risk_source"/>
+                            </tree>
+                        </field>
+                    </group>
+                </group>
+                <button name="action_cancel" position="after">
+                    <button name="refund_in_shopify" string=" Refund In Shopify" type="object" icon="fa-mail-reply"
+                            attrs="{'invisible':['|','|',('shopify_financial_status','not in', ['paid', 'partially_paid', 'partially_refunded']), ('mk_instance_id','=',False),
+                            ('marketplace', '!=', 'shopify')]}"
+                            class="oe_highlight">
+                    </button>
+                    <button name="cancel_in_shopify" string="Cancel In Shopify" type="object" icon="fa-close"
+                            attrs="{'invisible':['|','|','|',('state','!=','cancel'), ('canceled_in_marketplace','=',True), ('mk_instance_id','=',False),
+                            ('marketplace', '!=', 'shopify')]}"
+                            class="oe_highlight">
+                    </button>
+                </button>
+            </field>
+        </record>
+
+        <record id="action_marketplace_fraud_orders" model="ir.actions.act_window">
+            <field name="name">Fraud Orders</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">tree,kanban,form,calendar,pivot,graph,activity</field>
+            <field name="search_view_id" ref="sale.sale_order_view_search_inherit_sale"/>
+            <field name="context">{}</field>
+            <field name="domain">[('mk_instance_id', '=', 'shopify'), ('is_fraud_order','=',True)]</field>
+        </record>
+    </data>
+</odoo>

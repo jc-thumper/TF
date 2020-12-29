@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+
+		<record id="view_wizard_merge_data_form" model="ir.ui.view">
+			<field name="name">wizard.merge.data.form</field>
+			<field name="model">wizard.merge.data</field>
+			<field name="arch" type="xml">
+				<form>
+					<group>
+						<field name="original_rec_id" required="1" style="width:50%" options="{'no_create': 1}"/>
+						<field name="duplicate_rec_id" required="1" style="width:50%" options="{'no_create': 1}"/>
+						<field name="take_action" widget="radio" style="width:40%;"/>
+					</group>
+					<label for="id" string="* NOTE: Original record means you want to keep in use."/>
+					<footer>
+						<footer>
+							<button name="action_merge_duplicate_data" string="Merge Data" type="object"
+								class="oe_highlight"/>
+							or
+							<button string="Cancel" class="oe_link" special="cancel" />
+						</footer>
+					</footer>
+				</form>
+			</field>
+		</record>
+
+		<record id="action_wizard_merge_data_view" model="ir.actions.act_window">
+			<field name="name">Merge Duplicate Data</field>
+			<field name="res_model">wizard.merge.data</field>
+			<field name="view_mode">form</field>
+			<field name="target">new</field>
+		</record>
+
+		<menuitem action="action_wizard_merge_data_view" id="menuitem_wizard_merge_data"
+			parent="base.menu_administration_shortcut" sequence="0" />
+
+	</data>
+</odoo>

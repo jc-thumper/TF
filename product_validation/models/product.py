@@ -76,9 +76,8 @@ class ProductTemplate(models.Model):
             lst_price = vals.get('lst_price', self.lst_price)
             if product_type in ['consu', 'product']:
                 if uom_id != uom_po_id:
-                    reordering_rule = self.env['stock.warehouse.orderpoint'].search(
-                        [('product_id.product_tmpl_id', '=', self.id), ('qty_multiple', '>', 1)])
-                    if not reordering_rule:
+                    reordering_rule = self.env['stock.warehouse.orderpoint'].search([('product_id.product_tmpl_id', '=', self.id)])
+                    if reordering_rule and not reordering_rule.filtered(lambda r: r.qty_multiple > 1):
                         raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
                 if not route_ids:
                     raise UserError(_('Warning ! \n Please define a Route for the Product.'))
@@ -124,11 +123,11 @@ class ProductTemplate(models.Model):
         if not self.env.context.get("from_product"):
             self = self.with_context(from_template=True)
             if res.type in ['consu', 'product']:
-                if res.uom_id != res.uom_po_id:
-                    reordering_rule = self.env['stock.warehouse.orderpoint'].search(
-                        [('product_id', '=', res.id), ('qty_multiple', '>', 1)])
-                    if not reordering_rule:
-                        raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
+                # if res.uom_id != res.uom_po_id:
+                #     reordering_rule = self.env['stock.warehouse.orderpoint'].search(
+                #         [('product_id', '=', res.id), ('qty_multiple', '>', 1)])
+                #     if not reordering_rule:
+                #         raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
                 if not res.route_ids:
                     raise UserError(_('Warning ! \n Please define a Route for the Product.'))
                 else:
@@ -178,11 +177,11 @@ class Product(models.Model):
         res = super(Product, self).create(vals)
         if not self.env.context.get("from_template"):
             if res.type in ['consu', 'product']:
-                if res.uom_id != res.uom_po_id:
-                    reordering_rule = self.env['stock.warehouse.orderpoint'].search(
-                        [('product_id', '=', res.id), ('qty_multiple', '>', 1)])
-                    if not reordering_rule:
-                        raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
+                # if res.uom_id != res.uom_po_id:
+                #     reordering_rule = self.env['stock.warehouse.orderpoint'].search(
+                #         [('product_id', '=', res.id), ('qty_multiple', '>', 1)])
+                #     if not reordering_rule:
+                #         raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
                 if not res.route_ids:
                     raise UserError(_('Warning ! \n Please define a Route for the Product.'))
                 else:
@@ -246,9 +245,8 @@ class Product(models.Model):
 
             if product_type in ['consu', 'product']:
                 if uom_id != uom_po_id:
-                    reordering_rule = self.env['stock.warehouse.orderpoint'].search(
-                        [('product_id', '=', self.id), ('qty_multiple', '>', 1)])
-                    if not reordering_rule:
+                    reordering_rule = self.env['stock.warehouse.orderpoint'].search([('product_id', '=', self.id)])
+                    if reordering_rule and not reordering_rule.filtered(lambda r: r.qty_multiple > 1):
                         raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
                 if not route_ids:
                     raise UserError(_('Warning ! \n Please define a Route for the Product.'))

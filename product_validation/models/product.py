@@ -7,6 +7,30 @@ from odoo.exceptions import UserError
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        self.ensure_one()
+        if default is None:
+            default = {}
+        default['taxes_id'] = [(6, False, self.taxes_id.ids)]
+        default['route_ids'] = [(6, False, self.route_ids.ids)]
+        default['seller_ids'] = [(6, False, self.seller_ids.ids)]
+        default['sale_ok'] = self.sale_ok
+        default['purchase_ok'] = self.purchase_ok
+        default['list_price'] = self.list_price
+        default['standard_price'] = self.standard_price
+        self = self.with_context(from_template=True)
+        return super(ProductTemplate, self).copy(default=default)
+
+
+    @api.onchange('uom_id', 'uom_po_id')
+    def onchange_check_reordering_rule(self):
+        if self.uom_id != self.uom_po_id:
+            reordering_rule = self.env['stock.warehouse.orderpoint'].search(
+                [('product_id.product_tmpl_id', '=', self._origin.id)])
+            if reordering_rule and reordering_rule.qty_multiple <= 1:
+                raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
+
     # def update_validation(self):
     #     for reorder in self.env['stock.warehouse.orderpoint'].with_context(active_test=False).search([]):
     #         reorder.lead_days = 0
@@ -25,18 +49,17 @@ class ProductTemplate(models.Model):
     #     buy = ir_model_data.get_object_reference('purchase_stock', 'route_warehouse0_buy')[1]
     #     dropship = ir_model_data.get_object_reference('stock_dropshipping', 'route_drop_shipping')[1]
     #     manufacture = ir_model_data.get_object_reference('mrp', 'route_warehouse0_manufacture')[1]
-
     #     for each in self.env['product.template'].with_context(active_test=False).search([]):
     #         route_ids = each.route_ids.ids
     #         routes = route_ids and self.env['stock.location.route'].browse(route_ids).mapped('name') or []
-
+    #
     #         if each.bom_count >= 1:
     #             if 'Buy' in routes:
     #                 each.write({'route_ids': [(3, buy)]})
     #             if 'Dropship' in routes:
     #                 each.write({'route_ids': [(3, dropship)]})
     #             each.write({'route_ids': [(4, manufacture)]})
-
+    #
     #         if each.purchase_ok:
     #             each.write({'route_ids': [(4, buy)]})
     #         else:
@@ -53,81 +76,71 @@ class ProductTemplate(models.Model):
     #     return True
 
     def write(self, vals):
-        if not self.env.context.get("from_product"):
-            product_type = vals.get('type', self.type)
-            uom_id = vals.get('uom_id', self.uom_id.id)
-            uom_po_id = vals.get('uom_po_id', self.uom_po_id.id)
-            if vals.get('taxes_id'):
-                taxes_id = vals.get('taxes_id')[0][2]
-            else:
-                taxes_id = self.taxes_id and self.taxes_id.ids or []
-            if vals.get('route_ids'):
-                route_ids = vals.get('route_ids')[0][2]
-            else:
-                route_ids = self.route_ids.ids
-            sale_ok = vals.get('sale_ok', self.sale_ok)
-            purchase_ok = vals.get('purchase_ok', self.purchase_ok)
-            bom_count = vals.get('bom_count') or self.bom_count
-            if vals.get('seller_ids'):
-                seller_ids = vals.get('seller_ids')[0][2]
-            else:
-                seller_ids = self.seller_ids.ids
-            standard_price = vals.get('standard_price', self.standard_price)
-            lst_price = vals.get('lst_price', self.lst_price)
-            if product_type in ['consu', 'product']:
-                if uom_id != uom_po_id:
-                    reordering_rule = self.env['stock.warehouse.orderpoint'].search([('product_id.product_tmpl_id', '=', self.id)])
-                    if reordering_rule and not reordering_rule.filtered(lambda r: r.qty_multiple > 1):
-                        raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
-                if not route_ids:
-                    raise UserError(_('Warning ! \n Please define a Route for the Product.'))
+        for each in self:
+            if not self.env.context.get("from_product"):
+                product_type = vals.get('type', each.type)
+                if vals.get('taxes_id'):
+                    taxes_id = vals.get('taxes_id')[0][2]
                 else:
-                    routes = self.env['stock.location.route'].browse(route_ids).mapped('name')
-                    if 'Dropship' in routes:
-                        if 'Buy' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Buy when using Dropship.'))
-                        if not sale_ok or not purchase_ok:
-                            raise UserError(
-                                _('Warning ! \n Must be Can be Sold & Can be Purchased when using Dropship.'))
-                    if len(routes) > 1:
-                        if all(item in routes for item in ['Buy', 'Manufacture']):
-                            raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
-                    if bom_count >= 1 and 'Manufacture' not in routes:
-                        raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
+                    taxes_id = each.taxes_id and each.taxes_id.ids or []
+                if vals.get('route_ids'):
+                    route_ids = vals.get('route_ids')[0][2]
+                else:
+                    route_ids = each.route_ids.ids
+                sale_ok = vals.get('sale_ok', each.sale_ok)
+                purchase_ok = vals.get('purchase_ok', each.purchase_ok)
+                bom_count = vals.get('bom_count') or each.bom_count
+                if vals.get('seller_ids'):
+                    seller_ids = vals.get('seller_ids')[0][2]
+                else:
+                    seller_ids = each.seller_ids.ids
+                standard_price = vals.get('standard_price', each.standard_price)
+                lst_price = vals.get('lst_price', each.lst_price)
+                if product_type in ['consu', 'product']:
+                    if not route_ids:
+                        raise UserError(_('Warning ! \n Please define a Route for the Product.'))
+                    else:
+                        routes = self.env['stock.location.route'].browse(route_ids).mapped('name')
+                        if 'Dropship' in routes:
+                            if 'Buy' not in routes:
+                                raise UserError(_('Warning ! \n Route must be Buy when using Dropship.'))
+                            if not sale_ok or not purchase_ok:
+                                raise UserError(
+                                    _('Warning ! \n Must be Can be Sold & Can be Purchased when using Dropship.'))
+                        # if len(routes) > 1:
+                        #     if all(item in routes for item in ['Buy', 'Manufacture']):
+                        #         raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
+                        # if bom_count >= 1 and 'Manufacture' not in routes:
+                        #     raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
 
-                    if sale_ok:
-                        default_customer_taxes = self.env.company.account_sale_tax_id.ids
-                        if not all(item in taxes_id for item in default_customer_taxes):
-                            raise UserError(_('Warning ! \n When Can be Sold, Customer Taxes must be Texas'))
-                        if not any(item in routes for item in ['Buy', 'Manufacture']):
-                            raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
-                        # if standard_price >= lst_price:
-                        #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
-                    else:
-                        if lst_price > 0:
-                            raise UserError(_('Warning ! \n Sales Price must be $0.00'))
-                    if purchase_ok:
-                        if 'Buy' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Buy since it can be purchase.'))
-                        if not seller_ids:
-                            raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
-                    else:
-                        if 'Manufacture' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Manufacture since it cant be Purchased.'))
+                        if sale_ok:
+                            default_customer_taxes = self.env.company.account_sale_tax_id.ids
+                            if not all(item in taxes_id for item in default_customer_taxes):
+                                raise UserError(_('Warning ! \n When Can be Sold, Customer Taxes must be Texas'))
+                            if not any(item in routes for item in ['Buy', 'Manufacture']):
+                                raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
+                            # if standard_price >= lst_price:
+                            #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                        else:
+                            if lst_price > 0:
+                                raise UserError(_('Warning ! \n Sales Price must be $0.00'))
+                        if purchase_ok:
+                            if 'Buy' not in routes:
+                                raise UserError(_('Warning ! \n Route must be Buy since it can be purchased.'))
+                            if not seller_ids:
+                                raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
+                        else:
+                            if 'Manufacture' not in routes:
+                                raise UserError(_('Warning ! \n Route must be Manufacture since it cant be Purchased.'))
         self = self.with_context(from_template=True)
         return super(ProductTemplate, self).write(vals)
 
     @api.model
     def create(self, vals):
+        self = self.with_context(from_template=True)
         res = super(ProductTemplate, self).create(vals)
         if not self.env.context.get("from_product"):
-            self = self.with_context(from_template=True)
             if res.type in ['consu', 'product']:
-                # if res.uom_id != res.uom_po_id:
-                #     reordering_rule = self.env['stock.warehouse.orderpoint'].search(
-                #         [('product_id', '=', res.id), ('qty_multiple', '>', 1)])
-                #     if not reordering_rule:
-                #         raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
                 if not res.route_ids:
                     raise UserError(_('Warning ! \n Please define a Route for the Product.'))
                 else:
@@ -138,11 +151,11 @@ class ProductTemplate(models.Model):
                         if not res.sale_ok or not res.purchase_ok:
                             raise UserError(
                                 _('Warning ! \n Must be Can be Sold & Can be Purchased when using Dropship.'))
-                    if len(res.route_ids) > 1:
-                        if all(item in routes for item in ['Buy', 'Manufacture']):
-                            raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
-                    if res.bom_count > 1 and 'Manufacture' not in routes:
-                        raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
+                    # if len(res.route_ids) > 1:
+                    #     if all(item in routes for item in ['Buy', 'Manufacture']):
+                    #         raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
+                    # if res.bom_count > 1 and 'Manufacture' not in routes:
+                    #     raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
                     if res.sale_ok:
                         default_customer_taxes = self.env.company.account_sale_tax_id.ids
                         taxes_id = res.taxes_id and res.taxes_id.ids or []
@@ -157,7 +170,7 @@ class ProductTemplate(models.Model):
                             raise UserError(_('Warning ! \n Sales Price must be $0.00'))
                     if res.purchase_ok:
                         if 'Buy' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Buy since it can be purchase.'))
+                            raise UserError(_('Warning ! \n Route must be Buy since it can be purchased.'))
                         if not res.seller_ids:
                             raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
                     else:
@@ -171,17 +184,21 @@ class Product(models.Model):
 
     weight = fields.Float('Weight', digits='Stock Weight', default=0.01)
 
+    @api.onchange('uom_id', 'uom_po_id')
+    def onchange_check_reordering_rule(self):
+        if self.uom_id != self.uom_po_id:
+            reordering_rule = self.env['stock.warehouse.orderpoint'].search(
+                [('product_id', '=', self._origin.id)])
+            if reordering_rule and reordering_rule.qty_multiple <= 1:
+                raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
+
+
     @api.model
     def create(self, vals):
         self = self.with_context(from_product=True)
         res = super(Product, self).create(vals)
         if not self.env.context.get("from_template"):
             if res.type in ['consu', 'product']:
-                # if res.uom_id != res.uom_po_id:
-                #     reordering_rule = self.env['stock.warehouse.orderpoint'].search(
-                #         [('product_id', '=', res.id), ('qty_multiple', '>', 1)])
-                #     if not reordering_rule:
-                #         raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
                 if not res.route_ids:
                     raise UserError(_('Warning ! \n Please define a Route for the Product.'))
                 else:
@@ -192,11 +209,11 @@ class Product(models.Model):
                         if not res.sale_ok or not res.purchase_ok:
                             raise UserError(
                                 _('Warning ! \n Must be Can be Sold & Can be Purchased when using Dropship.'))
-                    if len(res.route_ids) > 1:
-                        if all(item in routes for item in ['Buy', 'Manufacture']):
-                            raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
-                    if res.bom_count > 1 and 'Manufacture' not in routes:
-                        raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
+                    # if len(res.route_ids) > 1:
+                    #     if all(item in routes for item in ['Buy', 'Manufacture']):
+                    #         raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
+                    # if res.bom_count > 1 and 'Manufacture' not in routes:
+                    #     raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
 
                     if res.sale_ok:
                         default_customer_taxes = self.env.company.account_sale_tax_id.ids
@@ -212,7 +229,7 @@ class Product(models.Model):
                             raise UserError(_('Warning ! \n Sales Price must be $0.00'))
                     if res.purchase_ok:
                         if 'Buy' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Buy since it can be purchase.'))
+                            raise UserError(_('Warning ! \n Route must be Buy since it can be purchased.'))
                         if not res.seller_ids:
                             raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
                     else:
@@ -221,67 +238,64 @@ class Product(models.Model):
         return res
 
     def write(self, vals):
-        if not self.env.context.get("from_template") and not self.env.context.get("from_product"):
-            product_type = vals.get('type', self.type)
-            uom_id = vals.get('uom_id', self.uom_id.id)
-            uom_po_id = vals.get('uom_po_id', self.uom_po_id.id)
-            if vals.get('taxes_id'):
-                taxes_id = vals.get('taxes_id')[0][2]
-            else:
-                taxes_id = self.taxes_id and self.taxes_id.ids or []
-            if vals.get('route_ids'):
-                route_ids = vals.get('route_ids')[0][2]
-            else:
-                route_ids = self.route_ids.ids
-            sale_ok = vals.get('sale_ok', self.sale_ok)
-            purchase_ok = vals.get('purchase_ok', self.purchase_ok)
-            bom_count = vals.get('bom_count') or self.bom_count
-            if vals.get('seller_ids'):
-                seller_ids = vals.get('seller_ids')[0][2]
-            else:
-                seller_ids = self.seller_ids.ids
-            standard_price = vals.get('standard_price', self.standard_price)
-            lst_price = vals.get('lst_price', self.lst_price)
-
-            if product_type in ['consu', 'product']:
-                if uom_id != uom_po_id:
-                    reordering_rule = self.env['stock.warehouse.orderpoint'].search([('product_id', '=', self.id)])
-                    if reordering_rule and not reordering_rule.filtered(lambda r: r.qty_multiple > 1):
-                        raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
-                if not route_ids:
-                    raise UserError(_('Warning ! \n Please define a Route for the Product.'))
+        for each in self:
+            if not self.env.context.get("from_template") and not self.env.context.get("from_product"):
+                product_type = vals.get('type', each.type)
+                if vals.get('taxes_id'):
+                    taxes_id = vals.get('taxes_id')[0][2]
                 else:
-                    routes = self.env['stock.location.route'].browse(route_ids).mapped('name')
-                    if 'Dropship' in routes:
-                        if 'Buy' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Buy when using Dropship.'))
-                        if not sale_ok or not purchase_ok:
-                            raise UserError(
-                                _('Warning ! \n Must be Can be Sold & Can be Purchased when using Dropship.'))
-                    if len(routes) > 1:
-                        if all(item in routes for item in ['Buy', 'Manufacture']):
-                            raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
-                    if bom_count >= 1 and 'Manufacture' not in routes:
-                        raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
-                    if sale_ok:
-                        default_customer_taxes = self.env.company.account_sale_tax_id.ids
-                        if not all(item in taxes_id for item in default_customer_taxes):
-                            raise UserError(_('Warning ! \n When Can be Sold, Customer Taxes must be Texas'))
-                        if not any(item in routes for item in ['Buy', 'Manufacture']):
-                            raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
-                        # if standard_price >= lst_price:
-                        #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                    taxes_id = each.taxes_id and each.taxes_id.ids or []
+                if vals.get('route_ids'):
+                    route_ids = vals.get('route_ids')[0][2]
+                else:
+                    route_ids = each.route_ids.ids
+                sale_ok = vals.get('sale_ok', each.sale_ok)
+                purchase_ok = vals.get('purchase_ok', self.purchase_ok)
+                bom_count = vals.get('bom_count') or self.bom_count
+                if vals.get('seller_ids'):
+                    seller_ids = vals.get('seller_ids')[0][2]
+                else:
+                    seller_ids = self.seller_ids.ids
+                standard_price = vals.get('standard_price', self.standard_price)
+                lst_price = vals.get('lst_price', self.lst_price)
+
+                if product_type in ['consu', 'product']:
+
+                    if not route_ids:
+                        raise UserError(_('Warning ! \n Please define a Route for the Product.'))
                     else:
-                        if lst_price > 0:
-                            raise UserError(_('Warning ! \n Sales Price must be $0.00'))
-                    if purchase_ok:
-                        if 'Buy' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Buy since it can be purchase.'))
-                        if not seller_ids:
-                            raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
-                    else:
-                        if 'Manufacture' not in routes:
-                            raise UserError(_('Warning ! \n Route must be Manufacture since it cant be Purchased.'))
+                        routes = self.env['stock.location.route'].browse(route_ids).mapped('name')
+
+                        if 'Dropship' in routes:
+                            if 'Buy' not in routes:
+                                raise UserError(_('Warning ! \n Route must be Buy when using Dropship.'))
+                            if not sale_ok or not purchase_ok:
+                                raise UserError(
+                                    _('Warning ! \n Must be Can be Sold & Can be Purchased when using Dropship.'))
+                        # if len(routes) > 1:
+                        #     if all(item in routes for item in ['Buy', 'Manufacture']):
+                        #         raise UserError(_('Warning ! \n Cannot have both Buy & Manufacture.'))
+                        # if bom_count >= 1 and 'Manufacture' not in routes:
+                        #     raise UserError(_('Warning ! \n Route must be Manufacture since a BOM exists.'))
+                        if sale_ok:
+                            default_customer_taxes = self.env.company.account_sale_tax_id.ids
+                            if not all(item in taxes_id for item in default_customer_taxes):
+                                raise UserError(_('Warning ! \n When Can be Sold, Customer Taxes must be Texas'))
+                            if not any(item in routes for item in ['Buy', 'Manufacture']):
+                                raise UserError(_('Warning ! \n Route must be Buy or Manufacture'))
+                            # if standard_price >= lst_price:
+                            #     raise UserError(_('Warning ! \n Cost must be less than Sales price'))
+                        else:
+                            if lst_price > 0:
+                                raise UserError(_('Warning ! \n Sales Price must be $0.00'))
+                        if purchase_ok:
+                            if 'Buy' not in routes:
+                                raise UserError(_('Warning ! \n Route must be Buy since it can be purchased.'))
+                            if not seller_ids:
+                                raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
+                        else:
+                            if 'Manufacture' not in routes:
+                                raise UserError(_('Warning ! \n Route must be Manufacture since it cant be Purchased.'))
         self = self.with_context(from_product=True)
         return super(Product, self).write(vals)
 
@@ -315,6 +329,12 @@ class Orderpoint(models.Model):
     lead_type = fields.Selection(
         [('net', 'Days to get the products'), ('supplier', 'Days to purchase')], 'Lead Type',
         required=True, default='net')
+
+    @api.constrains('qty_multiple', 'product_id')
+    def _check_reordering_rule(self):
+        for record in self:
+            if record.product_id.uom_id != record.product_id.uom_po_id and record.qty_multiple <= 1:
+                raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
 
 
 class MrpBom(models.Model):

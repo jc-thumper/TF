@@ -89,12 +89,12 @@ class ProductTemplate(models.Model):
                     route_ids = each.route_ids.ids
                 sale_ok = vals.get('sale_ok', each.sale_ok)
                 purchase_ok = vals.get('purchase_ok', each.purchase_ok)
-                bom_count = vals.get('bom_count') or each.bom_count
-                if vals.get('seller_ids'):
-                    seller_ids = vals.get('seller_ids')[0][2]
-                else:
-                    seller_ids = each.seller_ids.ids
-                standard_price = vals.get('standard_price', each.standard_price)
+                # bom_count = vals.get('bom_count') or each.bom_count
+                # if vals.get('seller_ids'):
+                #     seller_ids = vals.get('seller_ids')[0][2]
+                # else:
+                #     seller_ids = each.seller_ids.ids
+                # standard_price = vals.get('standard_price', each.standard_price)
                 lst_price = vals.get('lst_price', each.lst_price)
                 if product_type in ['consu', 'product']:
                     if not route_ids:
@@ -127,13 +127,17 @@ class ProductTemplate(models.Model):
                         if purchase_ok:
                             if 'Buy' not in routes:
                                 raise UserError(_('Warning ! \n Route must be Buy since it can be purchased.'))
-                            if not seller_ids:
-                                raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
+                            # if not seller_ids:
+                            #     raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
                         else:
                             if 'Manufacture' not in routes:
                                 raise UserError(_('Warning ! \n Route must be Manufacture since it cant be Purchased.'))
         self = self.with_context(from_template=True)
-        return super(ProductTemplate, self).write(vals)
+        res = super(ProductTemplate, self).write(vals)
+        if vals.get('purchase_ok') or vals.get('seller_ids'):
+            if self.purchase_ok and not self.seller_ids:
+                raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
+        return res
 
     @api.model
     def create(self, vals):
@@ -191,7 +195,6 @@ class Product(models.Model):
                 [('product_id', '=', self._origin.id)])
             if reordering_rule and reordering_rule.qty_multiple <= 1:
                 raise UserError(_('Warning ! \n Must have a Reordering rule with Quantity Multiple > 1.'))
-
 
     @api.model
     def create(self, vals):
@@ -251,12 +254,12 @@ class Product(models.Model):
                     route_ids = each.route_ids.ids
                 sale_ok = vals.get('sale_ok', each.sale_ok)
                 purchase_ok = vals.get('purchase_ok', self.purchase_ok)
-                bom_count = vals.get('bom_count') or self.bom_count
-                if vals.get('seller_ids'):
-                    seller_ids = vals.get('seller_ids')[0][2]
-                else:
-                    seller_ids = self.seller_ids.ids
-                standard_price = vals.get('standard_price', self.standard_price)
+                # bom_count = vals.get('bom_count') or self.bom_count
+                # if vals.get('seller_ids'):
+                #     seller_ids = vals.get('seller_ids')[0][2]
+                # else:
+                #     seller_ids = self.seller_ids.ids
+                # standard_price = vals.get('standard_price', self.standard_price)
                 lst_price = vals.get('lst_price', self.lst_price)
 
                 if product_type in ['consu', 'product']:
@@ -291,13 +294,17 @@ class Product(models.Model):
                         if purchase_ok:
                             if 'Buy' not in routes:
                                 raise UserError(_('Warning ! \n Route must be Buy since it can be purchased.'))
-                            if not seller_ids:
-                                raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
+                            # if not seller_ids:
+                            #     raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
                         else:
                             if 'Manufacture' not in routes:
                                 raise UserError(_('Warning ! \n Route must be Manufacture since it cant be Purchased.'))
         self = self.with_context(from_product=True)
-        return super(Product, self).write(vals)
+        res = super(Product, self).write(vals)
+        if vals.get('purchase_ok') or vals.get('seller_ids'):
+            if self.purchase_ok and not self.seller_ids:
+                raise UserError(_('Warning ! \n Must have a Vendor Pricelist.'))
+        return res
 
 
 class SupplierInfo(models.Model):

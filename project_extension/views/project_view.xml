@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data>
+
+        <record id="view_task_search_form_inherit" model="ir.ui.view">
+            <field name="name">project.task.search</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_search_form"/>
+            <field name="arch" type="xml">
+                <filter name="inactive" position="after">
+                    <filter string="Unarchived and Archived" name="archive_unarchived" domain="[('active', 'in', [False,True])]"/>
+                </filter>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="project_view_kanban_inherit">
+            <field name="name">project.project.kanban</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project_kanban"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="open_tasks_count" invisible="1"/>
+                    <field name="all_open_tasks_count" invisible="1"/>
+                    <field name="all_tasks_count" invisible="1"/>
+                    <field name="active" invisible="1"/>
+                </field>
+                <xpath expr="//a[@name='%(project.act_project_project_2_project_task_all)d']" position="replace">
+                    <t t-if="record.active.raw_value">
+                        <a class="o_project_kanban_box" name="%(project.act_project_project_2_project_task_all)d"
+                           type="action">
+                            <div>
+                                <span class="o_value">
+                                    <t t-esc="record.open_tasks_count.value"/>
+                                </span>
+                                of
+                                <span class="o_value">
+                                    <t t-esc="record.task_count.value"/>
+                                </span>
+                                <span class="o_label">
+                                    <t t-esc="record.label_tasks.value"/>
+                                </span>
+                                Remain
+                            </div>
+                        </a>
+                    </t>
+
+                    <t t-if="!record.active.raw_value">
+                        <a class="o_project_kanban_box" name="%(project.act_project_project_2_project_task_all)d"
+                           context="{'search_default_archive_unarchived':1}" type="action">
+                            <div>
+                                <span class="o_value">
+                                    <t t-esc="record.all_open_tasks_count.value"/>
+                                </span>
+                                of
+                                <span class="o_value">
+                                    <t t-esc="record.all_tasks_count.value"/>
+                                </span>
+                                <span class="o_label">
+                                    <t t-esc="record.label_tasks.value"/>
+                                </span>
+                                Remain
+                            </div>
+                        </a>
+                    </t>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

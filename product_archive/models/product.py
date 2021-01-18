@@ -33,6 +33,21 @@ class ProductProduct(models.Model):
                 if product_available.get(product.id, {}).get('qty_available', 0):
                     raise UserError("Action cannot be performed as Product %s has stock available." % (product.display_name))
 
+                open_so = self.env['sale.order'].sudo().search([('state', 'in', ['draft', 'sent']), ('order_line.product_id', '=', product.id)])
+                if open_so:
+                    ref = ", ".join(open_so.mapped('name'))
+                    raise UserError("The product %s could not be archived because of an open Sale Order (%s)" % (product.display_name, ref))
+
+                open_po = self.env['purchase.order'].sudo().search([('state', 'in', ['draft', 'sent', 'to approve']), ('order_line.product_id', '=', product.id)])
+                if open_po:
+                    ref = ", ".join(open_po.mapped('name'))
+                    raise UserError("The product %s could not be archived because of an open Purchase Order (%s)" % (product.display_name, ref))
+
+                open_mo = self.env['mrp.production'].sudo().search([('state', 'not in', ['done', 'cancel']), ('product_id', '=', product.id)])
+                if open_mo:
+                    ref = ", ".join(open_mo.mapped('name'))
+                    raise UserError("The product %s could not be archived because of an open Manufacturing Order (%s)" % (product.display_name, ref))
+
             self.mapped('orderpoint_ids').write({'active': False})
             self.env['mrp.bom'].sudo().search([('product_id', 'in', self.ids)]).write({'active': False})
 

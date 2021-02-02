@@ -8,40 +8,79 @@
                         <div class="oe_structure" />
                         <div class="row">
                             <div class="col-xs-12">
-                                <h3>Work Order to : <span t-field="o.workcenter_id.name" /></h3>
-                            </div><br />
+                                <h3>Work Order to :
+                                    <span t-field="o.workcenter_id.name" />
+                                </h3>
+                            </div>
+                            <br />
                         </div>
                         <table class="table table-condensed">
                             <tr>
-                                <td class="col-xs-3"><strong>Manufacturing Order</strong></td>
-                                <td class="col-xs-3"><strong>Product</strong></td>
-                                <td class="col-xs-3"><strong>Quantity Producing</strong></td>
-                                <td class="col-xs-3"><strong>Quantity Produced</strong></td>
+                                <td class="col-xs-3">
+                                    <strong>Manufacturing Order</strong>
+                                </td>
+                                <td class="col-xs-3">
+                                    <strong>Product</strong>
+                                </td>
+                                <td class="col-xs-3">
+                                    <strong>Quantity Producing</strong>
+                                </td>
+                                <td class="col-xs-3">
+                                    <strong>Quantity Produced</strong>
+                                </td>
+                                <td class="col-xs-3">
+                                    <strong>Bin Location</strong>
+                                </td>
+
                             </tr>
                             <tr>
-                                <td class="col-xs-3"><span t-field="o.production_id.name" /></td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.production_id.name" />
+                                </td>
                                 <td class="col-xs-3">
                                     <span t-field="o.product_id.default_code" />
-                                    <span t-field="o.product_id.name" /></td>
+                                    <span t-field="o.product_id.name" />
+                                </td>
                                 <td class="col-xs-3">
                                     <span t-field="o.qty_producing" />
-                                    <span t-field="o.product_uom_id.name" groups="product.group_uom" /></td>
+                                    <span t-field="o.product_uom_id.name" groups="product.group_uom" />
+                                </td>
                                 <td class="col-xs-3">
-                                    <span t-field="o.qty_produced" />/<span t-field="o.qty_producing" />
-                                    <span t-field="o.product_uom_id.name" groups="product.group_uom" /></td>
+                                    <span t-field="o.qty_produced" />/
+                                    <span t-field="o.qty_producing" />
+                                    <span t-field="o.product_uom_id.name" groups="product.group_uom" />
+                                </td>
+                                <td class="col-xs-3">
+                                    <t t-foreach="o.production_id.location_dest_id.putaway_rule_ids.filtered(lambda x: x.product_id == o.product_id)"
+                                        t-as="line">
+                                        <span t-field="line.location_out_id" />
+                                    </t>
+                                </td>
                             </tr>
                         </table>
                         <table class="table table-condensed">
                             <tr>
-                                <td class="col-xs-3"><strong>Planned Date</strong></td>
-                                <td class="col-xs-3"><strong>Expected Duration</strong></td>
-                                <td class="col-xs-3"><strong>Real Duration</strong></td>
+                                <td class="col-xs-3">
+                                    <strong>Planned Date</strong>
+                                </td>
+                                <td class="col-xs-3">
+                                    <strong>Expected Duration</strong>
+                                </td>
+                                <td class="col-xs-3">
+                                    <strong>Real Duration</strong>
+                                </td>
                                 <td class="col-xs-3"></td>
                             </tr>
                             <tr>
-                                <td class="col-xs-3"><span t-field="o.date_planned_start" /></td>
-                                <td class="col-xs-3"><span t-field="o.duration_expected" /></td>
-                                <td class="col-xs-3"><span t-field="o.duration" /></td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.date_planned_start" />
+                                </td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.duration_expected" />
+                                </td>
+                                <td class="col-xs-3">
+                                    <span t-field="o.duration" />
+                                </td>
                                 <td class="col-xs-3"></td>
                             </tr>
                         </table>
@@ -50,15 +89,31 @@
                             <h4>Consumption Details</h4>
                             <table class="table table-condensed">
                                 <tr>
-                                    <td class="text-center"><strong>Part Number</strong></td>
-                                    <td class="text-center"><strong>Part Description</strong></td>
-                                    <td class="text-center"><strong>Job Qty</strong></td>
-                                    <td class="text-center"><strong>BOM Qty</strong></td>
+                                    <td class="text-center">
+                                        <strong>Part Number</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>Part Description</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>Job Qty</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>BOM Qty</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>Bin Location</strong>
+                                    </td>
+
                                 </tr>
                                 <tr t-foreach="o.production_id.bom_id.bom_line_ids" t-as="line"
                                     t-if="line.product_id.id in product_ids">
-                                    <td class="text-left"><span t-field="line.product_id.default_code" /></td>
-                                    <td class="text-left"><span t-field="line.product_id.name" /></td>
+                                    <td class="text-left">
+                                        <span t-field="line.product_id.default_code" />
+                                    </td>
+                                    <td class="text-left">
+                                        <span t-field="line.product_id.name" />
+                                    </td>
                                     <td class="text-center">
                                         <span t-esc="line.product_qty * o.qty_producing" />
                                         <span t-field="line.product_uom_id" />
@@ -67,6 +122,12 @@
                                         <span t-field="line.product_qty" />
                                         <span t-field="line.product_uom_id" />
                                     </td>
+                                    <td class="text-center">
+                                        <t t-foreach="o.production_id.location_src_id.putaway_rule_ids.filtered(lambda x: x.product_id == line.product_id)"
+                                            t-as="rule">
+                                            <span t-field="rule.location_out_id" />
+                                        </t>
+                                    </td>
                                 </tr>
                             </table>
                         </div>
@@ -74,18 +135,38 @@
                             <h4>Time Tracking</h4>
                             <table class="table table-condensed">
                                 <tr>
-                                    <td class="text-center"><strong>Start Time</strong></td>
-                                    <td class="text-center"><strong>End Time</strong></td>
-                                    <td class="text-center"><strong>Duration</strong></td>
-                                    <td class="text-center"><strong>User</strong></td>
-                                    <td class="text-center"><strong>Efficiency</strong></td>
+                                    <td class="text-center">
+                                        <strong>Start Time</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>End Time</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>Duration</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>User</strong>
+                                    </td>
+                                    <td class="text-center">
+                                        <strong>Efficiency</strong>
+                                    </td>
                                 </tr>
                                 <tr t-foreach="o.time_ids" t-as="time">
-                                    <td class="text-center"><span t-field="time.date_start" /></td>
-                                    <td class="text-center"><span t-field="time.date_end" /></td>
-                                    <td class="text-center"><span t-field="time.duration" /></td>
-                                    <td class="text-center"><span t-field="time.user_id.name" /></td>
-                                    <td class="text-center"><span t-field="time.loss_id.name" /></td>
+                                    <td class="text-center">
+                                        <span t-field="time.date_start" />
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="time.date_end" />
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="time.duration" />
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="time.user_id.name" />
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="time.loss_id.name" />
+                                    </td>
                                 </tr>
                             </table>
                         </div>

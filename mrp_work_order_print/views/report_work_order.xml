@@ -5,14 +5,14 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
                     <div class="page">
-                        <div class="oe_structure" />
+                        <div class="oe_structure"/>
                         <div class="row">
                             <div class="col-xs-12">
                                 <h3>Work Order to :
-                                    <span t-field="o.workcenter_id.name" />
+                                    <span t-field="o.workcenter_id.name"/>
                                 </h3>
                             </div>
-                            <br />
+                            <br/>
                         </div>
                         <table class="table table-condensed">
                             <tr>
@@ -35,25 +35,25 @@
                             </tr>
                             <tr>
                                 <td class="col-xs-3">
-                                    <span t-field="o.production_id.name" />
+                                    <span t-field="o.production_id.name"/>
                                 </td>
                                 <td class="col-xs-3">
-                                    <span t-field="o.product_id.default_code" />
-                                    <span t-field="o.product_id.name" />
+                                    <span t-field="o.product_id.default_code"/>
+                                    <span t-field="o.product_id.name"/>
                                 </td>
                                 <td class="col-xs-3">
-                                    <span t-field="o.qty_producing" />
-                                    <span t-field="o.product_uom_id.name" groups="product.group_uom" />
+                                    <span t-field="o.qty_producing"/>
+                                    <span t-field="o.product_uom_id.name" groups="product.group_uom"/>
                                 </td>
                                 <td class="col-xs-3">
-                                    <span t-field="o.qty_produced" />/
-                                    <span t-field="o.qty_producing" />
-                                    <span t-field="o.product_uom_id.name" groups="product.group_uom" />
+                                    <span t-field="o.qty_produced"/>/
+                                    <span t-field="o.qty_producing"/>
+                                    <span t-field="o.product_uom_id.name" groups="product.group_uom"/>
                                 </td>
                                 <td class="col-xs-3">
                                     <t t-foreach="o.production_id.location_dest_id.putaway_rule_ids.filtered(lambda x: x.product_id == o.product_id)"
-                                        t-as="line">
-                                        <span t-field="line.location_out_id" />
+                                       t-as="line">
+                                        <span t-esc="(line.location_out_id.display_name)[9:]"/>
                                     </t>
                                 </td>
                             </tr>
@@ -73,19 +73,19 @@
                             </tr>
                             <tr>
                                 <td class="col-xs-3">
-                                    <span t-field="o.date_planned_start" />
+                                    <span t-field="o.date_planned_start"/>
                                 </td>
                                 <td class="col-xs-3">
-                                    <span t-field="o.duration_expected" />
+                                    <span t-field="o.duration_expected"/>
                                 </td>
                                 <td class="col-xs-3">
-                                    <span t-field="o.duration" />
+                                    <span t-field="o.duration"/>
                                 </td>
                                 <td class="col-xs-3"></td>
                             </tr>
                         </table>
                         <div t-if="o.raw_workorder_line_ids">
-                            <t t-set="product_ids" t-value="o.raw_workorder_line_ids.mapped('product_id').ids" />
+                            <t t-set="product_ids" t-value="o.raw_workorder_line_ids.mapped('product_id').ids"/>
                             <h4>Consumption Details</h4>
                             <table class="table table-condensed">
                                 <tr>
@@ -109,23 +109,23 @@
                                 <tr t-foreach="o.production_id.bom_id.bom_line_ids" t-as="line"
                                     t-if="line.product_id.id in product_ids">
                                     <td class="text-left">
-                                        <span t-field="line.product_id.default_code" />
+                                        <span t-field="line.product_id.default_code"/>
                                     </td>
                                     <td class="text-left">
-                                        <span t-field="line.product_id.name" />
+                                        <span t-field="line.product_id.name"/>
                                     </td>
                                     <td class="text-center">
-                                        <span t-esc="line.product_qty * o.qty_producing" />
-                                        <span t-field="line.product_uom_id" />
+                                        <span t-esc="line.product_qty * o.qty_producing"/>
+                                        <span t-field="line.product_uom_id"/>
                                     </td>
                                     <td class="text-center">
-                                        <span t-field="line.product_qty" />
-                                        <span t-field="line.product_uom_id" />
+                                        <span t-field="line.product_qty"/>
+                                        <span t-field="line.product_uom_id"/>
                                     </td>
                                     <td class="text-center">
                                         <t t-foreach="o.production_id.location_src_id.putaway_rule_ids.filtered(lambda x: x.product_id == line.product_id)"
-                                            t-as="rule">
-                                            <span t-field="rule.location_out_id" />
+                                           t-as="rule">
+                                            <span t-esc="(rule.location_out_id.display_name)[9:]"/>
                                         </t>
                                     </td>
                                 </tr>
@@ -153,19 +153,19 @@
                                 </tr>
                                 <tr t-foreach="o.time_ids" t-as="time">
                                     <td class="text-center">
-                                        <span t-field="time.date_start" />
+                                        <span t-field="time.date_start"/>
                                     </td>
                                     <td class="text-center">
-                                        <span t-field="time.date_end" />
+                                        <span t-field="time.date_end"/>
                                     </td>
                                     <td class="text-center">
-                                        <span t-field="time.duration" />
+                                        <span t-field="time.duration"/>
                                     </td>
                                     <td class="text-center">
-                                        <span t-field="time.user_id.name" />
+                                        <span t-field="time.user_id.name"/>
                                     </td>
                                     <td class="text-center">
-                                        <span t-field="time.loss_id.name" />
+                                        <span t-field="time.loss_id.name"/>
                                     </td>
                                 </tr>
                             </table>
@@ -178,7 +178,7 @@
 
     <data>
         <report string="Work Order Details" id="action_report_work_order" model="mrp.workorder"
-            name="mrp_work_order_print.report_workorder" file="mrp_work_order_print.report.report_work_order"
-            report_type="qweb-pdf" />
+                name="mrp_work_order_print.report_workorder" file="mrp_work_order_print.report.report_work_order"
+                report_type="qweb-pdf"/>
     </data>
 </odoo>

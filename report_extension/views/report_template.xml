@@ -6,12 +6,12 @@
 
                 <t t-set="current_subtotal" t-value="0"/>
                 <t t-set="shipping_charge" t-value="0"/>
-                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.type == 'service')" t-as="line">
+                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.default_code == 'S&amp;H')" t-as="line">
                     <t t-set="shipping_charge" t-value="line.price_total + shipping_charge"/>
                 </t>
 
 
-                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.type != 'service')" t-as="line">
+                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.default_code != 'S&amp;H')" t-as="line">
 
                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
                        groups="account.group_show_line_subtotals_tax_excluded"/>
@@ -133,10 +133,10 @@
             <tbody class="invoice_tbody">
                 <t t-set="current_subtotal" t-value="0"/>
                 <t t-set="shipping_charge" t-value="0"/>
-                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.type == 'service')" t-as="line">
+                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.default_code == 'S&amp;H')" t-as="line">
                     <t t-set="shipping_charge" t-value="line.price_total + shipping_charge"/>
                 </t>
-                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.type != 'service').sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
+                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.default_code != 'S&amp;H').sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
                    t-as="line">
                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
                        groups="account.group_show_line_subtotals_tax_excluded"/>

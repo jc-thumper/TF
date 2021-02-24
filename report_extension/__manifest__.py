@@ -8,7 +8,9 @@
     'maintainer': 'Confianz',
     'company': 'Confianz',
     'website': 'https://www.confianzit.com',
-    'depends': ['sale', 'account'],
+    'depends': [
+        'sale','account'
+    ],
     'data': [
         'views/report_template.xml',
         'views/portal_template.xml',

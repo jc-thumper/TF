@@ -93,7 +93,7 @@
                             <td class="text-right">
                                 <span
                                         data-id="total_untaxed"
-                                        t-field="sale_order.amount_untaxed"
+                                        t-esc="sale_order.amount_untaxed - shipping_charge"
                                         t-options='{"widget": "monetary","display_currency": sale_order.pricelist_id.currency_id}'
                                 />
                             </td>

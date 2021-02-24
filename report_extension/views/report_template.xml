@@ -78,7 +78,7 @@
                                 <strong>Subtotal</strong>
                             </td>
                             <td name="td_amount_untaxed" class="text-right">
-                                <span t-field="doc.amount_untaxed"/>
+                                <span t-esc="doc.amount_untaxed - shipping_charge" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
                             </td>
                         </tr>
                         <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
@@ -205,7 +205,7 @@
                                 <strong>Subtotal</strong>
                             </td>
                             <td class="text-right">
-                                <span t-field="o.amount_untaxed"/>
+                                <span t-esc="o.amount_untaxed - shipping_charge" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                         </tr>
                         <t t-foreach="o.amount_by_group" t-as="amount_by_group">

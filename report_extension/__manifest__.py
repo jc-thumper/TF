@@ -13,6 +13,7 @@
     ],
     'data': [
         'views/report_template.xml',
+        'views/portal_template.xml',
     ],
     'license': "AGPL-3",
     'installable': True,

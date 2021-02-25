@@ -6,12 +6,12 @@
 
                 <t t-set="current_subtotal" t-value="0"/>
                 <t t-set="shipping_charge" t-value="0"/>
-                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.type == 'service')" t-as="line">
+                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.default_code == 'S&amp;H')" t-as="line">
                     <t t-set="shipping_charge" t-value="line.price_total + shipping_charge"/>
                 </t>
 
 
-                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.type != 'service')" t-as="line">
+                <t t-foreach="doc.order_line.filtered(lambda line: line.product_id.default_code != 'S&amp;H')" t-as="line">
 
                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
                        groups="account.group_show_line_subtotals_tax_excluded"/>
@@ -78,7 +78,7 @@
                                 <strong>Subtotal</strong>
                             </td>
                             <td name="td_amount_untaxed" class="text-right">
-                                <span t-field="doc.amount_untaxed"/>
+                                <span t-esc="doc.amount_untaxed - shipping_charge" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.pricelist_id.currency_id}"/>
                             </td>
                         </tr>
                         <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
@@ -133,10 +133,10 @@
             <tbody class="invoice_tbody">
                 <t t-set="current_subtotal" t-value="0"/>
                 <t t-set="shipping_charge" t-value="0"/>
-                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.type == 'service')" t-as="line">
+                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.default_code == 'S&amp;H')" t-as="line">
                     <t t-set="shipping_charge" t-value="line.price_total + shipping_charge"/>
                 </t>
-                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.type != 'service').sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
+                <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.product_id.default_code != 'S&amp;H').sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"
                    t-as="line">
                     <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
                        groups="account.group_show_line_subtotals_tax_excluded"/>
@@ -205,7 +205,7 @@
                                 <strong>Subtotal</strong>
                             </td>
                             <td class="text-right">
-                                <span t-field="o.amount_untaxed"/>
+                                <span t-esc="o.amount_untaxed - shipping_charge" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: o.currency_id}"/>
                             </td>
                         </tr>
                         <t t-foreach="o.amount_by_group" t-as="amount_by_group">

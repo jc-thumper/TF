@@ -16,7 +16,7 @@ class PaymentTransaction(models.Model):
                 vals['partner_id'] = invoice.partner_id.id
                 if invoice.invoice_payment_state == 'not_paid' and not self.invoice_ids:
                     vals['invoice_ids'] = [(6, 0, invoice.ids)]
-
+                vals['communication'] = invoice.invoice_payment_ref
         return vals
 
 

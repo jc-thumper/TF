@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data noupdate="1">
+        <function model="service.level.result" name="_create_service_level_result_indices"/>
+    </data>
+</odoo>

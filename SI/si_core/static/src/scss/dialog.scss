@@ -1,0 +1,8 @@
+/*
+* Default z-index = 1051 ( = z-index of modal + 1)
+* Selection list for many2one field is hide if we increase z-index of modal to blur the others.
+*/
+.ui-autocomplete,
+.dropdown-menu {
+  z-index: 1500 !important;
+}

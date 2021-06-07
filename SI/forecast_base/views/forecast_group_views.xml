@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="forecast_groups_tree_view" model="ir.ui.view">
+        <field name="name">Forecast Groups List</field>
+        <field name="model">forecast.group</field>
+        <field name="arch" type="xml">
+            <tree create="false" edit="false" delete="false">
+                <field name="reference_name" string="Name"/>
+            </tree>
+        </field>
+    </record>
+
+
+</odoo>

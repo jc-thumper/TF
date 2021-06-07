@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_forecasting_license_confirm_box_form" model="ir.ui.view">
+        <field name="name">License Confirm Message</field>
+        <field name="model">forecasting.license.confirm.box</field>
+        <field name="arch" type="xml">
+            <form string="Confirmation">
+                <center>
+                    <field name="message" readonly="1"/>
+                </center>
+                <footer>
+                    <button name="accept_confirmation" type="object" string="RENEW" class="oe_highlight"/>
+                    <button name="cancel_confirmation" type="object" string="NO"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Tree view-->
+    <record model="ir.ui.view" id="demand_types_view_tree">
+        <field name="name">demand.types.view.tree</field>
+        <field name="model">product.classification.info</field>
+        <field name="arch" type="xml">
+            <tree default_order="product_id asc" create="false" edit="false" delete="false">
+                <field name="product_id" string="Name"/>
+                <field name="demand_clsf_id" string="Demand Type" invisible="1"/>
+                <field name="warehouse_id" string="Warehouse Location" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--Filter in tree view-->
+    <record id="view_demand_type_filter" model="ir.ui.view">
+        <field name="name">demand.type.search</field>
+        <field name="model">product.classification.info</field>
+        <field name="arch" type="xml">
+            <search string="Demand Types">
+                <filter name="group_demand_type" string="Demand Type"
+                        context="{'group_by':'demand_clsf_id'}"
+                        domain="[('demand_clsf_id', '!=', None)]"/>
+                <filter name="group_warehouse_location" string="Warehouse Location"
+                        context="{'group_by':'warehouse_id'}"
+                        domain="[('warehouse_id', '!=', None)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!--Form view-->
+    <record model="ir.ui.view" id="demand_types_view_form">
+        <field name="name">demand.types.view.form</field>
+        <field name="model">product.classification.info</field>
+        <field name="arch" type="xml">
+            <form default_order="product_id asc" create="false" edit="true" delete="false">
+                <sheet>
+                    <group class="row">
+                        <group class="col">
+                            <field name="product_id" string="Name" readonly="1"/>
+                            <field name="demand_clsf_id" string="Demand Type"/>
+                        </group>
+                        <group class="col">
+                            <field name="warehouse_id" string="Warehouse Location" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--Action window-->
+    <record id="action_demand_types" model="ir.actions.act_window">
+        <field name="name">Demand Types</field>
+        <field name="res_model">product.classification.info</field>
+        <field name="view_mode">tree,form</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="search_view_id" ref="view_demand_type_filter"/>
+        <field name="domain">[('client_available', '=', True)]</field>
+        <field name="context">{
+            'search_default_group_demand_type': 1,
+            'search_default_group_warehouse_location': 1}
+        </field>
+        <field name="target">current</field>
+    </record>
+
+    <record model="ir.actions.act_window.view" id="action_demand_types_tree">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="demand_types_view_tree"/>
+        <field name="act_window_id" ref="action_demand_types"/>
+    </record>
+
+    <record model="ir.actions.act_window.view" id="action_demand_types_form">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="demand_types_view_form"/>
+        <field name="act_window_id" ref="action_demand_types"/>
+    </record>
+
+    <menuitem
+            id="menu_demand_types"
+            name="Demand Types"
+            parent="stock.menu_stock_inventory_control"
+            action="forecast_base.action_demand_types"
+            groups="base.group_user"/>
+</odoo>

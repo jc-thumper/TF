@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data noupdate="1">
+        <!--Forecast Group-->
+        <record model="forecast.group" id="forecast_group_a">
+            <field  name="name">group_a</field>
+            <field  name="demand_clsf_id" eval="ref('demand_classification_seasonal')"/>
+            <field  name="period_type">monthly</field>
+            <field  name="frequency">monthly</field>
+            <field  name="no_periods">12</field>
+        </record>
+
+        <record model="forecast.group" id="forecast_group_b">
+            <field  name="name">group_b</field>
+            <field  name="demand_clsf_id" eval="ref('demand_classification_smooth')"/>
+            <field  name="period_type">monthly</field>
+            <field  name="frequency">monthly</field>
+            <field  name="no_periods">12</field>
+        </record>
+
+        <record model="forecast.group" id="forecast_group_c">
+            <field  name="name">group_c</field>
+            <field  name="demand_clsf_id" eval="ref('demand_classification_intermittent')"/>
+            <field  name="period_type">quarterly</field>
+            <field  name="frequency">quarterly</field>
+            <field  name="no_periods">4</field>
+        </record>
+
+        <record model="forecast.group" id="forecast_group_d">
+            <field  name="name">group_d</field>
+            <field  name="demand_clsf_id" eval="ref('demand_classification_lumpy')"/>
+            <field  name="period_type">quarterly</field>
+            <field  name="frequency">quarterly</field>
+            <field  name="no_periods">4</field>
+        </record>
+
+        <record model="forecast.group" id="forecast_group_e">
+            <field  name="name">group_e</field>
+            <field  name="demand_clsf_id" eval="ref('demand_classification_erratic')"/>
+            <field  name="period_type">weekly</field>
+            <field  name="frequency">weekly</field>
+            <field  name="no_periods">52</field>
+        </record>
+
+        <record model="forecast.group" id="forecast_group_not_enough_data">
+            <field  name="name">not_enough_data</field>
+            <field  name="demand_clsf_id" eval="ref('demand_classification_not_enough_data')"/>
+            <field  name="period_type">weekly</field>
+            <field  name="frequency">weekly</field>
+            <field  name="no_periods">52</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data noupdate="1">
+        <!--Demand Classification-->
+        <record model="demand.classification" id="demand_classification_seasonal">
+            <field  name="name">seasonal</field>
+        </record>
+
+        <record model="demand.classification" id="demand_classification_smooth">
+            <field  name="name">smooth</field>
+        </record>
+
+        <record model="demand.classification" id="demand_classification_intermittent">
+            <field  name="name">intermittent</field>
+        </record>
+
+        <record model="demand.classification" id="demand_classification_lumpy">
+            <field  name="name">lumpy</field>
+        </record>
+
+        <record model="demand.classification" id="demand_classification_erratic">
+            <field  name="name">erratic</field>
+        </record>
+
+        <record model="demand.classification" id="demand_classification_not_enough_data">
+            <field  name="name">not_enough_data</field>
+        </record>
+    </data>
+</odoo>

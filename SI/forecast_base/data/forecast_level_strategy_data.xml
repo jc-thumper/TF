@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record model="forecast.level.strategy" id="forecast_warehouse_level">
+            <field name="name">warehouse</field>
+            <field name="unique_keys">product_id,company_id,warehouse_id</field>
+        </record>
+    </data>
+</odoo>

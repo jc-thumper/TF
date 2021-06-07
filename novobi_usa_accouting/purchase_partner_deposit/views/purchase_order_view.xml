@@ -1,0 +1,33 @@
+<odoo>
+    <record id="view_deposit_total_purchase_form" model="ir.ui.view">
+        <field name="name">view_deposit_total_purchase_form</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_invoice']" position="after">
+                <button name="%(account_partner_deposit.action_view_deposit_order_form)d" string="Create deposit" type="action"
+                        attrs="{'invisible': ['|', '|', ('state', 'not in', ['purchase', 'done']),
+                        ('invoice_status', '=', 'invoiced'), ('order_line', '=', [])]}"/>
+            </xpath>
+
+            <div name="button_box" position="inside">
+                <button name="action_view_deposit" type="object" class="oe_stat_button" icon="fa-money"
+                        attrs="{'invisible': [('deposit_count', '=', 0)]}">
+                    <field name="deposit_count" widget="statinfo" string="Deposits"/>
+                </button>
+            </div>
+
+            <field name="amount_total" position="after">
+                <field name="deposit_total" widget="monetary" options="{'currency_field': 'currency_id'}"
+                    attrs="{'invisible': [('deposit_count', '=', 0)]}"/>
+                <div class="oe_subtotal_footer_separator oe_inline o_td_label"
+                     attrs="{'invisible': [('deposit_count', '=', 0)]}">
+                    <label for="remaining_total"/>
+                </div>
+                <field name="remaining_total" nolabel="1" class="oe_subtotal_footer_separator"
+                       widget="monetary" options="{'currency_field': 'currency_id'}"
+                       attrs="{'invisible': [('deposit_count', '=', 0)]}"/>
+            </field>
+        </field>
+    </record>
+</odoo>

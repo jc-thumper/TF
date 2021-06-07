@@ -1,0 +1,12 @@
+<odoo>
+    <!--Add option to see transactions from Vendor 1099 Report-->
+    <template id="line_caret_vendor_1099" inherit_id="account_reports.line_caret_options">
+        <li role="presentation" position="after">
+            <li t-if="line['caret_options'] == 'vendor.1099'" role="presentation">
+                <a role="menuitem" tabindex="-1" t-att-data-id="line['id']"
+                   action="open_vendor_1099" class="dropdown-item">See Transactions
+                </a>
+            </li>
+        </li>
+    </template>
+</odoo>

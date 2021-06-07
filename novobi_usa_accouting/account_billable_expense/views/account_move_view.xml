@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_billable_expense" model="ir.ui.view">
+        <field name="name">view_move_form_inherit_billable_expense</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <field name="is_billable" invisible="1" />
+            </header>
+
+            <field name="invoice_line_ids" position="after">
+                <!-- Add Assign Expense btn to Supplier form For Vendor Bill in Posted state only -->
+                <button name="open_expense_popup" type="object" class="btn btn-sm btn-link"
+                        style="background-color: Transparent;" string="Assign expenses to a customer"
+                        attrs="{'invisible': ['|', ('type', '!=', 'in_invoice'), ('state', '!=', 'posted')]}"/>
+
+                <!-- Add Assign Expense btn to Customer form For Customer Invoice in Draft state only -->
+                <field name="expense_btn_name" widget="assign_expense_btn" nolabel="1"
+                       attrs="{'invisible': ['|', '|', ('state', '!=', 'draft'), ('type', '!=', 'out_invoice'), ('expense_btn_name', '=', False)]}" />
+            </field>
+
+            <xpath expr="//notebook/page/field/tree/field[@name='name']" position="replace">
+                <field name="name" invisible="1" />
+                <field name="usa_description" widget="section_and_note_text" required="1"/>
+                <field name="is_billable"  attrs="{'column_invisible': [('parent.is_billable', '=', False)]}" />
+            </xpath>
+
+            <xpath expr="//notebook/page/field/form/sheet/group/field[@name='company_id']" position="after">
+                <field name="is_billable" invisible="1"/>
+                <field name="source_document" readonly="1" attrs="{'invisible': [('is_billable', '=', False)]}"/>
+            </xpath>
+            <xpath expr="//notebook/page/field/form/sheet/field[@name='name']" position="replace">
+                <field name="name" invisible="1"/>
+                <field name="usa_description" widget="text" required="1"/>
+                <field name="type" invisible="1"/>
+                <field name="invoiced_to_id" invisible="1"/>
+                <button name="open_invoice_expense" type="object" string="Open Invoice"
+                        class="btn btn-sm btn-link" style="background-color: Transparent;"
+                        attrs="{'invisible': ['|', ('type', '!=', 'in_invoice'), ('invoiced_to_id', '=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!--Assign Expense popup form-->
+    <record id="assign_expense_form" model="ir.ui.view">
+        <field name="name">assign_expense_form</field>
+        <field name="model">account.move</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <field name="billable_expenses_ids">
+                    <tree editable="bottom" create="0" delete="0">
+                        <field name="bill_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="description" readonly="1"/>
+                        <field name="amount" readonly="1"/>
+                        <field name="amount_markup"/>
+                        <field name="amount_markup_percentage"/>
+                        <field name="amount_total" readonly="1" force_save="1"/>
+                        <field name="customer_id" context="{'res_partner_search_mode': 'customer'}" options="{'no_open': True}"/>
+                    </tree>
+                </field>
+
+                <footer>
+                    <button string='Ok' name="assign_customer" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

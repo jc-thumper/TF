@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<template xml:space="preserve">
+    <t t-name="GraphCustomTooltipJournal">
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <div t-attf-style="background-color: #{color};"></div>
+                    </td>
+                    <td class="key"><t t-esc="key" /></td>
+                    <td class="value"><t t-esc="value" /></td>
+                    <td class="value2"><t t-esc="value" /></td>
+                </tr>
+            </tbody>
+        </table>
+    </t>
+</template>

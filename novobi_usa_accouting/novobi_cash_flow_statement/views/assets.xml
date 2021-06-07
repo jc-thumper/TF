@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_backend_cash_flow" name="Backend Assets Cash Flow" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/scss" href="/novobi_cash_flow_statement/static/src/scss/advanced_cash_flow_report.scss"/>
+        </xpath>
+    </template>
+</odoo>

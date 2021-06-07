@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="line_template_cash_flow_detail"
+              inherit_id="account_reports.line_template" primary="True">
+        <xpath expr="//div[hasclass('o_account_reports_domain_dropdown')]/*[last()]" position="before">
+            <a t-if="line['parent_id'] not in ['sale_order', 'purchase_order']" role="menuitem" tabindex="-1"
+               t-att-data-id="line['id']"
+               action="open_document"
+               groups="account.group_account_user" class="dropdown-item">View Journal Entry
+            </a>
+            <a t-if="line['parent_id'] == 'sale_order'" role="menuitem" tabindex="-1" t-att-data-id="line['id']"
+               action="open_document"
+               data-object="sale.order" data-model="sale.order"
+               groups="account.group_account_user" class="dropdown-item">View Sale Order
+            </a>
+            <a t-if="line['parent_id'] == 'purchase_order'" role="menuitem" tabindex="-1" t-att-data-id="line['id']"
+               action="open_document"
+               data-object="purchase.order" data-model="purchase.order"
+               groups="account.group_account_user" class="dropdown-item">View Purchase Order
+            </a>
+        </xpath>
+    </template>
+</odoo>

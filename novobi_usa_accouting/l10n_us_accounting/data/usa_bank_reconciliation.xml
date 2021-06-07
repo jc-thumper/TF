@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_usa_bank_reconciliation" model="ir.actions.client">
+            <field name="name">Bank Reconciliation</field>
+            <field name="tag">usa_bank_reconciliation</field>
+            <field name="context">{'model': 'usa.bank.reconciliation'}</field>
+        </record>
+    </data>
+</odoo>

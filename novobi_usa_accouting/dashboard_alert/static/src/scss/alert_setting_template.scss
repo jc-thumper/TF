@@ -1,0 +1,38 @@
+.unsubscribe_alert_form {
+    max-width: 500px;
+    position: relative;
+    margin: 50px auto;
+}
+
+.snooze_alert_form {
+    max-width: 500px;
+    position: relative;
+    margin: 50px auto;
+    .background_field_select {
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-top: 0px;
+        margin-bottom: 0px;
+    }
+    .txt_mess{
+        margin-top: 1rem;
+    }
+}
+
+.alert_more_settings_form {
+    max-width: 500px;
+    position: relative;
+    margin: 50px auto;
+    .selection_setting {
+        width: 100%;
+        float: left;
+        border-radius: 0.25rem;
+        margin: 0px;
+        .format_selection_setting {
+            width: 100%;
+            font-size: 0.875rem;
+            font-weight: normal;
+            color: #495057;
+        }
+    }
+}

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="search_template_filter_billable_expense">
+        <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+            <span class="fa fa-filter"/> Filter:
+            <t t-if="options.get('include_po', False)">Include Purchase Orders</t>
+        </a>
+        <div class="dropdown-menu o_filters_menu" role="menu">
+            <a role="menuitem" class="dropdown-item js_account_report_bool_filter" t-if="options.get('include_po') != None"
+               title="Include Purchase Orders" data-filter="include_po">Include Purchase Orders</a>
+        </div>
+    </template>
+
+    <template id="search_template_inherit_billable_expense" inherit_id="account_reports.search_template">
+        <div id="extra_options_dropdown" position="after">
+            <div id="extra_options_dropdown_billable_expense" class="btn-group o_dropdown o_account_reports_filter_bool" t-if="options.get('include_po') != None">
+                <t t-call="purchase_billable_expense.search_template_filter_billable_expense"/>
+            </div>
+        </div>
+    </template>
+</odoo>

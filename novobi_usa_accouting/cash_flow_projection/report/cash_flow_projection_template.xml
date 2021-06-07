@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="cash_flow_projection_report">
+        <div class="o_form_view">
+            <div class="page o_form_sheet_bg">
+                <div class="o_form_sheet">
+                    <div class="h2">Cash Flow Projection</div>
+
+                    <table class="table table-responsive table-sm" id="projection_table">
+
+                        <thead>
+                            <tr id="periods">
+                                <td class="col-sm-4 row-title">
+                                    <strong>Date</strong>
+                                </td>
+                                <t t-foreach="periods" t-as="period">
+                                    <td class="text-center o_period_name_cell"
+                                        title="Click to view detail report for this period"
+                                        t-att-data-period="period['period']">
+                                        <strong t-esc="period['period']"/>
+                                    </td>
+                                </t>
+                            </tr>
+                        </thead>
+
+                        <tr class="table-active" id="opening_bank_balance">
+                            <td class="col-sm-4 row-title">
+                                <strong>
+                                    Current Cash &amp; Bank Balance (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <td t-foreach="periods" t-as="period" class="text-right">
+                                <strong t-esc="round(period['opening_balance'], 2)"/>
+                            </td>
+                        </tr>
+
+                        <tr class="table-active" id="opening_forward_balance">
+                            <td class="col-sm-4 row-title">
+                                <strong>
+                                    Balance Brought Forward (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <td t-foreach="periods" t-as="period" class="text-right">
+                                <strong t-esc="round(period['forward_balance'], 2)"/>
+                            </td>
+                        </tr>
+
+                        <tr class="o_cfp_spacing_line">
+                            <!-- Blank row-->
+                            <td t-colspan="len(periods[0]['cash_in_lines']) + 1"></td>
+                        </tr>
+
+                        <tr class="table-active" id="cash_in">
+                            <td class="col-sm-4 row-title">
+                                <strong>Cash In (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <td t-foreach="periods" t-as="period" class="text-center">
+                            </td>
+                        </tr>
+
+                        <tr t-foreach="range(len(periods[0]['cash_in_lines']))" t-as="i">
+                            <t t-set="source_name" t-value=""/>
+                            <td class="text-left cash-source-name"
+                                t-att-data-trans-code="periods[0]['cash_in_lines'][i]['transaction_code']">
+                                <t t-set="source_name" t-value="periods[0]['cash_in_lines'][i]['transaction_name']"/>
+                                <t t-if="periods[0]['cash_in_lines'][i]['transaction_code'] == 'cash_in_other'">
+                                    <t t-if="period_type == 'day'">
+                                        <t t-set="source_name" value="">Recurring Daily Cash In</t>
+                                    </t>
+                                    <t t-if="period_type == 'week'">
+                                        <t t-set="source_name">Recurring Weekly Cash In</t>
+                                    </t>
+                                    <t t-if="period_type == 'month'">
+                                        <t t-set="source_name">Recurring Monthly Cash In</t>
+                                    </t>
+                                </t>
+                                <t t-esc="source_name"/>
+                                <button t-if="periods[0]['cash_in_lines'][i]['transaction_code']=='sale_order'"
+                                        class="btn btn-sm btn-link float-right open_set_so_lead_time">
+                                    Set up due date for SO
+                                </button>
+                                <button t-if="periods[0]['cash_in_lines'][i]['transaction_code']=='cash_in_other'"
+                                        class="btn btn-sm btn-link float-right open_set_recurring_cash_in">
+                                    Update recurring cash in
+                                </button>
+                            </td>
+                            <t t-foreach="periods" t-as="period">
+                                <t t-set="tooltip_text" t-value="(period['cash_in_lines'][i]['transaction_code'] not in ['cash_in_other', 'cash_out_other']) and 'Click to view transactions' or 'Click to update {}'.format(source_name.lower())"/>
+                                <td class="text-right o_cash_in_cell period-cell"
+                                    t-att-title="tooltip_text"
+                                    t-att-data-period="period['period']"
+                                    t-att-data-trans-code="period['cash_in_lines'][i]['transaction_code']"
+                                    data-cash-type="cash_in"><input t-if="period['cash_in_lines'][i]['has_user_value']"
+                                           type='text'
+                                           class='o_cash_in_input_cell text-right input-number-cell'
+                                           t-att-value="period['cash_in_lines'][i]['amount']"/>
+                                    <t t-else="" t-esc="period['cash_in_lines'][i]['amount']"/>
+                                </td>
+                            </t>
+                        </tr>
+
+                        <tr id="total_cash_in" class="table-active">
+                            <td class="col-sm-4 row-title">
+                                <strong>Total Cash In (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <td t-foreach="periods" t-as="period" class="text-right">
+                                <strong t-esc="period['total_cash_in']"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <!-- Blank row-->
+                            <td t-colspan="len(periods[0]['cash_in_lines']) + 1"></td>
+                        </tr>
+
+                        <tr class="table-active" id="cash_out">
+                            <td class="col-sm-4 row-title">
+                                <strong>Cash Out (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <td t-foreach="periods" t-as="period" class="text-center">
+                            </td>
+                        </tr>
+
+                        <tr t-foreach="range(len(periods[0]['cash_out_lines']))" t-as="i">
+                            <t t-set="source_name" t-value=""/>
+                            <td class="text-left cash-source-name"
+                                t-att-data-trans-code="periods[0]['cash_out_lines'][i]['transaction_code']">
+                                <t t-set="source_name" t-value="periods[0]['cash_out_lines'][i]['transaction_name']"/>
+                                <t t-if="periods[0]['cash_out_lines'][i]['transaction_code'] == 'cash_out_other'">
+                                    <t t-if="period_type == 'day'">
+                                        <t t-set="source_name" value="">Recurring Daily Cash Out</t>
+                                    </t>
+                                    <t t-if="period_type == 'week'">
+                                        <t t-set="source_name">Recurring Weekly Cash Out</t>
+                                    </t>
+                                    <t t-if="period_type == 'month'">
+                                        <t t-set="source_name">Recurring Monthly Cash Out</t>
+                                    </t>
+                                </t>
+                                <t t-esc="source_name"/>
+                                <button t-if="periods[0]['cash_out_lines'][i]['transaction_code']=='purchase_order'"
+                                        class="btn btn-sm btn-link float-right open_set_so_lead_time">
+                                    Set up due date for PO
+                                </button>
+                                <button t-if="periods[0]['cash_out_lines'][i]['transaction_code']=='cash_out_other'"
+                                        class="btn btn-sm btn-link float-right open_set_recurring_cash_out">
+                                    Update recurring cash out
+                                </button>
+                            </td>
+                            <t t-foreach="periods" t-as="period">
+                                <t t-set="tooltip_text" t-value="(period['cash_out_lines'][i]['transaction_code'] not in ['cash_in_other', 'cash_out_other']) and 'Click to view transactions' or 'Click to update {}'.format(source_name.lower())"/>
+                                <td class="text-right o_cash_in_cell period-cell"
+                                    t-att-title="tooltip_text"
+                                    t-att-data-period="period['period']"
+                                    t-att-data-trans-code="period['cash_out_lines'][i]['transaction_code']"
+                                    data-cash-type="cash_out"><input t-if="period['cash_out_lines'][i]['has_user_value']" type='text'
+                                           class='o_cash_in_input_cell text-right input-number-cell'
+                                           t-att-value="period['cash_out_lines'][i]['amount']"/>
+                                    <t t-else="" t-esc="period['cash_out_lines'][i]['amount']"/>
+                                </td>
+                            </t>
+                        </tr>
+
+                        <tr id="total_cash_out" class="table-active">
+                            <td class="col-sm-4 row-title">
+                                <strong>Total Cash Out (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <td t-foreach="periods" t-as="period" class="text-right">
+                                <strong t-esc="period['total_cash_out']"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <!-- Blank row-->
+                            <td t-colspan="len(periods[0]['cash_in_lines']) + 1"></td>
+                        </tr>
+
+                        <tr id="cash_flow" class="table-active">
+                            <td class="col-sm-4 row-title">
+                                <strong>Net Cashflow/Balance Carried Forward (<t t-esc="currency.symbol"/>)
+                                </strong>
+                            </td>
+                            <t t-foreach="periods" t-as="period">
+                                <t t-if="period['cash_flow'] >= 0">
+                                    <td class="text-right cash-increase">
+                                        <strong>+
+                                            <t t-esc="period['cash_flow']"/>
+                                        </strong>
+                                    </td>
+                                </t>
+                                <t t-else="">
+                                    <td class="text-right cash-decrease">
+                                        <strong>
+                                            <t t-esc="period['cash_flow']"/>
+                                        </strong>
+                                    </td>
+                                </t>
+                            </t>
+                        </tr>
+
+                        <tr class="o_cfp_spacing_line">
+                            <!-- Blank row-->
+                            <td t-colspan="len(periods[0]['cash_in_lines']) + 1"></td>
+                        </tr>
+
+                        <!--                        <tr class="table-active" id="closing_bank_balance">-->
+                        <!--                            <td class="col-sm-4 row-title">-->
+                        <!--                                <strong>Closing Bank Balance (<t t-esc="currency.symbol"/>)-->
+                        <!--                                </strong>-->
+                        <!--                            </td>-->
+                        <!--                            <td t-foreach="periods" t-as="period" class="text-right">-->
+                        <!--                                <strong t-esc="period['closing_balance']"/>-->
+                        <!--                            </td>-->
+                        <!--                        </tr>-->
+                    </table>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</odoo>

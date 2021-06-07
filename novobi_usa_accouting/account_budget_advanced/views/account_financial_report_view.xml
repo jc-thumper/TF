@@ -1,0 +1,12 @@
+<odoo>
+     <record id="view_account_financial_report_line_budget_form" model="ir.ui.view">
+        <field name="name">view_account_financial_report_line_budget_form</field>
+        <field name="model">account.financial.html.report.line</field>
+        <field name="inherit_id" ref="account_reports.view_account_financial_report_line_form"/>
+        <field name="arch" type="xml">
+            <field name="print_on_new_page" position="after">
+                <field name="hide_in_budget" groups="base.group_no_one"/>
+            </field>
+        </field>
+     </record>
+</odoo>

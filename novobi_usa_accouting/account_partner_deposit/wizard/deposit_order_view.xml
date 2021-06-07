@@ -1,0 +1,32 @@
+<odoo>
+    <record id="view_deposit_order_form" model="ir.ui.view">
+        <field name="name">Make a Deposit</field>
+        <field name="model">deposit.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="deposit_option" class="oe_inline" widget="radio"/>
+                    <label for="amount"/>
+                    <div>
+                        <field name="amount" class="oe_inline" widget="monetary"/>
+                        <span attrs="{'invisible': [('deposit_option', '!=', 'percentage')]}"
+                              class="oe_inline">%</span>
+                    </div>
+                </group>
+
+                <footer>
+                    <button name="create_deposit" string="Create deposit" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_deposit_order_form" model="ir.actions.act_window">
+        <field name="name">Make a Deposit</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">deposit.order</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_report_vendor_1099" model="ir.actions.client">
+            <field name="name">Vendor 1099 Report</field>
+            <field name="tag">usa_1099_report</field>
+            <field name="context" eval="{'model': 'vendor.1099.report'}"/>
+        </record>
+
+        <menuitem id="menu_action_report_vendor_1099" sequence="20"
+                  name="Vendor 1099 Report" action="action_report_vendor_1099"
+                  parent="account_reports.account_reports_partners_reports_menu" />
+    </data>
+</odoo>

@@ -1,0 +1,127 @@
+<odoo>
+    <record id="view_account_payment_deposit_form" model="ir.ui.view">
+        <field name="name">view_account_payment_deposit_form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="before">
+                <field name="is_deposit" invisible="1"/>
+                <field name="property_account_customer_deposit_id" string="Deposit Account" options="{'no_create': True}"
+                       attrs="{'invisible': ['|', ('is_deposit', '!=', True), ('partner_type', '!=', 'customer')],
+                       'required': [('is_deposit', '=', True), ('partner_type', '=', 'customer')],
+                       'readonly': [('state', '!=', 'draft')]}"/>
+                <field name="property_account_vendor_deposit_id" string="Deposit Account" options="{'no_create': True}"
+                       attrs="{'invisible': ['|', ('is_deposit', '!=', True), ('partner_type', '!=', 'supplier')],
+                       'required': [('is_deposit', '=', True), ('partner_type', '=', 'supplier')],
+                       'readonly': [('state', '!=', 'draft')]}"/>
+            </field>
+
+            <button name="open_payment_matching_screen" position="replace">
+            </button>
+
+            <!--Hide Sales/Purchases Receipt checkbox-->
+            <field name="is_payment_receipt" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <label id="is_payment_receipt_for_customer" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </label>
+            <label id="is_payment_receipt_for_vendor" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </label>
+            <field name="expense_account" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="income_account" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_payment_deposit_tree" model="ir.ui.view">
+        <field name="name">view_account_payment_deposit_tree</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="partner_type" position="after">
+                <field name="is_deposit" invisible="1"/>
+                <field name="payment_type" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="action_account_payment_customer_deposit" model="ir.actions.act_window">
+        <field name="name">Customer Deposit</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids"
+                eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('account_partner_deposit.view_account_payment_deposit_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('account_partner_deposit.view_account_payment_deposit_form')})]" />
+        <field name="context">{
+            'default_payment_type': 'inbound',
+            'default_partner_type': 'customer',
+            'default_is_deposit': True}
+        </field>
+        <field name="domain">[('is_deposit', '=', True), ('payment_type', '=', 'inbound'), ('partner_type', '=', 'customer')]</field>
+    </record>
+
+    <record id="action_account_payment_supplier_deposit" model="ir.actions.act_window">
+        <field name="name">Vendor Deposit</field>
+        <field name="res_model">account.payment</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids"
+                eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'tree', 'view_id': ref('account_partner_deposit.view_account_payment_deposit_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('account_partner_deposit.view_account_payment_deposit_form')})]" />
+        <field name="context">{
+            'default_payment_type': 'outbound',
+            'default_partner_type': 'supplier',
+            'default_is_deposit': True}
+        </field>
+        <field name="domain">[('is_deposit', '=', True), ('payment_type', '=', 'outbound'), ('partner_type', '=', 'supplier')]</field>
+    </record>
+
+    <menuitem action="action_account_payment_customer_deposit" name="Customer Deposit"
+              id="menu_action_account_payment_customer_deposit" parent="account.menu_finance_receivables" sequence="10"/>
+    <menuitem action="action_account_payment_supplier_deposit" name="Vendor Deposit"
+              id="menu_action_account_payment_supplier_deposit" parent="account.menu_finance_payables" sequence="10"/>
+
+    <!-- Filter deposit from Customer & Bill Payment -->
+    <record id="view_account_payment_search_deposit_domain" model="ir.ui.view">
+        <field name="name">account.payment.search.deposit.domain</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <filter name="outbound_filter" position="attributes">
+                <attribute name="domain">[('payment_type','=','outbound'), ('is_deposit', '=', False)]</attribute>
+            </filter>
+            <filter name="inbound_filter" position="attributes">
+                <attribute name="domain">[('payment_type','=','inbound'), ('is_deposit', '=', False)]</attribute>
+            </filter>
+        </field>
+    </record>
+
+    <!--Popup form in Order-->
+     <record id="view_account_payment_deposit_order_form" model="ir.ui.view">
+        <field name="name">view_account_payment_deposit_order_form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_invoice_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="before">
+                <field name="is_deposit" invisible="1"/>
+                <field name="property_account_customer_deposit_id" string="Deposit Account" options="{'no_create': True}"
+                       attrs="{'invisible': ['|', ('is_deposit', '!=', True), ('partner_type', '!=', 'customer')],
+                       'required': [('is_deposit', '=', True), ('partner_type', '=', 'customer')],
+                       'readonly': [('state', '!=', 'draft')]}"/>
+                <field name="property_account_vendor_deposit_id" string="Deposit Account" options="{'no_create': True}"
+                       attrs="{'invisible': ['|', ('is_deposit', '!=', True), ('partner_type', '!=', 'supplier')],
+                       'required': [('is_deposit', '=', True), ('partner_type', '=', 'supplier')],
+                       'readonly': [('state', '!=', 'draft')]}"/>
+            </field>
+        </field>
+    </record>
+</odoo>

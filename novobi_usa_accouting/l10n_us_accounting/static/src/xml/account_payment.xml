@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>
+    <t t-name="ShowPaymentInfoUSA">
+        <div>
+            <t t-if="outstanding">
+                <div>
+                    <strong class="pull-left" id="outstanding">
+                        <t t-if="type == 'out_invoice' || type == 'in_invoice'">Outstanding Payments/Credit Notes</t>
+                        <t t-elif="type == 'out_refund'">Open invoices</t>
+                        <t t-else="">Open bills</t>
+                    </strong>
+                </div>
+            </t>
+            <table class="max-content-table-amount">
+                <t t-foreach="lines" t-as="line">
+                    <tr class="payment-line">
+                        <t t-if="outstanding">
+                            <td>
+                                <a title="Assign to Invoice" role="button" href="javascript:void(0);"
+                                   class="oe_form_field outstanding_credit_assign" t-att-data-id="line.id"
+                                   style="margin-right: 10px;">Apply
+                                </a>
+                            </td>
+                            <td class="text-left">
+                                <span class="oe_form_field" style="margin-right: 30px;">
+                                    <a class="open_transaction" t-att-invoice-id="line.invoice_id"
+                                       t-att-payment-id="line.payment_id" t-att-move-id="line.move_id"
+                                       href="javascript:void(0);" title="View Transaction">
+                                        <t t-esc="line.journal_name"/>
+                                    </a>
+                                </span>
+                            </td>
+                        </t>
+                        <t t-else="">
+                            <td>
+                                <div class="left-col">
+                                    <div class="o_field_widget text-right o_payment_label">
+                                        <t t-if="line.type == 'out_invoice'">
+                                            <span>
+                                                Less
+                                                <a class="open-payment-usa o_form_uri text-primary"
+                                                   t-att-payment-id="account_payment_id" t-att-invoice-id="invoice_id"
+                                                   t-att-move-id="move_id" style="margin-bottom:5px;" title="View Transaction">
+                                                    <t t-if="line.is_write_off">
+                                                        Write-off
+                                                    </t>
+                                                    <t t-elif="line.journal_name == 'Customer Invoices'">
+                                                        Credit Note
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-esc="line.journal_name"/>
+                                                    </t>
+                                                </a>
+                                            </span>
+                                        </t>
+                                        <t t-elif="line.type == 'out_refund'">
+                                            <span>
+                                                Less Credit to
+                                                <a class="open-payment-usa o_form_uri text-primary"
+                                                   t-att-payment-id="account_payment_id" t-att-invoice-id="invoice_id"
+                                                   t-att-move-id="move_id" style="margin-bottom:5px;" title="View Transaction">
+                                                    <t t-if="line.journal_name == 'Customer Invoices'">
+                                                        <t t-esc="line.ref"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-esc="line.journal_name"/>
+                                                    </t>
+                                                </a>
+                                            </span>
+                                        </t>
+                                        <t t-elif="line.type == 'in_invoice'">
+                                            <span>
+                                                Less
+                                                <a class="open-payment-usa o_form_uri text-primary"
+                                                   t-att-payment-id="account_payment_id" t-att-invoice-id="invoice_id"
+                                                   t-att-move-id="move_id" style="margin-bottom:5px;" title="View Transaction">
+                                                    <t t-if="line.journal_name == 'Vendor Bills'">
+                                                        Credit note
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-esc="line.journal_name"/>
+                                                    </t>
+                                                </a>
+                                            </span>
+                                        </t>
+                                        <t t-elif="line.type == 'in_refund'">
+                                            <span>
+                                                Less Credit to
+                                                <a class="open-payment-usa o_form_uri text-primary"
+                                                   t-att-payment-id="account_payment_id" t-att-invoice-id="invoice_id"
+                                                   t-att-move-id="move_id" style="margin-bottom:5px;" title="View Transaction">
+                                                    <t t-if="line.journal_name == 'Vendor Bills'">
+                                                        Bill
+                                                        <t t-esc="line.ref"/>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-esc="line.journal_name"/>
+                                                    </t>
+                                                </a>
+                                            </span>
+                                        </t>
+                                    </div>
+                                    <div class="payment-date">
+                                        <t t-esc="line.date"/>
+                                    </div>
+                                </div>
+                            </td>
+                        </t>
+                        <td class="text-right">
+                            <t t-if="outstanding">
+                                <span class="oe_form_field oe_form_field_float oe_form_field_monetary"
+                                      style="margin-left: 20px;">
+                                    <t t-if="line.position == 'before'">
+                                        <t t-esc="line.currency"/>
+                                    </t>
+                                    <t t-esc="line.amount"/>
+                                    <t t-if="line.position == 'after'">
+                                        <t t-esc="line.currency"/>
+                                    </t>
+                                </span>
+                            </t>
+                            <t t-else="">
+                                <div class="right-col">
+                                    <span class="oe_form_field oe_form_field_float oe_form_field_monetary"
+                                          style="margin-left: 20px;">
+                                        <t t-if="line.position == 'before'">
+                                            <t t-esc="line.currency"/>
+                                        </t>
+                                        <t t-esc="line.amount"/>
+                                        <t t-if="line.position == 'after'">
+                                            <t t-esc="line.currency"/>
+                                        </t>
+                                    </span>
+                                    <i class="fa fa-times remove-payment-usa" t-att-payment-id="payment_id" t-att-partial-id="line.partial_id" title="Unapply"/>
+                                </div>
+                            </t>
+                        </td>
+                    </tr>
+                </t>
+            </table>
+        </div>
+    </t>
+</templates>

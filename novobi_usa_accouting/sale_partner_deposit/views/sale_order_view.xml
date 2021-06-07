@@ -1,0 +1,44 @@
+<odoo>
+    <record id="view_deposit_total_sale_form" model="ir.ui.view">
+        <field name="name">view_deposit_button_sale_form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_quotation_send']" position="before">
+                <button name="%(account_partner_deposit.action_view_deposit_order_form)d" string="Create deposit" type="action"
+                        attrs="{'invisible': ['|', ('invoice_status', '=', 'invoiced'), ('state', 'not in', ['sale', 'done'])]}"/>
+            </xpath>
+
+            <div name="button_box" position="inside">
+                <button name="action_view_deposit" type="object" class="oe_stat_button" icon="fa-money"
+                        attrs="{'invisible': [('deposit_count', '=', 0)]}">
+                    <field name="deposit_count" widget="statinfo" string="Deposits"/>
+                </button>
+            </div>
+
+            <field name="amount_total" position="after">
+                <field name="deposit_total" widget="monetary" options="{'currency_field': 'currency_id'}"
+                    attrs="{'invisible': [('deposit_count', '=', 0)]}"/>
+                <div class="oe_subtotal_footer_separator oe_inline o_td_label"
+                     attrs="{'invisible': [('deposit_count', '=', 0)]}">
+                    <label for="remaining_total"/>
+                </div>
+                <field name="remaining_total" nolabel="1" class="oe_subtotal_footer_separator"
+                       widget="monetary" options="{'currency_field': 'currency_id'}"
+                       attrs="{'invisible': [('deposit_count', '=', 0)]}"/>
+            </field>
+        </field>
+    </record>
+
+    <!--Remove Percentage invoice method-->
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr='//button[@context="{&apos;default_advance_payment_method&apos;: &apos;percentage&apos;}"]' position="attributes">
+                <attribute name="context">{}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

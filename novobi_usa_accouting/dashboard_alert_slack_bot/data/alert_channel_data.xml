@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!--Add slack bot channel to group of alert channels-->
+        <record id="slack_bot_alert_channel" model="alert.channel">
+            <field name="name">Slack</field>
+            <field name="channel_code">slack_bot</field>
+            <field name="contact_field">slack_bot</field>
+        </record>
+
+    </data>
+</odoo>

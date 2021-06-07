@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="ir.actions.server" id="action_account_reports_customer_statements_print_all">
+            <field name="name">Print Follow-ups</field>
+            <field name="model_id" ref="model_res_partner"/>
+            <field name="binding_model_id" ref="model_res_partner" />
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                    action = env['account.followup.report'].print_followups(records)
+            </field>
+        </record>
+
+    </data>
+</odoo>

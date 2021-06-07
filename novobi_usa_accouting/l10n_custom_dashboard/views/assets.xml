@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="l10n_custom_dashboard.assets_backend"
+              name="Custom Dashboard USA"
+              inherit_id="web.assets_backend">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/l10n_custom_dashboard/static/src/js/custom_dashboard.js"/>
+        </xpath>
+    </template>
+</odoo>

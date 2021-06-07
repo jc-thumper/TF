@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--KPI default show-->
+        <record id="profit_margin" model="kpi.journal">
+            <field name="name">Profit margin</field>
+            <field name="selected" eval="True"/>
+            <field name="data" eval=""/>
+            <field name="order" eval="0"/>
+            <field name="code_name">profit_margin</field>
+            <field name="icon_kpi" type="base64" file="account_dashboard/static/src/img/profit_margin.png"/>
+            <field name="unit">percentage</field>
+            <field name="color">#F06050</field>
+            <field name="default_kpi" eval="True"/>
+            <field name="green_on_positive">True</field>
+            <field name="code_compute">
+gross_profit = model.get_group_in_period('Gross Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance
+operating_income = model.get_group_in_period('Operating Income', 'Profit and Loss', date_from, date_to, lines_dict).balance
+result = 0 if operating_income == 0 else 100 * (gross_profit/ operating_income)
+            </field>
+        </record>
+
+        <record id="net_profit_loss" model="kpi.journal">
+            <field name="name">Net Profit/Loss</field>
+            <field name="selected" eval="True"/>
+            <field name="data" eval=""/>
+            <field name="order" eval="1"/>
+            <field name="code_name">net_profit_loss</field>
+            <field name="icon_kpi" type="base64" file="account_dashboard/static/src/img/net_profit_loss.png"/>
+            <field name="default_kpi" eval="True"/>
+            <field name="color">#F4A460</field>
+            <field name="green_on_positive">True</field>
+            <field name="code_compute">
+net_profit_loss = model.get_group_in_period('NET PROFIT/LOSS', 'Profit and Loss', date_from, date_to, lines_dict).balance
+result = net_profit_loss
+            </field>
+        </record>
+
+        <record id="total_income" model="kpi.journal">
+            <field name="name">Total Income</field>
+            <field name="selected" eval="True"/>
+            <field name="data" eval=""/>
+            <field name="order" eval="2"/>
+            <field name="code_name">total_income</field>
+            <field name="icon_kpi" type="base64" file="account_dashboard/static/src/img/total_income.png"/>
+            <field name="default_kpi" eval="True"/>
+            <field name="color">#F7CD1F</field>
+            <field name="green_on_positive">True</field>
+            <field name="code_compute">
+other_income = model.get_group_in_period('Other Income', 'Profit and Loss', date_from, date_to, lines_dict).balance
+operating_income = model.get_group_in_period('Operating Income', 'Profit and Loss', date_from, date_to, lines_dict).balance
+result = other_income + operating_income
+            </field>
+        </record>
+
+        <record id="total_expenses" model="kpi.journal">
+            <field name="name">Total Expenses</field>
+            <field name="selected" eval="True"/>
+            <field name="data" eval=""/>
+            <field name="order" eval="3"/>
+            <field name="code_name">total_expenses</field>
+            <field name="icon_kpi" type="base64" file="account_dashboard/static/src/img/expenses.png"/>
+            <field name="default_kpi" eval="True"/>
+            <field name="color">#6CC1ED</field>
+            <field name="green_on_positive">False</field>
+            <field name="code_compute">
+other_income = model.get_group_in_period('Other Income', 'Profit and Loss', date_from, date_to, lines_dict).balance
+operating_income = model.get_group_in_period('Operating Income', 'Profit and Loss', date_from, date_to, lines_dict).balance
+total_income = other_income + operating_income
+net_profit_loss = model.get_group_in_period('NET PROFIT/LOSS', 'Profit and Loss', date_from, date_to, lines_dict).balance
+result = total_income - net_profit_loss
+            </field>
+        </record>
+
+        <record id="total_cash_cash_equivalent" model="kpi.journal">
+            <field name="name">Total Cash and Cash Equivalent</field>
+            <field name="selected" eval="True"/>
+            <field name="data" eval=""/>
+            <field name="order" eval="4"/>
+            <field name="code_name">total_cash_cash_equivalent</field>
+            <field name="icon_kpi" type="base64" file="account_dashboard/static/src/img/cash_and_equivalent.png"/>
+            <field name="default_kpi" eval="True"/>
+            <field name="color">#814968</field>
+            <field name="green_on_positive">True</field>
+            <field name="code_compute">
+bank_and_cash = model.get_group_in_period('Bank and Cash Accounts', 'Balance Sheet', date_from, date_to, lines_dict).balance
+result = bank_and_cash
+            </field>
+        </record>
+
+        <record id="total_receivables" model="kpi.journal">
+            <field name="name">Total Receivables</field>
+            <field name="selected" eval="True"/>
+            <field name="data" eval=""/>
+            <field name="order" eval="5"/>
+            <field name="code_name">total_receivables</field>
+            <field name="icon_kpi" type="base64" file="account_dashboard/static/src/img/receivables.png"/>
+            <field name="default_kpi" eval="True"/>
+            <field name="color">#EB7E7F</field>
+            <field name="green_on_positive">True</field>
+            <field name="code_compute">
+receivables = model.get_group_in_period('Receivables', 'Balance Sheet', date_from, date_to, lines_dict).balance
+result = receivables
+            </field>
+        </record>
+
+        <!--KPI default hide-->
+        <!--<record id="pal_vs_budget" model="kpi.journal">-->
+            <!--<field name="name">P&amp;L vs budget</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">pal_vs_budget</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="color">#2C8397</field>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="balance_sheet_vs_budget" model="kpi.journal">-->
+            <!--<field name="name">Balance sheet vs budget</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">balance_sheet_vs_budget</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="color">#475577</field>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="revenue_overview" model="kpi.journal">-->
+            <!--<field name="name">Revenue Overview</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">revenue_overview</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="color">#D6145F</field>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="revenue_with_budget_amount" model="kpi.journal">-->
+            <!--<field name="name">Revenue with Budget Amount</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">revenue_with_budget_amount</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="color">#30C381</field>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="total_expense_with_overview" model="kpi.journal">-->
+            <!--<field name="name">Total Expense Overview</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">total_expense_with_overview</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="color">#9365B8</field>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="total_expense_with_budget_amount" model="kpi.journal">-->
+            <!--<field name="name">Total Expense with Budget Amount</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">total_expense_with_budget_amount</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="net_income_overview" model="kpi.journal">-->
+            <!--<field name="name">Net Income Overview</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">net_income_overview</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="net_income_with_budget_amount" model="kpi.journal">-->
+            <!--<field name="name">Net Income with Budget Amount</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">net_income_with_budget_amount</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+        <!--<record id="profit_margin_percentage" model="kpi.journal">-->
+            <!--<field name="name">Profit Margin Percentage</field>-->
+            <!--<field name="selected" eval="False"/>-->
+            <!--<field name="data" eval=""/>-->
+            <!--<field name="order" eval="-1"/>-->
+            <!--<field name="code_name">profit_margin_percentage</field>-->
+            <!--<field name="default_kpi" eval="True"/>-->
+            <!--<field name="code_compute">-->
+<!--net_profit = model.get_group_in_period('Net Profit', 'Profit and Loss', date_from, date_to, lines_dict).balance-->
+<!--result = net_profit-->
+            <!--</field>-->
+        <!--</record>-->
+    </data>
+</odoo>

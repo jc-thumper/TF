@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_res_partner_filter_usa" model="ir.ui.view">
+        <field name="name">res.partner.select.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="ref" filter_domain="[('ref','ilike',self)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Create a new search and filter of customer list -->
+    <record id="view_res_partner_customer_filter_usa" model="ir.ui.view">
+        <field name="name">res.partner.customer.select.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="priority" eval="200"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <filter name="type_person" position="before">
+                <!-- This is a widget filter
+                We have the syntax as follows: name is the specific field, string is the name of QWeb template,
+                context is additional parameters that you want to transfer and help is always "__widget__"
+                -->
+                <filter name="credit"
+                        string="AmountSearchRange"
+                        context='{
+                            "title_display": "Search by Total Balance",
+                            "is_negative_checking": 0,
+                            "name": "credit",
+                            "help": "__widget__"}'
+                />
+
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Create a new search and filter of vendor list -->
+    <record id="view_res_partner_supplier_filter_usa" model="ir.ui.view">
+        <field name="name">res.partner.supplier.select.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="view_res_partner_customer_filter_usa"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <filter name="credit" position="replace">
+                <filter name="debit"
+                        string="AmountSearchRange"
+                        context='{
+                            "title_display": "Search by Total Balance",
+                            "is_negative_checking": 0,
+                            "name": "debit",
+                            "help": "__widget__"}'
+                />
+            </filter>
+        </field>
+    </record>
+
+    <record id="view_partner_tree_usa" model="ir.ui.view">
+        <field name="name">res.partner.tree.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <field name="display_name" position="before">
+                <field name="ref"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Different Tree view for Customer/Vendor in Accounting module -->
+    <record id="view_partner_tree_usa_accounting" model="ir.ui.view">
+        <field name="name">res.partner.tree.usa.accounting</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <tree position="inside">
+                <field name="currency_id" invisible="1"/>
+                <field name="ar_in_charge"/>
+                <field name="user_id"/>
+                <field name="open_balance" sum="Open Balance" string="Open Balance"
+                       widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                <field name="overdue_amount" sum="Overdue Balance" string="Overdue Balance"
+                       widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                <field name="credit" sum="Total Balance" string="Total Balance"
+                       widget='monetary' options="{'currency_field': 'currency_id'}"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_vendor_tree_usa_accounting" model="ir.ui.view">
+        <field name="name">res.vendor.tree.usa.accounting</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <tree position="inside">
+                <field name="currency_id" invisible="1"/>
+                <field name="debit_open_balance" sum="Open Balance" string="Open Balance"
+                       widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                <field name="debit_overdue_amount" sum="Overdue Balance" string="Overdue Balance"
+                       widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                <field name="debit" sum="Total Balance" string="Total Balance"
+                       widget='monetary' options="{'currency_field': 'currency_id'}"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Override act_window to point to our tree view in Accounting -->
+    <!-- Customers list -->
+    <record id="account.res_partner_action_customer" model="ir.actions.act_window">
+        <field name="search_view_id" ref="view_res_partner_customer_filter_usa"/>
+    </record>
+    <record id="res_partner_action_customer1" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_partner_tree_usa_accounting"/>
+        <field name="act_window_id" ref="account.res_partner_action_customer"/>
+    </record>
+    <record id="base.action_partner_customer_form_view2" model="ir.actions.act_window.view"> <!-- Tree view -->
+        <field name="view_id" ref="view_partner_tree_usa_accounting"/>
+    </record>
+
+    <!-- Vendors list -->
+    <record id="account.res_partner_action_supplier" model="ir.actions.act_window">
+        <field name="search_view_id" ref="view_res_partner_supplier_filter_usa"/>
+    </record>
+    <record id="res_partner_action_supplier1" model="ir.actions.act_window.view">
+        <field eval="1" name="sequence"/>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_vendor_tree_usa_accounting"/>
+        <field name="act_window_id" ref="account.res_partner_action_supplier"/>
+    </record>
+    <record id="base.action_partner_vendor_form_view2" model="ir.actions.act_window.view"> <!-- Tree view -->
+        <field name="view_id" ref="view_vendor_tree_usa_accounting"/>
+    </record>
+
+    <!--FORM VIEW-->
+    <record id="view_partner_form_usa" model="ir.ui.view">
+        <field name="name">res.partner.form.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <field name="type" position="before">
+                <field name="print_check_as"/>
+                <field name="check_name" attrs="{'invisible': [('print_check_as', '=', False)],
+                'required': [('print_check_as', '=', True)]}"/>
+                <field name="ref" readonly="1"/>
+            </field>
+
+            <xpath expr="//page[@name='sales_purchases']//field[@name='ref']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='child_ids']/kanban/templates//field[@name='name']" position="before">
+                <strong class="contact-address-type" attrs="{'invisible':[('type', '!=', 'contact')]}">
+                    Contact
+                </strong>
+                <strong class="contact-address-type" attrs="{'invisible':[('type', '!=', 'delivery')]}">
+                    Shipping Address
+                </strong>
+                <strong class="contact-address-type" attrs="{'invisible':[('type', '!=', 'invoice')]}">
+                    Billing Address
+                </strong>
+                <br/>
+            </xpath>
+
+            <field name="category_id" position="before">
+                <field name="usa_partner_type" invisible="1"/>
+                <field name="supplier_rank" invisible="1"/>
+                <field name="vendor_eligible_1099" attrs="{'invisible': [('supplier_rank', '&lt;', 1)]}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_partner_property_form_usa" model="ir.ui.view">
+        <field name="name">res.partner.property.form.inherit.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <field name="property_account_payable_id" position="after">
+                <field name="usa_partner_type" invisible="1" readonly="1"/>
+                <field name="ar_in_charge" attrs="{'invisible': [('usa_partner_type', 'not in', ['customer', 'both'])]}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Customize buttons -->
+    <record id="partner_view_buttons_usa" model="ir.ui.view">
+        <field name="name">partner.ledger.button.usa</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account_reports.partner_view_buttons"/>
+        <field name="arch" type="xml">
+            <!-- Hide Partner Ledger button for contacts -->
+            <button id="partner_ledger_button" position="attributes">
+                <attribute name="attrs">{'invisible': [('parent_id', '!=', False)]}</attribute>
+            </button>
+
+            <!-- Rename Due button to Customer Statement -->
+            <xpath expr="(//button[@name='open_action_followup']/div/span)[last()]" position="replace">
+                <span class="o_stat_text">Customer
+                    <br/>
+                    Statement
+                </span>
+            </xpath>
+            <xpath expr="//button[@name='open_action_followup']" position="attributes">
+                <attribute name="style">height: 54px;</attribute>
+                <attribute name="attrs">{'invisible': [('usa_partner_type', 'not in', ['customer', 'both'])]}</attribute>  <!--Always show button for Customer-->
+            </xpath>
+        </field>
+    </record>
+</odoo>

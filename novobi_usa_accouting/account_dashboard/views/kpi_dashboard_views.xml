@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="kpi_journal_form" model="ir.ui.view">
+        <field name="name">kpi.journal.form</field>
+        <field name="model">kpi.journal</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet string="KPI journal">
+                    <field name="icon_kpi" class="oe_avatar" widget="image" style="background-color: gray;"/>
+                    <group col="4">
+                        <field name="name" modifiers="{}"/>
+                        <field name="selected" modifiers="{}"/>
+                        <field name="code_name" modifiers="{}"/>
+                        <field name="period_type" modifiers="{}"/>
+                        <field name="green_on_positive" modifiers="{}"/>
+                    </group>
+                    <notebook>
+                        <page string="Python Code" name='code' autofocus="autofocus">
+                            <field name="code_compute" widget="ace" options="{'mode': 'python'}" placeholder="Enter Python code here. Help about Python expression is available in the help tab of this document."/>
+                        </page>
+                        <page string="Help">
+                            <group>
+                                <div style="margin-top: 4px;">
+                                    <h3>Help with Python expressions</h3>
+                                    <p>Various fields may use Python code or Python expressions. The following variables can be used:</p>
+                                    <ul>
+                                        <li><code>env</code>: Odoo Environment on which the action is triggered</li>
+                                        <li><code>model</code>: Odoo Model of the record on which the action is triggered; is a void recordset</li>
+                                        <li><code>record</code>: record on which the action is triggered; may be be void</li>
+                                        <li><code>records</code>: recordset of all records on which the action is triggered in multi mode; may be void</li>
+                                        <li><code>time</code>, <code>datetime</code>, <code>dateutil</code>, <code>timezone</code>: useful Python libraries</li>
+                                        <li><code>log(message, level='info')</code>:logging function to record debug information in <code>ir.logging</code> table</li>
+                                        <li><code>Warning</code>: Warning Exception to use with <code>raise</code></li>
+                                        <li>To return an action, assign: <code>action = {...}</code></li>
+                                    </ul>
+                                    <div>
+                                        <p>Example of Python code</p>
+                                        <code style='white-space: pre-wrap'>
+                                            partner_name = record.name + '_code'
+                                            env['res.partner'].create({'name': partner_name})
+                                        </code>
+                                    </div>
+                                </div>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_kpi_journal" model="ir.actions.act_window">
+        <field name="name">KPI Information</field>
+        <field name="res_model">kpi.journal</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!--<menuitem id="menu_configuration"-->
+              <!--name="Configuration"-->
+              <!--parent="account_dashboard.menu_root"-->
+              <!--sequence="20"-->
+              <!--groups="account.group_account_user"/>-->
+
+    <!--<menuitem id="kpi_journal_menu"-->
+              <!--name="General KPI Configuration"-->
+              <!--parent="account.account_management_menu"-->
+              <!--sequence="1"-->
+              <!--groups="account.group_account_manager"/>-->
+
+    <menuitem id="kpi_information_menu"
+              name="General KPI Configuration"
+              parent="account.account_management_menu"
+              action="action_kpi_journal"
+              sequence="1"
+              groups="account.group_account_manager"/>
+
+</odoo>

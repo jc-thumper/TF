@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- INITIAL THE DEFAULT CHANNELS FOR USERS -->
+        <function model="res.users" name="init_default_channel"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rename Reconciliation Models action to Bank Rules -->
+    <record id="account.action_account_reconcile_model" model="ir.actions.act_window">
+        <field name="name">Bank Rules</field>
+    </record>
+
+    <!-- Custom bank rules tree view -->
+    <record id="view_account_reconcile_model_tree_usa" model="ir.ui.view">
+        <field name="name">account.reconcile.model.tree.usa</field>
+        <field name="model">account.reconcile.model</field>
+        <field name="inherit_id" ref="account.view_account_reconcile_model_tree"/>
+        <field name="arch" type="xml">
+            <field name="account_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="amount_type" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="name" position="after">
+                <field name="rule_type"/>
+                <field name="match_journal_ids" widget="many2many_tags"/>
+                <field name="has_second_line"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Customize account reconcile model form to bank rules form -->
+    <record id="view_account_reconcile_model_form_usa" model="ir.ui.view">
+        <field name="name">account.reconcile.model.form.usa</field>
+        <field name="model">account.reconcile.model</field>
+        <field name="inherit_id" ref="account.view_account_reconcile_model_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="placeholder">New Rule</attribute>
+            </field>
+            <xpath expr="//field[@name='match_partner']/.." position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='match_partner']/.." position="after">
+                <group attrs="{'invisible': [('rule_type', '!=', 'invoice_matching')]}">
+                    <field name="payee_id"/>
+                </group>
+            </xpath>
+
+            <!-- Disable required attribute of account_id and second_account_id -->
+            <field name="account_id" position="attributes">
+                <attribute name="attrs">
+                    {'required': [('rule_type', '!=', 'invoice_matching'), ('has_second_line', '=', False)]}
+                </attribute>
+            </field>
+            <field name="second_account_id" position="attributes">
+                <attribute name="attrs">{'required': False}</attribute>
+            </field>
+
+            <!-- Hide 2 view groups of first account if choosing `Split` -->
+            <xpath expr="//field[@name='account_id']/.." position="attributes">
+                <attribute name="attrs">{'invisible': [('has_second_line', '=', True)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='label']/.." position="attributes">
+                <attribute name="attrs">{'invisible': [('has_second_line', '=', True)]}</attribute>
+            </xpath>
+            <!-- Hide field has_second_line and its label in the previous <div> of second_line -->
+            <xpath expr="//group[@name='second_line']/preceding-sibling::div[1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- Hide second line of Odoo -->
+            <xpath expr="//group[@name='second_line']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Add field payee_id, has_second_line and rule line_ids on top of account_id -->
+            <xpath expr="//field[@name='account_id']/.." position="before">
+                <group>
+                    <field name="payee_id" widget="res_partner_many2one"/>
+                </group>
+                <group class="oe_edit_only" attrs="{'invisible': [('rule_type', '=', 'invoice_matching'), '|',
+                ('match_total_amount', '=', False), '&amp;', ('match_total_amount', '=', True), ('match_total_amount_param', '=', 100.0)]}">
+                    <div>
+                        <field name="has_second_line" class="oe_inline" nolabel="1"/>
+                        <label for="has_second_line" string="Split"/>
+                    </div>
+                </group>
+                <group class="oe_read_only"/>
+                <group colspan="2" attrs="{'invisible': [('has_second_line', '=', False)]}">
+                    <field name="line_ids" nolabel="1" mode="tree" context="{'split_by': amount_type, 'line_ids': line_ids, 'default_line_id': id}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Bank rule lines tree view -->
+    <record id="view_account_reconcile_model_line_tree_usa" model="ir.ui.view">
+        <field name="name">account.reconcile.model.line.tree.usa</field>
+        <field name="model">account.reconcile.model.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="line_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="account_id"/>
+                <field name="label"/>
+                <field name="amount_type"/>
+                <field name="amount_fixed" attrs="{'invisible': [('amount_type', '!=', 'fixed')]}"/>
+                <field name="amount_percentage" attrs="{'invisible': [('amount_type', '!=', 'percentage')]}"/>
+                <field name="amount_regex" attrs="{'invisible': [('amount_type','!=','regex')]}"/>
+                <field name="journal_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Bank rule lines form view -->
+    <record id="view_account_reconcile_model_line_form_usa" model="ir.ui.view">
+        <field name="name">account.reconcile.model.line.form.usa</field>
+        <field name="model">account.reconcile.model.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group name="left">
+                            <field name="line_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="account_id" options="{'no_create': True}" domain="[('company_id', '=', company_id)]"/>
+                            <field name="amount_type" required="1"/>
+                            <field name="amount_fixed" attrs="{'required': [('amount_type', '=', 'fixed')], 'invisible': [('amount_type', '!=', 'fixed')]}"/>
+                            <field name="amount_percentage" attrs="{'required': [('amount_type', '=', 'percentage')], 'invisible': [('amount_type', '!=', 'percentage')]}"/>
+                            <field name="amount_regex" attrs="{'required': [('amount_type', '=', 'regex')], 'invisible': [('amount_type','!=','regex')]}"/>
+                            <field name="decimal_separator" attrs="{'required': [('amount_type', '=', 'regex')], 'invisible': [('amount_type','!=','regex')]}"/>
+                            <field name="tax_ids" widget="many2many_tags" domain="[('company_id', '=', company_id)]"
+                                   options="{'no_create': True}" context="{'append_type_to_tax_name': True}" />
+                            <field name="show_force_tax_included" invisible="1"/>
+                            <field name="force_tax_included" attrs="{'invisible': [('show_force_tax_included', '=', False)]}" force_save="1"/>
+                        </group>
+                        <group name="right">
+                            <field name="label"/>
+                            <field name="analytic_account_id" groups="analytic.group_analytic_accounting"
+                                   domain="['|', ('company_id', '=', company_id), ('company_id', '=', False)]"/>
+                            <field name="analytic_tag_ids" groups="analytic.group_analytic_tags" widget="many2many_tags"/>
+                            <field name="journal_id" domain="[('type', '=', 'general'), ('company_id', '=', company_id)]"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Manual reconciliation, rename 'Reconciliation' to 'Manual Matching' -->
+    <record id="account.menu_action_manual_reconciliation" model="ir.ui.menu">
+        <field name="name">Manual Matching</field>
+    </record>
+    <record id="account.action_manual_reconciliation" model="ir.actions.client">
+        <field name="name">Manual Matching</field>
+    </record>
+</odoo>

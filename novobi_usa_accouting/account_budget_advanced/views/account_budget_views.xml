@@ -1,0 +1,63 @@
+<odoo>
+    <!--Budget vs Actuals-->
+    <menuitem id="account_budget.menu_act_crossovered_budget_view"
+              name="Budget vs. Actuals"
+              parent="account.account_reports_management_menu"
+              sequence="60"/>
+
+    <record id="budget_actual_view_tree" model="ir.ui.view">
+        <field name="name">budget.actual.view.tree</field>
+        <field name="model">crossovered.budget</field>
+        <field name="inherit_id" ref="account_budget.crossovered_budget_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="budget_type" />
+            </field>
+            <field name="user_id" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="state" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="company_id" position="before">
+                <field name="analytic_account_id"/>
+            </field>
+            <tree position="attributes">
+                <attribute name="create">0</attribute>
+                <attribute name="decoration-muted"></attribute>
+                <attribute name="decoration-info"></attribute>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_budget_actual_search" model="ir.ui.view">
+        <field name="name">budget.actual.view.search</field>
+        <field name="model">crossovered.budget</field>
+        <field name="arch" type="xml">
+            <search string="Budget">
+                <field name="name" filter_domain="[('name','ilike',self)]" string="Budget"/>
+                <field name="analytic_account_id" filter_domain="[('analytic_account_id','ilike',self)]"
+                       string="Analytic Account"/>
+
+                <filter string="Profit and Loss" name="profit" domain="[('budget_type','=','profit')]"/>
+                <filter string="Balance Sheet" name="balance" domain="[('budget_type','=','balance')]"/>
+
+                <group expand="0" string="Group By">
+                    <filter string="Start Date" name="date_from" context="{'group_by':'date_from'}"/>
+                    <filter string="End Date" name="date_to" context="{'group_by':'date_to'}"/>
+                    <filter string="Budget Type" name="budget" context="{'group_by':'budget_type'}"/>
+                    <filter string="Analytic Account" name="analytic" context="{'group_by':'analytic_account_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+     <record model="ir.actions.act_window" id="account_budget.act_crossovered_budget_view">
+        <field name="name">Budget vs. Actuals</field>
+        <field name="search_view_id" ref="view_budget_actual_search"/>
+    </record>
+
+    <!--Hide some menus-->
+    <menuitem id="account_budget.menu_act_crossovered_budget_lines_view" active="False"/>
+    <menuitem id="account_budget.menu_budget_post_form" active="False"/>
+</odoo>

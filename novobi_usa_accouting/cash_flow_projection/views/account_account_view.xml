@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_account_journal_inherit" model="ir.ui.view">
+        <field name="name">view.account.journal.inherit</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_type_id']" position="after">
+                <field name="payment_lead_time" attrs="{'invisible' : [('internal_type', '!=', 'liquidity')]}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

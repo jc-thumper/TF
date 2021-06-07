@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Account Form View-->
+    <record id="view_account_form_inherit" model="ir.ui.view">
+        <field name="name">view.account.form.inherit</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <field name="deprecated" position="after">
+                <field name="account_eligible_1099" attrs="{'invisible': [('reconcile', '=', True)]}"/>
+            </field>
+        </field>
+    </record>
+</odoo>

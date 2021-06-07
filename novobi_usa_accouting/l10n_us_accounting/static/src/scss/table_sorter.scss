@@ -1,0 +1,90 @@
+.o_account_reports_page {
+  .table-responsive.table-reconciliation {
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 30px;
+
+    @media (max-height: 1000px) {
+      height: 550px;
+    }
+    @media (max-height: 900px) {
+      height: 450px;
+    }
+    @media (max-height: 768px) {
+      height: 320px;
+    }
+    @media (max-height: 640px) {
+      height: 200px;
+    }
+
+    .table-sorter {
+      background-color: #FFFFFF;
+      font-size: 9pt;
+      text-align: left;
+      margin: auto;
+      margin-bottom: 0 !important;
+      width: 100%;
+      white-space: normal;
+
+      thead {
+        tr {
+          .headerSortUp {
+            background-image: url("/l10n_us_accounting/static/src/img/tablesorter/asc.gif");
+          }
+          .headerSortDown {
+            background-image: url("/l10n_us_accounting/static/src/img/tablesorter/desc.gif");
+          }
+          .headerSortUp,
+          .headerSortDown {
+            background-repeat: no-repeat;
+            background-position: center right;
+            background-color: #8dbdd8;
+          }
+
+          th {
+            background-color: #e6EEEE;
+            border-right: 1px solid #FFF;
+            font-size: 9pt;
+            padding: 8px 4px;
+            vertical-align: middle;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+
+            &:last-child {
+              border-right: none;
+            }
+
+            span {
+              padding: 0 15px;
+            }
+          }
+        }
+      }
+
+      tbody {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: auto;
+
+        tr {
+          td {
+            color: #3D3D3D;
+            padding: 4px;
+            background-color: #FFF;
+            vertical-align: top;
+            border-bottom: #cccccc solid 1px;
+            border-top-style: unset;
+
+            input.report-checkbox {
+              vertical-align: middle;
+            }
+          }
+
+          &:nth-child(odd) td {
+            background-color:#f9f9f9;
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="l10n_us_accounting.assets_backend_usa" name="Backend Assets USA" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <!-- SCSS -->
+            <link rel="stylesheet" type="text/scss" href="/l10n_us_accounting/static/src/scss/common.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/l10n_us_accounting/static/src/scss/search_view.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/l10n_us_accounting/static/src/scss/table_sorter.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/l10n_us_accounting/static/src/scss/account_report.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/l10n_us_accounting/static/src/scss/account_reconciliation.scss"/>
+            <!-- CSS -->
+            <link rel="stylesheet" type="text/css" href="/l10n_us_accounting/static/src/css/usa_customer.css"/>
+            <link rel="stylesheet" type="text/css" href="/l10n_us_accounting/static/src/css/usa_account_followup_report.css"/>
+
+            <!-- JAVASCRIPT -->
+            <!-- Override Account Reconciliation -->
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/reconciliation/reconciliation_action.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/reconciliation/reconciliation_model.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/reconciliation/reconciliation_renderer.js"/>
+
+            <!-- Account Report - Bank Reconciliation -->
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/account_report/jquery.tablesorter.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/account_report/account_reports.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/account_report/usa_bank_reconciliation.js"/>
+
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/dialog.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/account_payment_field.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/search_menu_amount.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/rule_selector.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/model_field_selector_usa.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/rule_domain.js"/>
+            <script type="text/javascript" src="/l10n_us_accounting/static/src/js/usa_1099_report.js"></script>
+        </xpath>
+    </template>
+
+    <template id="l10n_us_accounting.assets_common" name="Common Assets USA" inherit_id="web.report_assets_common">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/less" href="/l10n_us_accounting/static/src/scss/check_printing.scss"/>
+        </xpath>
+    </template>
+</odoo>

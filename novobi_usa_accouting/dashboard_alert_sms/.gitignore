@@ -1,0 +1,4 @@
+*.pyc
+controller/__pycache__/*.pyc
+models/__pycache__/*.pyc
+wizards/__pycache__/*.pyc

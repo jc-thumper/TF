@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- INITIAL DATA FOR US-ACCOUNTING DASHBOARD TABLE -->
+
+        <function model="usa.journal" name="init_data_usa_journal"/>
+    </data>
+</odoo>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--MAIN TEMPLATE to call LINE TEMPLATE-->
+    <template id="template_budget_entry_screen" inherit_id="account_reports.main_template" primary="True">
+        <xpath expr="//table/.." position="attributes">
+            <attribute name="id">budget-table-div</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('o_account_reports_page')]" position="attributes">
+                <!--<attribute name="style">width:100%; margin:0; padding-top:0; padding-bottom:0</attribute>-->
+                <attribute name="class">container-fluid o_account_reports_page o_account_reports_no_print</attribute>
+            </xpath>
+
+        <xpath expr="//div[@id='budget-table-div']/.." position="attributes">
+            <attribute name="id">budget-container-div</attribute>
+        </xpath>
+
+        <xpath expr="//table" position="attributes">
+            <attribute name="id">budget-table</attribute>
+            <attribute name="class">o_account_reports_table table-bordered fixed-table-container</attribute>
+        </xpath>
+
+        <!--Remove some header's section-->
+        <div class="o_account_reports_summary" position="replace">
+        </div>
+
+        <!--Button Section-->
+        <div class="o_account_reports_header" position="after">
+            <div class="row mt16 mb16" >
+                <div class="col-5" t-if="budget_entry">
+                    <button class="btn btn-primary" id="btn_save"
+                        t-att-data-id="bank_reconciliation_data_id">SAVE</button>
+                    <button class="btn btn-secondary" id="btn_close"
+                            t-att-data-id="bank_reconciliation_data_id">CLOSE</button>
+                    <button class="btn btn-secondary" id="btn_delete"
+                            t-att-data-id="bank_reconciliation_data_id">DELETE</button>
+                </div>
+                <div class="col-5">
+                    <button class="btn btn-primary" id="btn_import" t-if="budget_entry">IMPORT</button>
+                    <button class="btn btn-primary" id="btn_export">EXPORT</button>
+                </div>
+            </div>
+
+            <div class="row mb16">
+                <div class="col-5">
+                    <div class="row">
+                        <div class="col-4">
+                            <strong>Budget Type:</strong>
+                        </div>
+                        <div>
+                            <span t-esc="'Profit and Loss' if crossovered_budget.budget_type == 'profit' else 'Balance Sheet'"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-4">
+                            <strong t-att-style="'opacity:0.5' if not crossovered_budget.analytic_account_id else ''">Analytic Account:</strong>
+                        </div>
+                        <div>
+                            <span t-esc="crossovered_budget.analytic_account_id.display_name if crossovered_budget.analytic_account_id else ''"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-4">
+                            <strong>Show Rows:</strong>
+                        </div>
+                        <div>
+                            <input type="radio" name="hide_zero" value="no" checked="checked"/> <span class="hide_zero_label">All</span>
+                            <input type="radio" name="hide_zero" value="yes"/> <span class="hide_zero_label">Non-zero</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-5">
+                    <div class="row">
+                        <div class="col-2">
+                            <strong>Start:</strong>
+                        </div>
+                        <div>
+                            <span t-esc="crossovered_budget.date_from.strftime('%b %Y')"/>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-2">
+                            <strong>End:</strong>
+                        </div>
+                        <div>
+                            <span t-esc="crossovered_budget.date_to.strftime('%b %Y')"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-2">
+                            <strong>Currency:</strong>
+                        </div>
+                        <div>
+                            <span t-esc="currency_id.name"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!--LINE TEMPLATE-->
+    <template id="line_template_budget_entry_screen" inherit_id="account_reports.line_template" primary="True">
+        <tr position="attributes">
+            <attribute name="t-att-data-total-id">line.get('total_id')</attribute>
+            <attribute name="t-att-data-code">line.get('code')</attribute>
+            <attribute name="t-att-data-formulas">line.get('formulas')</attribute>
+            <attribute name="t-att-data-account-id">line.get('account_id')</attribute>
+        </tr>
+
+        <xpath expr='//t[@t-as="column"]' position="replace">
+            <t t-foreach="line.get('columns')" t-as="column">
+                <td t-att-class="'o_account_report_line ' + (column.get('class', lines.get('columns_header')[-1][column_index+line.get('colspan', 1)].get('class', '')))"
+                    t-att-style="column.get('style', lines.get('columns_header')[-1][column_index+line.get('colspan', 1)].get('style', ''))"
+                    t-att-data-id="line.get('id')"
+                    t-att-data-formulas="line.get('formulas')"
+                    t-att-data-code="line.get('code')"
+                    t-att-data-parent-id="line.get('parent_id')"
+                    t-att-data-total-id="line.get('total_id')">
+                    <t t-if="lines.get('columns_header')[-1][column_index+1].get('total_column') or line.get('total_id')">
+                        <span class="o_account_report_column_value" t-esc="column.get('name') if column.get('name') else 0"/>
+                    </t>
+                    <t t-elif="line.get('parent_id')">
+                        <input t-att-value="column.get('name') if column.get('name') else 0" onfocus="this.select()" />
+                    </t>
+                </td>
+            </t>
+        </xpath>
+    </template>
+</odoo>

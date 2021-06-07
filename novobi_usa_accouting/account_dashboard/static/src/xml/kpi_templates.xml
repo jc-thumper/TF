@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <!--
+        This template is the ribbon at the top of the account_dashboard dashboard that adds
+        some figures to it. We call this rubbon the "InventoryForecastDashboard".
+    -->
+    <t t-name="account_dashboard.KPIDashboard">
+        <div t-if="show_demo or data" class="o_account_dashboard">
+            <div class="">
+                <a class="">
+                    <i id="setting_header_btn"
+                       class="fa fa-cog"/>
+                </a>
+                <div class="container journal_manage dropdown-menu" role="menu">
+                    <t t-call="account_dashboard.JournalManage">
+                        <t t-set="kpi_info" t-value="data.kpi_info"/>
+                    </t>
+                </div>
+            </div>
+            <div class="kpi_header">
+                <t t-call="account_dashboard.ElementsHeader">
+                    <t t-set="kpi_data" t-value="data.kpi_data"/>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="account_dashboard.JournalManage">
+        <button type="button"
+                class="close_setting_header_btn"
+                aria-label="Close">
+            <span aria-hidden="false" style="font-size: x-large;">×</span>
+        </button>
+        <div class="content-header">
+            <div class="col-4">
+                <a modifiers="{}"
+                   class="title_group_kpis">
+                    <span>KPIs Selected</span>
+                </a>
+                <ul class="slides content_kpis_selected">
+                    <t t-foreach="kpi_info.kpi_selected" t-as="info">
+                        <li class="slide" t-att-value="info">
+                            <span class="o_row_handle fa fa-arrows o_field_widget ui-sortable-handle"
+                                  name="sequence"
+                                  style="padding-right: 8px;"/><t t-esc="info"/>
+                        </li>
+                    </t>
+                </ul>
+            </div>
+
+            <div style="border-left: 1px solid #c1c0c0;"/>
+            <div class="col-8">
+                <a modifiers="{}"
+                   class="title_group_kpis">
+                    <span>Select KPI</span>
+                </a>
+                <div class="content_group_kpis">
+                    <t t-call="account_dashboard.CheckBoxGroup">
+                        <t t-set="kpis" t-value="kpi_info.kpi_selections"/>
+                    </t>
+                </div>
+
+            </div>
+        </div>
+    </t>
+
+    <t t-name="account_dashboard.CheckBoxGroup">
+        <!--Num of columns will show in the selection area-->
+        <t t-set="num_cols" t-value="2"/>
+        <t t-set="num_selected_kpis" t-value="0"/>
+
+        <!--Rend data for each columns base on number of columns assigned in num_cols var-->
+        <t t-foreach="_.range(0, num_cols)" t-as="col">
+            <div class="col-6">
+                <t t-set="num_elem" t-value="Math.ceil(kpis.length/num_cols)"/>
+                <t t-foreach="_.range(col*num_elem, (col+1)*num_elem)" t-as="index">
+                    <t t-if="index&lt;kpis.length">
+                        <!--Rend the row to the screen-->
+                        <div class="slide">
+                            <div>
+                                <t t-if="kpis[index].selected">
+                                    <t t-set="num_selected_kpis" t-value="num_selected_kpis + 1"/>
+                                    <input class="select_kpi"
+                                           type="checkbox"
+                                           checked="checked"
+                                           t-att-value="kpis[index].name"/>
+                                </t>
+                                <t t-else="">
+                                    <input class="select_kpi"
+                                           type="checkbox"
+                                           t-att-value="kpis[index].name"/>
+                                </t>
+
+                                <span>
+                                    <t t-esc="kpis[index].name"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </t>
+
+        <div class="select_all_kpis_header_btn">
+            <t t-if="num_selected_kpis === kpis.length">
+                <input class="select_all_kpis"
+                       type="checkbox"
+                       checked="checked"
+                       value="Select/Deselect All"/>
+            </t>
+            <t t-else="">
+                <input class="select_all_kpis"
+                       type="checkbox"
+                       value="Select/Deselect All"/>
+            </t>
+
+            <span>Select/Deselect All</span>
+        </div>
+    </t>
+
+    <t t-name="account_dashboard.ElementHeader">
+        <div class="float-left card_item">
+            <div class="panel panel-custom">
+                <div class="panel-heading panel-background">
+                    <div class="row">
+                        <div class="col-8 text-left">
+                            <div class="kpi_value" t-attf-title="#{value['value']}">
+                                <t t-esc="value['short_title']"/>
+                            </div>
+                        </div>
+                    </div>
+                    <t t-if="value['comparison']">
+                        <div class="row comparison">
+                            <div class="col-2 comparison_left">
+                                <img t-attf-src="#{value['trend']}"
+                                     class="img img-fluid img-kpi-trend"/>
+                            </div>
+                            <div class="col-10 text-left comparison_right">
+                                <div class="comparison_label text_break" t-attf-title="#{value['comparison_title']}">
+                                    <t t-esc="value['comparison']"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="row">
+                            <br/>
+                        </div>
+                    </t>
+                    <div class="row">
+                        <div class="col-8 text-left text-kpi-title">
+                            <div class="text_break kpi_name" t-attf-title="#{value['label']}">
+                                <t t-esc="value['label']"/>
+                            </div>
+                            <div class="text_period_type">
+                                <t t-esc="value['period_type']"/>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <img t-attf-src="#{value['icon']}"
+                                 class="img img-fluid img-kpi-tile"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="account_dashboard.ElementsHeader">
+        <!--Num of rows kpi will showed in the KPI section-->
+        <t t-set="num_elem" t-value="kpi_data.length"/>
+        <t t-set="num_hidden_element" t-value="6"/>
+
+        <!--Rend data for each row base on number of rows assigned in num_row var-->
+        <div class="items_header">
+
+            <t t-foreach="_.range(0, num_elem)" t-as="index">
+                <t t-if="index&lt;kpi_data.length">
+                    <!--Rend each item in row kpi items-->
+                    <t t-call="account_dashboard.ElementHeader">
+                        <t t-set="value" t-value="kpi_data[index]"/>
+
+                    </t>
+                </t>
+            </t>
+            <t t-foreach="_.range(0, num_hidden_element)" t-as="index">
+                <div class="float-left card_item hidden_item"></div>
+            </t>
+
+        </div>
+    </t>
+</templates>

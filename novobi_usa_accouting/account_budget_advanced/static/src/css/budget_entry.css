@@ -1,0 +1,81 @@
+#budget-table {
+    overflow: auto;
+    margin: auto;
+    width: 10px;
+}
+
+#budget-table-div {
+    height: 80%;
+}
+
+#budget-container-div {
+    height: 80vh;
+}
+
+#budget-table input {
+    border: none;
+    -moz-appearance:textfield;
+    text-align: right;
+
+    -webkit-transition: all 0.30s ease-in-out;
+    -moz-transition: all 0.30s ease-in-out;
+    -ms-transition: all 0.30s ease-in-out;
+    -o-transition: all 0.30s ease-in-out;
+    width: 100%;
+}
+
+#budget-table input:focus {
+    box-shadow: 0 0 5px #008784;
+}
+
+#budget-table .o_account_reports_level2, #budget-table .o_account_reports_level3 {
+    border-bottom: none;
+}
+
+#budget-table span{
+    text-align: right;
+    min-width: 100px;
+    cursor: context-menu;
+}
+
+#budget-table .total_column span{
+    font-weight: bold;
+}
+
+#budget-table thead th{
+    outline: 1px solid white;
+    text-align: right;
+    background-color: #f0f0f0;
+    color: black;
+}
+
+#budget-table thead tr:first-child th:first-child{
+    text-align: center;
+}
+
+#budget-table .header_month {
+    text-align: center;
+}
+
+#budget-table tbody td:first-child {
+    color: black;
+    outline: 1px solid #dee2e6;
+    min-width: 300px;
+}
+
+#budget-table td {
+    min-width: 100px;
+}
+
+.hide_zero_label {
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+.income_budget {
+    color: #00863e;
+}
+
+.expense_budget {
+    color: #c54d49;
+}

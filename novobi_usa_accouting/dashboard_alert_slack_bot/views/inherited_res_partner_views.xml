@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_contact_partner_slack_info_form" model="ir.ui.view">
+            <field name="name">res.contact.partner.sms.info.form</field>
+            <field name="model">res.partner</field>
+            <field eval="7" name="priority"/>
+            <field name="inherit_id" ref="dashboard_alert.view_contact_partner_info_form"/>
+            <field name="arch" type="xml">
+                <field name="email" position="after">
+                    <field name="slack_bot" invisible="not context.get('slack_bot', False)"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

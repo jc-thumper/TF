@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- INITIAL DATA FOR ALERT CHANNEL TABLE -->
+        <!--<function model="alert.channel" name="init_channel_data"/>-->
+
+        <!--Add slack bot channel to group of alert channels-->
+        <record id="email_alert_channel" model="alert.channel">
+            <field name="name">Email</field>
+            <field name="channel_code">email</field>
+            <field name="channel_default">True</field>
+            <field name="contact_field">email</field>
+        </record>
+
+    </data>
+</odoo>
+

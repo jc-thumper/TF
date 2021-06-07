@@ -1,0 +1,27 @@
+<odoo>
+    <record id="chatbot.view_confirm_message" model="ir.ui.view">
+        <field name="name">chatbot.confirm.message.wizard.form</field>
+        <field name="model">chatbot.extend_confirm_message</field>
+        <field name="arch" type="xml">
+            <form string="Confirmation Form">
+                <center>
+                    <field name="message" readonly="1"/>
+                </center>
+                <footer>
+                    <button name="accept_confirmation" type="object" string="YES" class="oe_highlight"/>
+                    <button type="object" string="NO" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_extend_confirm_message" model="ir.actions.act_window">
+        <field name="name">confirm.message</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">chatbot.extend_confirm_message</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="chatbot.view_confirm_message"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

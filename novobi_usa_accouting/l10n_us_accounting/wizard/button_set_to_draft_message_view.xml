@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_button_set_to_draft_message" model="ir.ui.view">
+        <field name="name">view_button_set_to_draft_message</field>
+        <field name="model">button.draft.message</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="payment_id" invisible="1"/>
+                <field name="move_id" invisible="1"/>
+                <field name="message" readonly="1"/>
+                <footer>
+                    <button name="button_set_to_draft" type="object" class="btn-primary" string="Reset to draft"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_view_button_set_to_draft_message" model="ir.actions.act_window">
+        <field name="name">Confirmation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">button.draft.message</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_button_set_to_draft_message"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

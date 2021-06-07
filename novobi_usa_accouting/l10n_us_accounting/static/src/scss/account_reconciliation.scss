@@ -1,0 +1,52 @@
+.o_reconciliation_line {
+  div.reconciliation_model_name {
+    color: #00a09d;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #00a09d;
+    padding: 0 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  table.accounting_view {
+    thead tr.header {
+      td {
+        border-top: none !important;
+        background-color: white !important;
+        padding-right: 5px;
+
+        &.sort {
+          cursor: pointer;
+        }
+      }
+    }
+    td.cell_date {
+      box-shadow: 0 1px 0 #EAEAEA;
+    }
+  }
+
+  td.cell_date {
+    width: 100px;
+  }
+
+  td.cell_info_popover {
+    &:empty {
+      padding: 1px 2px !important;
+      width: 15px !important;
+    }
+  }
+}
+
+.o_input_dropdown {
+  input[type=text].apply-payee {
+    color: #6c757d;
+  }
+
+  button.badge.badge-secondary {
+    &.apply-payee {
+      position: absolute;
+      right: 1rem;
+      cursor: pointer;
+    }
+  }
+}

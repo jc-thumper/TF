@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="seq_audit_trail_log" model="ir.sequence">
+            <field name="name">Audit Log</field>
+            <field name="code">audit_trail_log</field>
+            <field name="prefix">LOG</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="seq_audit_trail_log_line" model="ir.sequence">
+            <field name="name">Audit Log Line</field>
+            <field name="code">audit_trail_log_line</field>
+            <field name="prefix">LGL</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+        <record id="seq_audit_trail_rule" model="ir.sequence">
+            <field name="name">Audit Rule</field>
+            <field name="code">audit_trail_rule</field>
+            <field name="prefix">RULE</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+    </data>
+</odoo>

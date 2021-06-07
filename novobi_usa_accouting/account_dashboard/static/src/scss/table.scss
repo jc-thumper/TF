@@ -1,0 +1,31 @@
+$header_background_color: #875A7B;
+$header_text_color: #FDFDFD;
+$alternate_row_background_color: #DDD;
+
+$table_width: 100%;
+$table_body_height: 300px;
+
+.oe_table_kanban {
+    width: $table_width;
+    table-layout: fixed;
+    border-collapse: collapse;
+
+    th { text-decoration: underline; }
+    th, td {
+        padding: 5px;
+        text-align: left;
+    }
+
+    thead {
+        background-color: $header_background_color;
+        color: $header_text_color;
+    }
+    tbody {
+        width: 100%;
+        height: $table_body_height;
+        tr td.header_product {
+            background-color: $header_background_color !important;
+            color: $header_text_color !important;
+        }
+    }
+}

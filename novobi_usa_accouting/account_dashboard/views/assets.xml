@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets_modify_account_dashboard_backend"
+              name="modify_account_dashboard_assets"
+              inherit_id="web.assets_backend">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/account_dashboard/static/src/js/kpi_header.js"/>
+
+            <link rel="stylesheet" type="text/scss" href="/account_dashboard/static/src/scss/account_dashboard.scss"/>
+
+            <!--Graph-->
+            <link rel="stylesheet" type="text/scss" href="/account_dashboard/static/src/scss/table.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/account_dashboard/static/src/scss/base.scss"/>
+
+            <!--kanban view-->
+            <script type="text/javascript" src="/account_dashboard/static/src/js/account_dashboard.js"/>
+
+            <!--widget color setting-->
+            <link rel="stylesheet" type="text/scss" href="/account_dashboard/static/src/scss/widget_color_setting.scss"/>
+            <script type="text/javascript" src="/account_dashboard/static/lib/jscolor/jscolor.js"/>
+            <script type="text/javascript" src="/account_dashboard/static/src/js/widget_color_setting.js"/>
+        </xpath>
+    </template>
+</odoo>

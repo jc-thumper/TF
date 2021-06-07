@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--<record id="account_followup.line_template_followup_report" model="ir.ui.view">-->
+        <!--<field name="primary" eval="False"/>-->
+    <!--</record>-->
+
+    <!-- Add a summary for account followup report-->
+    <template id="customer_statement_report" inherit_id="account_followup.template_followup_report">
+        <xpath expr="//div[hasclass('js_account_report_footnotes')]" position="before">
+            <link rel="stylesheet" type="text/css" href="/l10n_us_accounting/static/src/css/usa_account_followup_report.css"/>
+            <div class="table-responsive">
+                <table class="o_account_reports_table">
+                    <t t-foreach="summary_lines" t-as="line">
+                        <t t-if="line.get('class') == 'summary_title'">
+                            <thead>
+                                <t t-foreach="line['columns']" t-as="column">
+                                    <td t-att-class="(column=='Total Amount' and 'summary_title_total_report_usa' or 'summary_title_report_usa')">
+                                        <t t-esc="column"/>
+                                    </td>
+                                </t>
+                            </thead>
+                        </t>
+                        <t t-if="line.get('class') == 'summary_values'">
+                            <tbody><tr>
+                                    <t t-foreach="line['columns']" t-as="column">
+                                        <td t-att-class="(column_last and 'summary_values_total_report_usa' or 'summary_values_report_usa')">
+                                            <t t-esc="column"/>
+                                        </td>
+                                    </t>
+                            </tr></tbody>
+                        </t>
+                    </t>
+                </table>
+            </div>
+        </xpath>
+    </template>
+</odoo>

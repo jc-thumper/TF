@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-extend="account_dashboard.ElementHeader">
+        <t t-jquery=".panel-heading > :first-child" t-operation="before">
+            <span class="fa fa-bell alert-bell" style="display: flex; position: absolute; right: 6px; top: 6px; font-size: 18px;cursor: pointer;
+    z-index: 100;"></span>
+        </t>
+
+        <t t-jquery=".kpi_name" t-operation="after">
+            <div class="kpi_id" style="display: none;">
+                <t t-esc="value['kpi_id']"/>
+            </div>
+        </t>
+
+        <t t-jquery=".text-right" t-operation="attributes">
+            <attribute name="style">padding-top: 4px;</attribute>
+        </t>
+    </t>
+</templates>

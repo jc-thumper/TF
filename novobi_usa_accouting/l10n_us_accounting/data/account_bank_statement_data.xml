@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <function model="account.bank.statement.line" name="update_historical_reconciliation_data"/>
+</odoo>

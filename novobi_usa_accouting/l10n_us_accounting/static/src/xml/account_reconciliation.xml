@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+
+    <!-- BANK RECONCILIATION FORM -->
+    <!-- Rename button 'Validate' to 'Apply' -->
+    <t t-extend="reconciliation.line">
+        <t t-jquery="caption .o_buttons" t-operation="replace">
+            <div class="float-right d-inline o_exclude_button">
+                <button class="btn btn-secondary o_exclude">Exclude</button>
+            </div>
+            <div class="float-right o_buttons">
+                <button t-attf-class="o_no_valid btn btn-secondary #{state.balance.type &lt; 0 ? '' : 'd-none'}"
+                        disabled="disabled" data-toggle="tooltip" title="Select a partner or choose a counterpart" accesskey="">Apply</button>
+                <button t-attf-class="o_validate btn btn-secondary #{!state.balance.type ? '' : 'd-none'}">Apply</button>
+                <button t-attf-class="o_reconcile btn btn-primary #{state.balance.type &gt; 0 ? '' : 'd-none'}">Apply</button>
+            </div>
+        </t>
+
+        <!-- Add column Date to header of table -->
+        <t t-jquery=".accounting_view thead tr" t-operation="before">
+            <tr class="header">
+                <td sort_type="number" sort_mode="" class="sort">Account <span class="sort_icon"/></td>
+                <td sort_type="date" sort_mode="" class="sort">Date <span class="sort_icon"/></td>
+                <td sort_type="date" sort_mode="" class="sort">Due Date <span class="sort_icon"/></td>
+                <td sort_type="text" sort_mode="" class="sort">Transaction <span class="sort_icon"/></td>
+                <td sort_type="currency" sort_mode="" class="sort text-right">Deposit <span class="sort_icon"/></td>
+                <td sort_type="currency" sort_mode="" class="sort text-right">Payment <span class="sort_icon"/></td>
+                <td/>
+            </tr>
+        </t>
+
+        <t t-jquery=".accounting_view thead tr td.cell_due_date" t-operation="before">
+            <td class="cell_date"><t t-esc="state.st_line.date"/></td>
+        </t>
+
+        <!--Add applying reconciliation model name-->
+        <t t-jquery="table.accounting_view" t-operation="after">
+            <div class="reconciliation_model_name">Bank Rule: <span/></div>
+        </t>
+    </t>
+    <!-- Change text from '... to be reconciled' to '... to be reviewed' -->
+    <t t-extend="reconciliation.statement">
+        <t t-jquery=".o_view_noreconciliation p:last" t-operation="replace">
+            <p>This page displays all the bank transactions that are to be reviewed and provides with a neat interface to do so.</p>
+        </t>
+    </t>
+
+    <!-- Add column Date to suggested matching list. -->
+    <t t-extend="reconciliation.line.mv_line">
+        <t t-jquery="td.cell_due_date" t-operation="replace">
+            <td class="cell_date">
+                <t t-if="typeof(line.id) != 'number' &amp;&amp; line.id">
+                    <span class="badge badge-secondary">New</span>
+                </t>
+                <t t-else="" t-esc="line.date"/>
+            </td>
+            <td class="cell_due_date">
+                <t t-if="typeof(line.id) != 'number' &amp;&amp; line.id">
+                    <span class="badge badge-secondary">New</span>
+                </t>
+                <t t-else="" t-esc="line.date_maturity || line.date"/>
+            </td>
+        </t>
+    </t>
+    <!-- Add column Date to Balance line -->
+    <t t-extend="reconciliation.line.match">
+        <t t-jquery="table" t-operation="attributes">
+            <attribute name="class">table_sort</attribute>
+        </t>
+    </t>
+    <!-- Add column Date to Balance line -->
+    <t t-extend="reconciliation.line.balance">
+        <t t-jquery="td.cell_due_date" t-operation="before">
+            <td class="cell_date"/>
+        </t>
+    </t>
+
+    <!-- Add column Date to Batch payment -->
+    <t t-extend="batch.payment.tab">
+        <t t-jquery="table" t-operation="attributes">
+            <attribute name="class">table_sort</attribute>
+        </t>
+        <t t-jquery="td.cell_due_date" t-operation="replace">
+            <td class="cell_date">
+                <t t-esc="batch.date"/>
+            </td>
+            <td class="cell_due_date"/>
+        </t>
+        <t t-jquery="td.cell_left" t-operation="replace"/>
+        <t t-jquery="td.cell_right" t-operation="replace">
+            <t t-if="batch.type == 'inbound'">
+                <td class="cell_left">
+                </td>
+                <td class="cell_right">
+                    <t t-esc="batch.amount_str"/>
+                    <t t-if="batch.amount_currency_str">
+                        (<t t-esc="batch.amount_currency_str"/>)
+                    </t>
+                </td>
+            </t>
+            <t t-else="">
+                <td class="cell_left">
+                    <t t-esc="batch.amount_str"/>
+                    <t t-if="batch.amount_currency_str">
+                        (<t t-esc="batch.amount_currency_str"/>)
+                    </t>
+                </td>
+                <td class="cell_right">
+                </td>
+            </t>
+            <td class="cell_info_popover"/>
+        </t>
+    </t>
+
+    <!-- MANUAL MATCHING FORM -->
+    <!-- Rename button 'Reconcile' to 'Apply' -->
+    <t t-extend="reconciliation.manual.line">
+        <t t-jquery="caption .o_buttons" t-operation="replace">
+            <div class="float-right o_buttons">
+                <button t-attf-class="o_validate btn btn-secondary #{!state.balance.type ? '' : 'd-none'}">Apply</button>
+                <button t-attf-class="o_reconcile btn btn-primary #{state.balance.type &gt; 0 ? '' : 'd-none'}">Apply</button>
+                <button t-attf-class="o_no_valid btn btn-secondary #{state.balance.type &lt; 0 ? '' : 'd-none'}">Skip</button>
+            </div>
+        </t>
+    </t>
+    <!-- Remove 'There is nothing to reconcile.' -->
+    <t t-extend="reconciliation.manual.statement">
+        <t t-jquery=".o_view_noreconciliation p:first" t-operation="replace">
+            <p><b>Good Job!</b></p>
+        </t>
+    </t>
+
+
+    <!-- RAINBOW MAN -->
+    <!-- Change text from 'You reconciled...' to 'You reviewed...' -->
+    <t t-extend="reconciliation.done">
+        <t t-jquery="p:first" t-operation="replace">
+            <p>You reviewed <strong><t t-esc="number"/></strong> transactions in <strong><t t-esc="duration"/></strong>.
+                <t t-if="number > 1">
+                    <br/>That's on average <t t-esc="timePerTransaction"/> seconds per transaction.
+                </t>
+            </p>
+        </t>
+    </t>
+
+    <t t-name="reconciliation.statement.filter_button">
+        <div class="btn-group o_dropdown">
+            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                <span class="fa fa-filter"/>
+                Filters
+            </a>
+            <div class="dropdown-menu o_filters_menu" role="menu">
+                <a role="menuitem" class="dropdown-item" title="Ready" data-filter="ready">Ready</a>
+                <a role="menuitem" class="dropdown-item" title="In need action" data-filter="in_need_of_action">
+                    In need of action
+                </a>
+            </div>
+        </div>
+    </t>
+    <t t-name="reconciliation.line.mv_line_new.details">
+        <table class='details'>
+            <tr t-if="line.account_code">
+                <td>Account</td>
+                <td><t t-esc="line.account_id.display_name"/></td>
+            </tr>
+            <tr t-if="line.analytic_account_id.id">
+                <td>Analytic account</td>
+                <td><t t-esc="line.analytic_account_id.display_name"/></td>
+            </tr>
+            <t t-if="line.analytic_tag_ids.length">
+                <tr>
+                    <td>Analytic tags</td>
+                    <td><t t-esc="line.analytic_tag_ids[0].display_name"/></td>
+                </tr>
+                <t t-foreach="line.analytic_tag_ids.slice(1)" t-as="tag">
+                    <tr>
+                        <td/>
+                        <td><t t-esc="tag.display_name"/></td>
+                    </tr>
+                </t>
+            </t>
+            <tr><td>Date</td><td><t t-esc="line.date.format('MM/DD/YYYY')"/></td></tr>
+            <t t-set="due_date" t-value="line.date_maturity ? line.date_maturity : line.date"/>
+            <tr><td>Due Date</td><td><t t-esc="due_date.format('MM/DD/YYYY')"/></td></tr>
+            <tr t-if="line.journal_id.id">
+                <td>Journal</td>
+                <td><t t-esc="line.journal_id.display_name"/></td>
+            </tr>
+            <tr t-if="line.partner_id">
+                <td>Partner</td>
+                <td><t t-esc="line.partner_name"/></td>
+            </tr>
+            <tr t-if="!line.partner_id &amp;&amp; line.payee_id">
+                <td>Payee</td>
+                <td><t t-esc="line.payee_id[1]"/></td>
+            </tr>
+            <tr><td>Label</td><td><t t-esc="line.label"/></td></tr>
+            <tr t-if="line.ref"><td>Ref</td><td><t t-esc="line.ref"/></td></tr>
+            <tr>
+                <td>Amount</td>
+                <td><t t-raw="line.amount_str"/></td>
+            </tr>
+            <tr t-if="line.is_partially_reconciled"><td>Residual</td>
+                <td>
+                    <t t-raw="line.amount_str"/>
+                    <t t-if="line.amount_currency_str"> (<t t-esc="line.amount_currency_str"/>)</t>
+                </td>
+            </tr>
+            <tr class="one_line_info" t-if='line.already_paid'>
+                <td colspan="2">This payment is registered but not reconciled.</td>
+            </tr>
+        </table>
+    </t>
+</templates>

@@ -1,0 +1,40 @@
+td.row-title {
+  width: 40% !important;
+}
+
+td.cash-source-name {
+  padding-left: 2em;
+  min-width: 350px !important;
+}
+
+td.o_period_name_cell:hover {
+    color: #00A09D;
+}
+
+td.cash-increase {
+  @extend td.period-cell;
+}
+
+td.cash-decrease {
+  @extend td.period-cell;
+}
+
+td.period-cell {
+  //width: 151px;
+  min-width: 80px;
+  max-width: 120px;
+}
+
+td.period-cell:hover {
+    color: #00A09D;
+}
+
+.input-number-cell {
+  background-color: #fffdbb;
+}
+
+tr.o_cfp_spacing_line {
+  height: 25px;
+}
+
+

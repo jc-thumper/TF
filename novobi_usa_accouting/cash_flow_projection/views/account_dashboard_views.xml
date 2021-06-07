@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_usa_journal_dashboard_inherit" model="ir.ui.view">
+        <field name="name">view.usa.journal.dashboard.inherit</field>
+        <field name="model">usa.journal</field>
+        <field name="inherit_id" ref="account_dashboard.usa_journal_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr='//t[@t-if="type == &apos;cash_forecast&apos;"]/div' position="replace">
+                <div class="row">
+                    <div class="col-12">
+                        <button type="object" name="action_open_cashflow_forecast_summary"
+                                class="btn btn-primary pull-right">
+                            <span>Cashflow Forecast Summary</span>
+                        </button>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

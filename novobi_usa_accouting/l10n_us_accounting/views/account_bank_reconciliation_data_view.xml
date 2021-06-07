@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Normal Form-->
+    <record id="bank_reconciliation_data_form" model="ir.ui.view">
+        <field name='name'>bank_reconciliation_data_form</field>
+        <field name='model'>account.bank.reconciliation.data</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+
+                    <h1><field name="journal_id" readonly="1"/></h1>
+
+                    <label for="statement_ending_date" />
+                    <field name="statement_ending_date" />
+
+                    <div name="change_report" attrs="{'invisible': [('change_transaction_ids', '=', [])]}">
+                        <h2>Reconciliation Change Report</h2>
+                        Since this reconciliation on <field name="reconcile_on"/>, changes were made to
+                        the reconciled transactions in this report
+                        <field name="change_transaction_ids">
+                            <tree>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="date"/>
+                                <field name="name"/>
+                                <field name="payee_id"/>
+                                <field name="amount" string="Original Amount"/>
+                                <field name="current_amount"/>
+                                <field name="amount_change" sum="Total"/>
+                                <field name="change_status" string="Change"/>
+                            </tree>
+                        </field>
+                    </div>
+
+                    <h2>Reconciliation Report</h2>
+                    Reconciled on: <field name="reconcile_on"/>
+
+                    <div name="summary" class="mt16 mb32">
+                        <strong>Summary</strong>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Statement Beginning Balance</span>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="beginning_balance"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Payments Cleared </span><field name="payment_count"/>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="payments_cleared"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Deposits Cleared </span><field name="deposit_count"/>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="deposits_cleared"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Adjustment</span>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="difference"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Statement Ending Balance</span>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="ending_balance"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Uncleared Payments as at </span><field name="statement_ending_date"/>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="payments_uncleared"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Uncleared Deposits as at </span><field name="statement_ending_date"/>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="deposits_uncleared"/>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-8 offset-1">
+                                <span>Register Balance as of </span><field name="statement_ending_date"/>
+                            </div>
+                            <div class="col-2 text-right">
+                                <field name="register_balance"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <strong>Details</strong>
+                    <br />
+                    <div class="reconciliation_header">Payments Cleared <field name="payment_count"/></div>
+                    <field name="payments_cleared_ids"/>
+
+                    <div class="reconciliation_header">Deposits Cleared <field name="deposit_count"/></div>
+                    <field name="deposits_cleared_ids">
+                        <tree>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="date"/>
+                            <field name="name"/>
+                            <field name="memo"/>
+                            <field name="payee_id"/>
+                            <field name="amount" sum="Total"/>
+                        </tree>
+                    </field>
+
+                    <div class="reconciliation_header">Uncleared payments as of <field name="statement_ending_date"/></div>
+                    <field name="payments_uncleared_ids"/>
+
+                    <div class="reconciliation_header">Uncleared deposits as of <field name="statement_ending_date"/></div>
+                    <field name="deposits_uncleared_ids">
+                        <tree>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="date"/>
+                            <field name="name"/>
+                            <field name="memo"/>
+                            <field name="payee_id"/>
+                            <field name="amount" sum="Total"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!--Tree-->
+    <record id="reconciliation_data_tree" model="ir.ui.view">
+        <field name='name'>reconciliation_data_tree</field>
+        <field name='model'>account.bank.reconciliation.data</field>
+        <field name="arch" type="xml">
+            <tree create="0" edit="0" delete="0">
+                <field name="currency_id" invisible="1"/>
+                <field name="statement_ending_date"/>
+                <field name="reconcile_on"/>
+                <field name="ending_balance"/>
+                <field name="change_amount"/>
+                <field name="difference" string="Auto Adjustment"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--Report Action in Dashboard-->
+    <record id="action_bank_reconciliation_data_report" model="ir.actions.act_window">
+        <field name="name">Reconciliation Reports</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.bank.reconciliation.data</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="reconciliation_data_tree"/>
+        <field name="domain">[('journal_id', '=', active_id), ('state', '=', 'reconciled')]</field>
+    </record>
+
+    <!--Popup Form + Action-->
+    <record id="bank_reconciliation_data_popup_form" model="ir.ui.view">
+        <field name='name'>bank_reconciliation_data_popup_form</field>
+        <field name='model'>account.bank.reconciliation.data</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <form string="Begin Reconciliation">
+                <group>
+                    <group>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="previous_reconciliation_id" invisible="1"/>
+                        <field name="journal_id" readonly="1"/>
+                        <field name="beginning_balance" required="1"
+                               attrs="{'readonly': [('previous_reconciliation_id', '!=', False)]}"/>
+                        <field name="ending_balance" required="1"/>
+                        <div colspan="2">
+                            <p class="text-muted">Notes: Input a negative ending balance if there is a statement balance that you have to pay for.</p>
+                        </div>
+                    </group>
+                    <group>
+                        <field name="statement_beginning_date" string="Last Statement Ending Date"
+                               attrs="{'readonly': [('previous_reconciliation_id', '!=', False)],
+                               'invisible': [('previous_reconciliation_id', '=', False)]}"/>
+                        <field name="statement_ending_date" required="1"/>
+                        <field name="start_date" string="Show transactions from"/>
+                        <div colspan="2">
+                            <p class="text-muted font-weight-bold">Notes: Uncleared transactions before this date are still listed in reconciliation report.</p>
+                        </div>
+                    </group>
+                </group>
+
+                <footer>
+                    <button string='Reconcile' name="open_reconcile_screen" type="object" class="btn-primary"
+                    context="{'start_reconciliation': True}"/>
+                    <button string='Undo last reconciliation' name="undo_last_reconciliation" type="object"
+                        confirm="Are you sure you want to undo previous reconciliation?"
+                            invisible="context.get('edit_info', False)"
+                            attrs="{'invisible': [('previous_reconciliation_id', '=', False)]}"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bank_reconciliation_data_popup" model="ir.actions.act_window">
+        <field name="name">Begin Reconciliation</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.bank.reconciliation.data</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="bank_reconciliation_data_popup_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <!--Data Line-->
+    <record id="reconciliation_data_line_tree" model="ir.ui.view">
+        <field name='name'>reconciliation_data_line_tree</field>
+        <field name='model'>account.bank.reconciliation.data.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="currency_id" invisible="1"/>
+                <field name="date"/>
+                <field name="name"/>
+                <field name="check_number"/>
+                <field name="memo"/>
+                <field name="payee_id"/>
+                <field name="amount" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Open report form -->
+    <record id="action_bank_reconciliation_data_report_form" model="ir.actions.act_window">
+        <field name="name">Reconciliation Reports</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.bank.reconciliation.data</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="bank_reconciliation_data_form"/>
+        <field name="target">main</field>
+    </record>
+</odoo>

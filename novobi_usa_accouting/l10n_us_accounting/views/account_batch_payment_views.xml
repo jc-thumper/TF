@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--TREE-->
+    <record id="view_batch_payment_tree_usa" model="ir.ui.view">
+        <field name="name">account.batch.payment.tree.usa</field>
+        <field name="model">account.batch.payment</field>
+        <field name="inherit_id" ref="account_batch_payment.view_batch_payment_tree"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="attributes">
+                <attribute name="string">Bank Account</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!--SEARCH-->
+    <record id="view_batch_payment_search_usa" model="ir.ui.view">
+        <field name="name">account.batch.payment.search.usa</field>
+        <field name="model">account.batch.payment</field>
+        <field name="inherit_id" ref="account_batch_payment.view_batch_payment_search"/>
+        <field name="arch" type="xml">
+            <field name="journal_id" position="before">
+                <field name="name"/>
+            </field>
+            <filter name="group_by_journal_id" position="attributes">
+                <attribute name="string">Bank Account</attribute>
+            </filter>
+            <filter name="open" position="before">
+                <filter name="amount"
+                        string="AmountSearchRange"
+                        context='{
+                            "title_display": "Search by Amount",
+                            "name": "amount",
+                            "help": "__widget__"}'
+                />
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+    <!--FORM-->
+    <record id="view_batch_payment_form_usa" model="ir.ui.view">
+        <field name="name">account.batch.payment.form.usa</field>
+        <field name="model">account.batch.payment</field>
+        <field name="inherit_id" ref="account_batch_payment.view_batch_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/group/group/field[@name='journal_id']" position="attributes">
+                <attribute name="string">Bank Account</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_ids']/tree/field[@name='amount']" position="after">
+                <field name="has_been_reviewed" optional="hide"/>
+            </xpath>
+            <group position="before">
+                <div class="oe_button_box">
+                    <button name="open_fund_entries"
+                        class="oe_stat_button"
+                        icon="fa-bars"
+                        type="object"
+                        string="Journal Entries" attrs="{'invisible': [('fund_line_ids', '=', False)]}">
+                    </button>
+                </div>
+            </group>
+
+            <field name="partner_id" position="attributes">
+                <attribute name="string">Customer/Vendor</attribute>
+            </field>
+
+            <notebook position="after">
+                <div class="mt-5">
+                    <u>Notes:</u>
+                    <ul>
+                        <li>If this is an Inbound Batch Payment, adjustments with positive amount mean money received, negative amount mean money paid.</li>
+                        <li>If this is an Outbound Batch Payment, adjustments with positive amount mean money paid, negative amount mean money received.</li>
+                    </ul>
+                </div>
+                <notebook>
+                    <page string="Adjustments">
+                        <field name="fund_line_ids" attrs="{'readonly': [('state', 'not in', ['draft'])]}">
+                            <tree editable="bottom" create="1" delete="1" edit="1">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="account_move_id" invisible="1"/>
+                                <field name="payment_date" required="1"/>
+                                <field name="partner_id" string="Customer/Vendor"/>
+                                <field name="account_id" required="1" domain="[('deprecated', '=', False)]"/>
+                                <field name="communication"/>
+                                <field name="amount" required="1"/>
+                                <field name="has_been_reviewed" optional="hide"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+                <group class="oe_subtotal_footer oe_right">
+                    <field name="amount" class="oe_subtotal_footer_separator"/>
+                </group>
+            </notebook>
+
+            <!--Remove total for payment list-->
+            <xpath expr="//tree/field[@name='amount']" position="attributes">
+                <attribute name="sum"></attribute>
+            </xpath>
+
+            <xpath expr="//tree/field[@name='payment_date']" position="after">
+                <field name="move_name" string="Number"/>
+            </xpath>
+
+            <xpath expr="//field[@name='payment_ids']/form/group" position="after">
+                <field name="has_open_invoice" invisible="1"/>
+                <field name="display_applied_invoices" invisible="1"/>
+                <!--Customer Payment-->
+                <notebook invisible="context.get('active_model') == 'account.move'"
+                          attrs="{'invisible': ['|', '|', ('has_open_invoice', '=', False), ('state', '!=', 'draft'), ('payment_type', '!=', 'inbound')]}">
+                    <page string="Open Invoices">
+                        <field name="open_invoice_ids" context="{'default_payment_id': id}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    </page>
+                </notebook>
+
+                <notebook invisible="context.get('active_model') == 'account.move'"
+                          attrs="{'invisible': ['|', '|', '|', ('state', 'in', ['draft', 'cancelled']),
+                                ('payment_type', '!=', 'inbound'), ('open_invoice_ids', '=', []),
+                                '&amp;', ('payment_type', '=', 'inbound'), ('partner_type', '=', 'supplier')]}">
+                    <page string="Applied Invoices">
+                        <field name="open_invoice_ids" context="{'default_payment_id': id}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    </page>
+                </notebook>
+
+                <!--Bill Payment-->
+                <notebook invisible="context.get('active_model') == 'account.move'"
+                          attrs="{'invisible': ['|', '|', ('has_open_invoice', '=', False), ('state', '!=', 'draft'), ('payment_type', '!=', 'outbound')]}">
+                    <page string="Open Bills">
+                        <field name="open_invoice_ids" context="{'default_payment_id': id}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    </page>
+                </notebook>
+
+                <notebook invisible="context.get('active_model') == 'account.move'"
+                          attrs="{'invisible': ['|', '|', '|', ('state', 'in', ['draft', 'cancelled']),
+                                ('payment_type', '!=', 'outbound'), ('open_invoice_ids', '=', []),
+                                '&amp;', ('payment_type', '=', 'outbound'), ('partner_type', '=', 'customer')]}">
+                    <page string="Applied Bills">
+                        <field name="open_invoice_ids" context="{'default_payment_id': id}" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                    </page>
+                </notebook>
+
+                <group class="oe_subtotal_footer oe_right" colspan="2" name="payment_total"
+                       attrs="{'invisible': [('display_applied_invoices', '=', False)]}">
+                    <field name="payment_with_invoices" string="Payment with Invoices" readonly="1" force_save="1"
+                           attrs="{'invisible': [('payment_type', '!=', 'inbound')]}"/>
+                    <field name="payment_with_invoices" string="Payment with Bills" readonly="1" force_save="1"
+                           attrs="{'invisible': [('payment_type', '!=', 'outbound')]}"/>
+                    <field name="writeoff_amount" readonly="1" force_save="1"/>
+                    <field name="outstanding_payment" readonly="1" force_save="1"/>
+                    <div class="oe_subtotal_footer_separator oe_inline o_td_label">
+                        <label for="amount" />
+                    </div>
+                    <field name="amount" nolabel="1" class="oe_subtotal_footer_separator" attrs="{'readonly': [('state', '!=', 'draft')]}" />
+                </group>
+            </xpath>
+
+            <xpath expr="//field[@name='payment_ids']/form//label[@for='amount']" position="attributes">
+                <attribute name="attrs">{'invisible': [('display_applied_invoices', '=', True)]}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='payment_ids']/form//field[@name='amount']" position="attributes">
+                <attribute name="attrs">{'readonly': [('state', '!=', 'draft')], 'invisible': [('display_applied_invoices', '=', True)]}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!--Fund Line form-->
+    <record id="account_batch_payment_fund_line_form" model="ir.ui.view">
+		<field name="name">account_batch_payment_fund_line_form</field>
+		<field name="model">account.batch.deposit.fund.line</field>
+		<field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="account_id" readonly="1"/>
+                            <field name="amount" readonly="1"/>
+                        </group>
+
+                        <group>
+                            <field name="payment_date" readonly="1"/>
+                            <field name="communication" readonly="1"/>
+                            <field name="account_move_id" string="Journal Entry" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+		</field>
+	</record>
+</odoo>

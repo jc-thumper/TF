@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.alert.setting</field>
+        <field name="model">res.config.settings</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div id="slack_detail_label" position="after">
+                <div class="content-group">
+                    <div class="row">
+                        <label for="slack_bot_token" string="Token" class="col-md-3 o_light_label"/>
+                        <field name="slack_bot_token"/>
+                    </div>
+                    <div class="row">
+                        <label for="slack_bot_name" string="Bot Name" class="col-md-3 o_light_label"/>
+                        <field name="slack_bot_name"/>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

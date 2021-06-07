@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_invoice_partial_payment_form" model="ir.ui.view">
+        <field name="name">view_invoice_partial_payment_form</field>
+        <field name="model">account.invoice.partial.payment</field>
+        <field name="arch" type="xml">
+            <form string="Amount to Apply">
+                <group>
+                    <field name="invoice_id" invisible="1"/>
+                    <field name="move_line_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="have_same_currency" invisible="1"/>
+                    <field name="amount" widget="monetary" required="1" attrs="{'readonly': [('have_same_currency', '=', False)]}"/>
+                </group>
+                <footer>
+                    <button string='Apply' name="apply" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

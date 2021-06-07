@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dashboard_alert.alert_layout" name="Alert Layout">
+        <t t-call="web.layout">
+            <t t-set="html_data" t-value="{'style': 'height: 100%;'}"/>
+            <t t-set="head">
+                <t t-call-assets="web.assets_common" t-js="false"/>
+                <t t-call-assets="web.assets_frontend" t-js="false"/>
+                <t t-call-assets="web.assets_common" t-css="false"/>
+                <t t-call-assets="web.assets_frontend" t-css="false"/>
+            </t>
+            <t t-set="body_classname" t-value="'o_home_menu_background'"/>
+
+            <div class="container mb-5 pb-5">
+                <!--rounded-0 shadow-sm bg-white-->
+                <div t-attf-class="card border-0 mx-auto mt-5 bg-100 rounded-0 shadow-sm bg-white o_database_list" style="max-width: 500px;">
+                    <div class="card-body">
+                        <div t-attf-class="text-center pb-3 border-bottom {{'mb-3' if form_small else 'mb-4'}}">
+                            <img t-attf-src="/web/binary/company_logo{{ '?dbname='+db if db else '' }}" alt="Logo" style="max-height:120px; max-width: 100%; width:auto"/>
+                        </div>
+                        <t t-raw="0"/>
+                        <div class="text-center small mt-4 pt-3 border-top" t-if="not disable_footer">
+                            <t t-if="not disable_database_manager">
+                                <a href="/web">Homepage</a>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="dashboard_alert.unsubscribe_alert" name="Unsubscribe Alert">
+        <t t-call="dashboard_alert.alert_layout">
+            <div id="unsubscribe_alert_form_section">
+                <form class="unsubscribe_alert_form"
+                      role="form"
+                      method="post"
+                      t-if="not message">
+                    <t t-if="error">
+                        <p class="alert alert-danger" role="alert">
+                            <t t-esc="error"/>
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <p class="alert alert-success txt_mess" t-if="mess" role="alert">
+                            <t t-raw="mess"/>
+                        </p>
+                        <input id="txt_token" type="hidden" name="token" t-att-value="token"/>
+                        <input id="txt_status" t-if="status == 'subscribe'" type="hidden" name="status" value="subscribe"/>
+                        <input id="txt_status" t-if="status == 'unsubscribe'" type="hidden" name="status" value="unsubscribe"/>
+                        <div t-if="status" class="clearfix">
+                            <div class="d-flex justify-content-between align-items-center small">
+                                <a id="btn_submit" href="#" class="btn btn-primary"><t t-esc="status.capitalize()"/></a>
+                            </div>
+                        </div>
+                    </t>
+
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <template id="dashboard_alert.snooze_alert" name="Snooze Alert">
+        <t t-call="dashboard_alert.alert_layout">
+            <div id="snooze_alert_form_section">
+                <form class="snooze_alert_form"
+                      role="form"
+                      method="post"
+                      t-if="not message">
+                    <t t-if="error">
+                        <p class="alert alert-danger" role="alert">
+                            <t t-esc="error"/>
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <h3 class="txt_subject" t-if="subject">
+                            <t t-esc="subject"/>
+                        </h3>
+
+                        <p class="txt_detail" t-if="detail">
+                            <t t-esc="detail"/>
+                        </p>
+
+                        <input id="txt_token" type="hidden" name="token" t-att-value="token"/>
+
+                        <div id="select_option" style="display: flex;">
+                            <h5>Snooze for:</h5>
+                            <div class="clearfix">
+                                <div class="background_field_select">
+                                    <select
+                                            class="format_field_select"
+                                            id="slt_time_snooze"
+                                            name="Time Snooze">
+                                        <!--Show option in selection-->
+                                        <t t-foreach="time_options" t-as="item">
+                                            <!--Default option-->
+                                            <t t-if="item['default']">
+                                                <option selected="" t-att-value="item['value']"><t t-esc="item['name']"/></option>
+                                            </t>
+                                            <t t-else="">
+                                                <option t-att-value="item['value']"><t t-esc="item['name']"/></option>
+                                            </t>
+                                        </t>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <t t-if="mess">
+                            <p class="alert alert-success txt_mess" role="alert">
+                                <t t-esc="mess"/>
+                            </p>
+                        </t>
+                        <t t-else="">
+                            <p class="txt_mess" role="alert"/>
+                        </t>
+
+                        <div class="clearfix">
+                            <div class="justify-content-between align-items-center small">
+                                <a id="btn_snooze" href="#" class="btn btn-primary">Snooze</a>
+                                <a id="btn_cancel" href="#" class="btn">Cancel</a>
+                            </div>
+                        </div>
+
+                    </t>
+                </form>
+            </div>
+        </t>
+    </template>
+
+    <template id="dashboard_alert.alert_more_settings" name="Alert More Setting">
+        <t t-call="dashboard_alert.alert_layout">
+            <div id="alert_more_settings_form_section">
+                <form class="alert_more_settings_form"
+                      role="form"
+                      method="post"
+                      t-if="not message">
+                    <t t-if="error">
+                        <p class="alert alert-danger" role="alert">
+                            <t t-esc="error"/>
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <h3 class="txt_title" t-if="title">
+                            <t t-esc="title"/>
+                        </h3>
+
+                        <div id="setting_content">
+                            <div class="form-group field-subject">
+                                <label for="subject">Subject</label>
+                                <input type="text" placeholder="Warning" name="subject"
+                                       t-att-value="subject" id="txt_subject" class="form-control"
+                                       required="required" autocapitalize="on"/>
+                            </div>
+
+                            <div class="form-group field-cond">
+                                <label for="condition">Condition</label>
+                                <div class="clearfix">
+                                    <div class="selection_setting form-control background_field_select">
+                                        <select
+                                                class="format_selection_setting format_field_select"
+                                                id="slt_condition"
+                                                name="condition">
+                                            <!--Show option in selection-->
+                                            <t t-foreach="cond_options" t-as="cond">
+                                                <!--Default option-->
+                                                <t t-if="cond['default']">
+                                                    <option selected="" t-att-value="cond['val']">
+                                                        <t t-esc="cond['name']"/>
+                                                    </option>
+                                                </t>
+                                                <t t-else="">
+                                                    <option t-att-value="cond['val']">
+                                                        <t t-esc="cond['name']"/>
+                                                    </option>
+                                                </t>
+                                            </t>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group field-threshold">
+                                <label for="threshold">Threshold</label>
+                                <input type="number" name="threshold" placeholder="0"
+                                       t-att-value="threshold" id="txt_threshold" class="form-control"
+                                       required="required"/>
+                            </div>
+
+                            <div class="form-group field-time-alert">
+                                <label for="time_alert">Time to Send The Alert</label>
+                                <div class="clearfix">
+                                    <div class="selection_setting form-control background_field_select">
+                                        <select
+                                                class="format_selection_setting format_field_select"
+                                                id="slt_time_alert"
+                                                name="time_alert">
+                                            <!--Show option in selection-->
+                                            <t t-foreach="cond_time_send" t-as="time_alert">
+                                                <!--Default option-->
+                                                <t t-if="time_alert['default']">
+                                                    <option selected="" t-att-value="time_alert['val']">
+                                                        <t t-esc="time_alert['name']"/>
+                                                    </option>
+                                                </t>
+                                                <t t-else="">
+                                                    <option t-att-value="time_alert['val']">
+                                                        <t t-esc="time_alert['name']"/>
+                                                    </option>
+                                                </t>
+                                            </t>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input id="txt_token" type="hidden" name="token" t-att-value="token"/>
+                        </div>
+
+                        <div t-attf-class="clearfix">
+                            <a id="btn_update" href="#" class="btn btn-primary">Update</a>
+                        </div>
+                    </t>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>

@@ -674,8 +674,8 @@ class ForecastResultAdjustLine(models.Model):
          default_channel='root.forecasting')
     def update_forecast_adjust_line_table(self, created_date, **kwargs):
         """ Create/Update forecast_result_adjust_line from data in forecast result table.
-        All the new records will have a same create_date and write_date
-        Then, update Forecast result daily
+        All the new records will have a same create_date and write_date.
+        Then, the forecast result daily will be updated
 
         :param str created_date: the created date of the rows in forecast_result table
         that we use to update update to the forecast_result_adjust_line table

@@ -1,0 +1,17 @@
+<odoo>
+    <record model="ir.ui.view" id="import_export_mps_tree">
+            <field name="name">import.mps.tree</field>
+            <field name="model">mrp.production.schedule</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="product_id"/>
+                </tree>
+            </field>
+        </record>
+
+    <record id="action_import_mps" model="ir.actions.act_window">
+        <field name="name">MRP Production Schedule</field>
+        <field name="res_model">mrp.production.schedule</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

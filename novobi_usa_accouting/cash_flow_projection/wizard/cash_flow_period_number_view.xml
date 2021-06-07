@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cash_flow_setting_period_number_view" model="ir.ui.view">
+        <field name="name">cash.flow.setting.period.number.view</field>
+        <field name="model">cash.flow.period.setting</field>
+        <field name="arch" type="xml">
+            <form string="Set up Number of Periods">
+                <group>
+                    <group>
+                        <field name="period_number"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="set_period_number" type="object" string="Save" class="btn-primary"/>
+                    <button string="Cancel" class="btn btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

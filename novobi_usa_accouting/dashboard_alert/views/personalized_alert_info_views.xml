@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="personalized_alert_info_tree" model="ir.ui.view">
+        <field name="name">personalized.alert.info.tree</field>
+        <field name="model">personalized.alert.info</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="subject"/>
+                <field name="condition"/>
+                <field name="value"/>
+                <field name="creator_id"/>
+            </tree>
+        </field>
+    </record>
+
+</odoo>

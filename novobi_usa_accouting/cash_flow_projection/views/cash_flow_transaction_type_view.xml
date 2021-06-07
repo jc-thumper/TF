@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <act_window id="action_cash_flow_transaction_type_tree" name="Transaction Types"
+                res_model="cash.flow.transaction.type"
+                view_mode="tree,form" target="current"/>
+
+    <menuitem name="Cash Flow Projection" id="cash_flow_projection_configurations"
+              parent="account.menu_finance_configuration" sequence="100"/>
+    <menuitem id="cash_flow_transaction_type_menu_item" parent="cash_flow_projection_configurations"
+              name="Transaction Types"
+              action="action_cash_flow_transaction_type_tree" sequence="10"/>"/>
+
+    <record id="cash_flow_transaction_type_list_view" model="ir.ui.view">
+        <field name="name">cash.flow.transaction.type.list.view</field>
+        <field name="model">cash.flow.transaction.type</field>
+        <field name="arch" type="xml">
+            <tree string="Transaction Types" default_order='create_date desc' delete="false">
+                <field name="name"/>
+                <field name="code" invisible="1"/>
+                <field name="cash_type"/>
+                <field name="is_show"/>
+                <field name="editable"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="cash_flow_transaction_type_form_view" model="ir.ui.view">
+        <field name="name">cash.flow.transaction.type.form.view</field>
+        <field name="model">cash.flow.transaction.type</field>
+        <field name="arch" type="xml">
+            <form string="Transaction Type" delete="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="cash_type"/>
+                            <field name="is_show"/>
+                            <field name="editable"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

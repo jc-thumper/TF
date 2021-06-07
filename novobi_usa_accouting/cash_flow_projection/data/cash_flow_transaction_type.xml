@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+        <!--  Show Past Due Transactions      -->
+        <record id="cash_flow_past_due_transaction" model="cash.flow.transaction.type">
+            <field name="name">Past Due Transactions</field>
+            <field name="code">past_due_transaction</field>
+            <field name="cash_type">none_cash</field>
+            <field name="is_show">False</field>
+            <field name="editable">False</field>
+            <field name="sequence">10</field>
+        </record>
+        <!--  Cash In      -->
+        <record id="cash_flow_incoming_payment" model="cash.flow.transaction.type">
+            <field name="name">Future Customer Payments</field>
+            <field name="code">future_customer_payment</field>
+            <field name="cash_type">cash_in</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="cash_flow_ar_invoice" model="cash.flow.transaction.type">
+            <field name="name">Customer Invoices</field>
+            <field name="code">ar_invoice</field>
+            <field name="cash_type">cash_in</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="cash_flow_sale_order" model="cash.flow.transaction.type">
+            <field name="name">Sales Orders</field>
+            <field name="code">sale_order</field>
+            <field name="cash_type">cash_in</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="cash_flow_ar_credit_note" model="cash.flow.transaction.type">
+            <field name="name">Customer Credit Notes</field>
+            <field name="code">ar_credit_note</field>
+            <field name="cash_type">cash_in</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="cash_flow_cash_in_other" model="cash.flow.transaction.type">
+            <field name="name">Recurring Cash In</field>
+            <field name="code">cash_in_other</field>
+            <field name="cash_type">cash_in</field>
+            <field name="is_show">True</field>
+            <field name="editable">True</field>
+            <field name="sequence">50</field>
+        </record>
+        <!--  Cash Out      -->
+        <record id="cash_flow_outgoing_payment" model="cash.flow.transaction.type">
+            <field name="name">Future Vendor Payments</field>
+            <field name="code">future_vendor_payment</field>
+            <field name="cash_type">cash_out</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="cash_flow_ap_invoice" model="cash.flow.transaction.type">
+            <field name="name">Vendor Bills</field>
+            <field name="code">ap_invoice</field>
+            <field name="cash_type">cash_out</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="cash_flow_purchase_order" model="cash.flow.transaction.type">
+            <field name="name">Purchase Orders</field>
+            <field name="code">purchase_order</field>
+            <field name="cash_type">cash_out</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="cash_flow_ap_credit_note" model="cash.flow.transaction.type">
+            <field name="name">Vendor Credit Notes</field>
+            <field name="code">ap_credit_note</field>
+            <field name="cash_type">cash_out</field>
+            <field name="is_show">True</field>
+            <field name="editable">False</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="cash_flow_cash_out_other" model="cash.flow.transaction.type">
+            <field name="name">Recurring Cash Out</field>
+            <field name="code">cash_out_other</field>
+            <field name="cash_type">cash_out</field>
+            <field name="is_show">True</field>
+            <field name="editable">True</field>
+            <field name="sequence">50</field>
+        </record>
+    </data>
+</odoo>

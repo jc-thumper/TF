@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="view_res_config_po_settings" model="ir.ui.view">
+        <field name="name">view_res_config_po_settings_inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='purchase_setting_container']" position="inside">
+                <div class="col-lg-6 o_setting_box" id="po_payment_lead_time">
+                    <div class="o_setting_left_pane"/>
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Due date for PO</span>
+                        <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." role="img"
+                              aria-label="Values set here are company-specific." groups="base.group_multi_company"/>
+                        <div class="text-muted">
+                            Due date for Purchase Order to receive full payment
+                        </div>
+                        <div class="content-group mt16">
+                            Due date:
+                            <field name="vendor_payment_lead_time" class="text-center oe_inline"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_res_config_so_settings" model="ir.ui.view">
+        <field name="name">view_res_config_so_settings_inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='sale_config_online_confirmation_pay']" position='after'>
+                <div class="col-lg-6 o_setting_box" id="so_payment_lead_time">
+                    <div class="o_setting_left_pane"/>
+                    <div class="o_setting_right_pane">
+                        <span class="o_form_label">Due date for SO</span>
+                        <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." role="img"
+                              aria-label="Values set here are company-specific." groups="base.group_multi_company"/>
+                        <div class="text-muted">
+                            Due date for Sale Order to receive full payment
+                        </div>
+                        <div class="content-group mt16">
+                            Due date:
+                            <field name="customer_payment_lead_time" class="text-center oe_inline"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.account.reports</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account_reports.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='account_reports_settings']" position="inside">
+                <div class="col-12 col-lg-6 o_setting_box"
+                     title="Include the deposits amount to Cash Flow Projection">
+                    <div class="o_setting_left_pane">
+                        <field name="module_cash_flow_projection_deposit"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="module_cash_flow_projection_deposit"/>
+                        <div class="text-muted">
+                            Include deposits for Cash Flow Projection
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

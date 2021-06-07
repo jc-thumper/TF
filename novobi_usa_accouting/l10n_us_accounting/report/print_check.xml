@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="ckus_check_usa" name="l10n us accounting ckus_check"
+                  inherit_id="l10n_us_check_printing.ckus_check">
+            <xpath expr="//div[hasclass('ckus_amount')]/t" position="attributes">
+                <attribute name="t-esc">page['amount'].replace(page['currency'].symbol, '')</attribute>
+            </xpath>
+
+            <!-- if use position="attributes": cannot parse the t-esc logic
+                 must use position="replace" -->
+            <xpath expr="//div[hasclass('ckus_amount_in_word')]" position="replace">
+                <div class="ckus_amount_in_word" t-esc="page['amount_in_word'] if page['currency'].currency_subunit_label in page['amount_in_word']
+                     else page['amount_in_word'].replace(page['currency'].currency_unit_label, '')"/>
+            </xpath>
+
+            <!--Print Check As-->
+            <xpath expr="//div[hasclass('ckus_payee_addr')]" position="attributes">
+                <attribute name="t-options">{"widget": "contact", "fields": ["address", "check_name"], "no_marker": True}</attribute>
+            </xpath>
+        </template>
+
+        <template id="ckus_stub" name="credit_ckus_stub" inherit_id="l10n_us_check_printing.ckus_stub">
+            <!--Header-->
+            <xpath expr="//th[3]" position="replace">
+                <th class="text-right">Original Amount</th>
+            </xpath>
+
+            <xpath expr="//th[last()]" position="before">
+                <th class="text-right">Credit</th>
+            </xpath>
+
+            <!--Line-->
+            <xpath expr="//td[last()]" position="before">
+                <td class="text-right">
+                    <t t-esc="stub_line['credit_amount']"/>
+                </td>
+            </xpath>
+        </template>
+    </data>
+</odoo>

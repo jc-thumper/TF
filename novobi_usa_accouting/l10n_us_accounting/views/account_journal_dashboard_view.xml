@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_journal_form_inherit_usa" model="ir.ui.view">
+        <field name="name">account.journal.form.usa</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='refund_sequence_id']/.." position="after">
+                <label for="write_off_sequence_number_next" attrs="{'invisible': [('type', 'not in', ['sale', 'purchase'])]}"/>
+                <div attrs="{'invisible': [('type', 'not in', ['sale', 'purchase'])]}">
+                    <field name="write_off_sequence_number_next" style="padding-right: 1.0em"/>
+                    <field name="write_off_sequence_id" required="0" readonly="1" groups="base.group_no_one"/>
+                </div>
+            </xpath>
+
+            <field name="type" position="after">
+                <field name="is_credit_card"
+                       attrs="{'invisible': [('type', '!=', 'bank')]}"/>
+                <field name="partner_id" domain="[('supplier_rank', '>', 0)]"
+                       context="{'res_partner_search_mode': 'supplier', 'default_is_company': True, 'default_company_type': 'company'}"
+                       attrs="{'invisible': [('is_credit_card', '=', False)], 'required': [('is_credit_card', '=', True)]}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_bank_journal_form_usa" model="ir.ui.view">
+        <field name="name">account.bank.journal.form</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_bank_journal_form"/>
+        <field name="arch" type="xml">
+            <field name="bank_id" position="after">
+                <field name="is_credit_card" />
+                <field name="partner_id" domain="[('supplier_rank', '>', 0)]"
+                       context="{'res_partner_search_mode': 'supplier', 'default_is_company': True, 'default_company_type': 'company'}"
+                       attrs="{'invisible': [('is_credit_card', '=', False)], 'required': [('is_credit_card', '=', True)]}"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Correct some words for consistency in dashboard -->
+    <record id="account_journal_dashboard_kanban_view_usa" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.usa</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <!-- System opens list of reconciliation reports -->
+            <xpath expr="//div[hasclass('o_primary')]/a" position="replace">
+                <t t-if="(journal_type == 'bank' || journal_type == 'cash')">
+                    <a type="action" name="%(action_bank_reconciliation_data_report)d">
+                        <field name="name"/>
+                    </a>
+                </t>
+                <t t-else="">
+                    <a type="object" name="open_action"><field name="name"/></a>
+                </t>
+            </xpath>
+
+            <!-- Remove Bank Statements and Search Operations -->
+            <xpath expr="((//t[@t-name='JournalManage']/div)[1]/div)[1]" position="replace">
+                 <div class="col-xs-4 o_kanban_card_manage_section o_kanban_manage_view">
+                    <div class="o_kanban_card_manage_title">
+                        <span>View</span>
+                    </div>
+                    <t t-if="journal_type == 'cash'">
+                        <div>
+                            <a type="object" name="open_action">Cash Statements</a>
+                        </div>
+                    </t>
+                    <div>
+                        <a type="object" name="open_action" context="{'action_name': 'action_account_moves_all_a'}" groups="base.group_no_one">Journal Items</a>
+                    </div>
+                </div>
+            </xpath>
+
+            <!-- Add new button for bank and cash -->
+            <xpath expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_view')]" position="inside">
+                <div>
+                    <a role="menuitem" type="object" name="open_action">Statements</a>
+                </div>
+                <div>
+                    <a role="menuitem" type="object" name="open_bank_statement_line" context="{'status': 'reconciled'}">Reconciled Items</a>
+                </div>
+                <div>
+                    <a role="menuitem" type="object" name="open_bank_statement_line" context="{'status': 'confirm'}">Reviewed Items</a>
+                </div>
+                <div>
+                    <a role="menuitem" type="object" name="open_bank_statement_line" context="{'status': 'excluded'}">Excluded Items</a>
+                </div>
+                <div>
+                    <a type="object" name="open_spend_money" context="{'display_name': 'Send Money'}">Send Money</a>
+                </div>
+                <div>
+                    <a type="object" name="open_collect_money" context="{'display_name': 'Receive Money'}">Receive Money</a>
+                </div>
+                <div>
+                    <a type="object" name="open_transfer_money" context="{'display_name': 'Internal Transfers'}">Internal Transfers</a>
+                </div>
+            </xpath>
+
+            <!-- Customize action of Customer Invoices and Vendor Bills -->
+            <!-- Open list view -->
+            <xpath expr="(((//t[@t-name='JournalManage']/div)[2]/div)[1]/div)[2]" position="replace">
+                <div>
+                    <a t-if="journal_type == 'sale'" type="object" name="open_action"
+                       context="{'use_domain': [('type', '=', 'out_invoice')], 'action_name': 'action_move_out_invoice_type'}">Invoices</a>
+                    <a t-if="journal_type == 'purchase'" type="object" name="open_action"
+                       context="{'use_domain': [('type', '=', 'in_invoice')],
+                       'search_view_id': 'l10n_us_accounting.view_account_invoice_filter_inherit_vendor_bills_usa'}">Bills</a>
+                </div>
+            </xpath>
+
+            <!-- Rename for purchase and sale -->
+            <!-- Open list view -->
+            <xpath expr="(((//t[@t-name='JournalManage']/div)[2]/div)[1]/div)[3]" position="replace">
+                <div>
+                    <a t-if="journal_type == 'sale'" type="object" name="open_action" context="{'use_domain': [('type', '=', 'out_refund'),
+                    ('is_write_off', '=', False)], 'invoice_type': 'refund', 'action_name': 'action_move_out_refund_type'}">Customer Credit Notes</a>
+                    <a t-if="journal_type == 'purchase'" type="object" name="open_action" context="{'use_domain': [('type', '=', 'in_refund')],
+                    'invoice_type': 'refund', 'action_name': 'action_move_in_refund_type'}">Vendor Credit Notes</a>
+                </div>
+            </xpath>
+
+            <!--Hide payment matching-->
+            <xpath expr="//t[@t-name='JournalManage']//a[@name='action_open_reconcile']" position="replace">
+            </xpath>
+
+            <!-- Open form view -->
+            <xpath expr="(((//t[@t-name='JournalManage']/div)[2]/div)[2]/div)[3]/a" position="replace">
+                <a type="object" name="action_create_new_credit_note" context="{'refund':True}">
+                    <span t-if="journal_type == 'sale'">Customer Credit Note</span>
+                    <span t-if="journal_type == 'purchase'">Vendor Credit Note</span>
+                </a>
+            </xpath>
+            <xpath expr="(((//t[@t-name='JournalManage']/div)[1]/div)[3]/div)[2]/a" position="replace">
+                <a type="object" name="open_action_with_context"
+                   context="{'action_name': 'action_account_reconcile_model', 'use_domain': True}"
+                   groups="account.group_account_manager">Bank Rules
+                </a>
+            </xpath>
+
+            <!-- Change Reconciliation Action -->
+            <xpath expr="//t[@t-name='JournalBodyBankCash']/div/t[@t-if='dashboard.number_to_reconcile > 0']" position="replace">
+                <t t-if="dashboard.number_for_reviews > 0">
+                    <button type="object" name="action_open_reconcile" class="btn btn-primary">
+                        <t t-esc="dashboard.number_for_reviews"/> Items For Review
+                    </button>
+                </t>
+                <button type="object" name="action_usa_reconcile" class="btn btn-primary"> Reconcile </button>
+            </xpath>
+
+            <!-- Update Last Statement -->
+            <xpath expr="//div[@name='latest_statement']" position="replace">
+                <div class="row" name="latest_statement">
+                    <div class="col-7">
+                        <span title="Latest Statement">Current Balance</span>
+                    </div>
+                    <div class="col-5 text-right">
+                        <span><t t-esc="dashboard.last_balance"/></span>
+                    </div>
+                </div>
+                <div class="row" name="new_latest_statement">
+                    <div class="col-7">
+                        <span title="Latest Statement">Latest Statement</span>
+                    </div>
+                    <div class="col-5 text-right">
+
+                        <span><t t-esc="dashboard.new_last_balance"/></span>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Correct some words for consistency in dashboard -->
+    <record id="account_reports_journal_dashboard_kanban_view_usa" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.reports.usa</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account_reports.account_reports_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <!--Reconciliation Report-->
+            <a name="%(account_reports.action_account_report_bank_reconciliation_with_journal)d" position="replace">
+                <a type="action" name="%(action_bank_reconciliation_data_report)d">Reconciliation Reports</a>
+            </a>
+        </field>
+    </record>
+
+    <!-- Correct some words for consistency in dashboard -->
+    <record id="account_reports_journal_dashboard_kanban_view_account_manager_usa" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.reports.manager.usa</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account_reports.account_reports_journal_dashboard_kanban_view_account_manager"/>
+        <field name="arch" type="xml">
+            <!-- Remove Difference -->
+            <xpath expr="//div[@t-if='dashboard.difference']" position="replace" />
+        </field>
+    </record>
+
+    <!-- Rename 'Batch Deposit' to 'Batch Payment' -->
+    <record id="account_journal_dashboard_kanban_view_inherited_usa" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.inherited.usa</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account_batch_payment.account_journal_dashboard_kanban_view_inherited" />
+        <field name="arch" type="xml">
+            <xpath expr="//a[@name='open_action_batch_payment']" position="replace">
+                <a type="object" name="open_action_batch_payment">Batch Payment</a>
+            </xpath>
+        </field>
+    </record>
+</odoo>

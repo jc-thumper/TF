@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="assets_backend_budget" name="Backend Assets Budget" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/css" href="/account_budget_advanced/static/src/css/animate.css"/>
+            <link rel="stylesheet" type="text/css" href="/account_budget_advanced/static/src/css/budget_entry.css"/>
+
+            <script type="text/javascript" src="/account_budget_advanced/static/src/js/tableHeadFixer.js"></script>
+            <script type="text/javascript" src="/account_budget_advanced/static/src/js/bootstrap-notify.js"></script>
+            <script type="text/javascript" src="/account_budget_advanced/static/src/js/usa_budget.js"></script>
+            <script type="text/javascript" src="/account_budget_advanced/static/src/js/usa_budget_entry.js"></script>
+            <script type="text/javascript" src="/account_budget_advanced/static/src/js/usa_budget_report.js"></script>
+            <script type="text/javascript" src="/account_budget_advanced/static/src/js/abstract_controller.js"></script>
+        </xpath>
+    </template>
+</odoo>

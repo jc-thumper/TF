@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_bank_reconciliation_difference_form" model="ir.ui.view">
+        <field name="name">view_bank_reconciliation_difference_form</field>
+        <field name="model">account.bank.reconciliation.difference</field>
+        <field name="arch" type="xml">
+            <form>
+                <p>Please confirm the information below, then click <b>APPLY ADJUSTMENT AND FINISH</b>, otherwise click <b>GO BACK</b></p>
+                <group>
+                    <field name="company_id" invisible="1"/>
+                    <field name="bank_reconciliation_data_id" invisible="1"/>
+                    <field name="adjustment_date" required="1"/>
+                    <field name="reconciliation_discrepancies_account_id" required="1"/>
+                </group>
+                <footer>
+                    <button string='Apply Adjustment and Finish' name="apply" type="object" class="btn-secondary"/>
+                    <button string="Go back" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

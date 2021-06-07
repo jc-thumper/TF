@@ -1,0 +1,17 @@
+<odoo>
+    <record id="print_pre_numbered_checks_warning_view" model="ir.ui.view">
+        <field name="name">Duplicate Check Number</field>
+        <field name="model">print.prenumbered.checks</field>
+        <field name="priority" eval="50"/>
+        <field name="arch" type="xml">
+            <form>
+                <p>This check number has been used. Click "Cancel" to undo, or "Yes" to reuse the check number.</p>
+                <field name="next_check_number" invisible="1"/>
+                <footer>
+                    <button name="print_checks" string="Yes" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="btn btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

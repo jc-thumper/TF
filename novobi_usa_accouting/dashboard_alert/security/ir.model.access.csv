@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dashboard_alert_alert_category,dashboard_alert.alert.category,dashboard_alert.model_alert_category,base.group_user,1,1,1,1
+access_dashboard_alert_alert_channel,dashboard_alert.alert.channel,dashboard_alert.model_alert_channel,base.group_user,1,1,1,1
+access_dashboard_alert_alert_info,dashboard_alert.alert.info,dashboard_alert.model_alert_info,base.group_user,1,1,1,1
+access_dashboard_alert_alert_setting,dashboard_alert.alert.setting,dashboard_alert.model_alert_setting,base.group_user,1,1,1,1
+access_dashboard_alert_personalized_alert_info,dashboard_alert.personalized.alert.info,dashboard_alert.model_personalized_alert_info,base.group_user,1,1,1,1
+access_dashboard_alert_kpi_company_value,dashboard_alert.kpi.company.value,dashboard_alert.model_kpi_company_value,base.group_user,1,1,1,1
+access_dashboard_alert_range_time_info,dashboard_alert.range.time.info,dashboard_alert.model_range_time_info,base.group_user,1,1,1,1
+access_dashboard_alert_action_session,dashboard_alert.action.session,dashboard_alert.model_action_session,base.group_user,1,1,1,1
+access_dashboard_alert_user_channel_info,dashboard_alert.user.channel.info,dashboard_alert.model_user_channel_info,base.group_user,1,1,1,1

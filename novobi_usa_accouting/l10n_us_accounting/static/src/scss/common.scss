@@ -1,0 +1,22 @@
+.reconciliation_header {
+    font-weight: bold;
+}
+
+// Not sure why header of report is hidden in odoo 13
+// This css is to show it
+.o_account_reports_header.usa_bank_reconciliation {
+    padding-top: 10px;
+    div.print_only {
+        display: block;
+
+        &:last-child {  // Company's name
+            color: #adb5bd !important;
+            margin-top: 0 !important;
+            margin-bottom: 10px !important;
+        }
+
+        br {
+            display: none;
+        }
+    }
+}

@@ -1,0 +1,33 @@
+<odoo>
+    <record id="dashboard_alert.kpi_list_wizard_form" model="ir.ui.view">
+        <field name="name">dashboard.alert.kpi.list.wizard.form</field>
+        <field name="model">kpi.list</field>
+        <field name="arch" type="xml">
+            <form string="Confirmation Form">
+                <center>
+                    <group>
+                        <group>
+
+                        </group>
+                        <group></group>
+                    </group>
+                    <field name="kpi_ids"/>
+                </center>
+                <footer>
+                    <button name="save_kpi_alert" type="object" string="Save" class="oe_highlight"/>
+                    <button type="object" string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--<record id="dashboard_alert_kpi_list_wizard_action" model="ir.actions.act_window">-->
+        <!--<field name="name">dashboard.alert.kpi.list.wizard.action</field>-->
+        <!--<field name="type">ir.actions.act_window</field>-->
+        <!--<field name="res_model">kpi.list</field>-->
+        <!--<field name="view_mode">form</field>-->
+        <!--<field name="view_id" ref="dashboard_alert.kpi_list_wizard_form"/>-->
+        <!--<field name="target">new</field>-->
+    <!--</record>-->
+
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <function model="account.journal" name="update_sequences">
+        <value>Customer Invoices</value>
+        <value>INV</value>
+        <value>RINV</value>
+        <value>CRN</value>
+    </function>
+
+    <function model="account.journal" name="update_sequences">
+        <value>Vendor Bills</value>
+        <value>BILL</value>
+        <value>RBILL</value>
+        <value>VCRN</value>
+    </function>
+
+    <function model="account.journal" name="create_write_off_sequences">
+        <value>Customer Invoices</value>
+        <value>INV</value>
+        <value eval="1"/>
+        <value>WRO</value>
+    </function>
+</odoo>

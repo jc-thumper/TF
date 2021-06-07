@@ -1,0 +1,17 @@
+<odoo>
+    <template id="contact_name" inherit_id="base.contact_name">
+        <div position="after">
+            <div t-if="'check_name' in fields">
+                <t t-if="object.print_check_as and object.check_name">
+                    <span itemprop="name" t-esc="object.check_name"/>
+                </t>
+                <t t-elif="object.name">
+                    <span itemprop="name" t-esc="object.name"/>
+                </t>
+                <t t-elif="not object.name and object.parent_name">
+                    <span itemprop="name" t-esc="object.parent_name"/>
+                </t>
+            </div>
+        </div>
+    </template>
+</odoo>

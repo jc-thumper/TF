@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Report Structure-->
+    <record id="view_cash_flow_report_structure_form" model="ir.ui.view">
+        <field name="name">view_cash_flow_report_structure_form</field>
+        <field name="model">cash.flow.report.structure</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" required="1"/>
+                        </h1>
+                    </div>
+
+                    <group string="Report Lines">
+                        <field name="line_ids" nolabel="1" domain="[('parent_id', '=', False)]"
+                               context="{'default_structure_id': active_id}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cash_flow_report_structure_tree" model="ir.ui.view">
+        <field name="name">view_cash_flow_report_structure_tree</field>
+        <field name="model">cash.flow.report.structure</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0">
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_cash_flow_report_structure" model="ir.actions.act_window">
+        <field name="name">Cash Flow Statement Structure</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">cash.flow.report.structure</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_cash_flow_report_structure_tree"/>
+    </record>
+
+    <menuitem id="menu_cash_flow_structure" name="Cash Flow Statement Structure"
+              parent="account.account_management_menu"
+              action="action_cash_flow_report_structure" groups="account.group_account_manager" sequence="99"/>
+
+    <!--Structure Line-->
+    <record id="view_cash_flow_report_structure_line_form" model="ir.ui.view">
+        <field name="name">view_cash_flow_report_structure_line_form</field>
+        <field name="model">cash.flow.report.structure.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h3>
+                            <field name="name" required="1"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group name="general">
+                            <field name="structure_id" invisible="1"/>
+                            <field name="parent_id" options="{'no_create': True}"/>
+                            <field name="has_total_line"/>
+                        </group>
+                    </group>
+
+                    <group string="Sub report lines">
+                        <field name="child_ids" nolabel="1"
+                               context="{'default_structure_id': structure_id, 'default_parent_id': active_id}"/>
+                    </group>
+
+                    <group string="Accounts in this Section">
+                        <field name="account_ids" nolabel="1" widget="many2many"
+                               domain="[('cashflow_structure_line_id', '=', False)]"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_cash_flow_report_structure_line_tree" model="ir.ui.view">
+        <field name="name">view_cash_flow_report_structure_line_tree</field>
+        <field name="model">cash.flow.report.structure.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

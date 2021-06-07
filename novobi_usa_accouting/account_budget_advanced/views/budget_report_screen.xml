@@ -1,0 +1,97 @@
+<odoo>
+    <!--HEADER TEMPLATE-->
+    <template id="main_table_header_budget_report">
+        <t t-if="len(lines.get('columns_header', [])) > 1">
+            <thead class="o_account_reports_header_hierarchy">
+                <t t-foreach="lines.get('columns_header')" t-as="header_line">
+                    <tr>
+                        <t t-foreach="header_line" t-as="header">
+                            <th t-att-colspan="header.get('colspan')" t-att-rowspan="header.get('rowspan')">
+                                <t t-esc="header.get('name')"/>
+                            </th>
+                        </t>
+                    </tr>
+                </t>
+                <!-- Empty <tr> to create a bottom border on the above
+                     <tr>. Necessary due to "border-collapse: collapse;" on the
+                     table. -->
+                <tr><th t-att-colspan="len(lines.get('columns_header')[-1])"></th></tr>
+            </thead>
+        </t>
+        <t t-else="">
+            <thead>
+                <tr class="o_account_report_column_header">
+                    <t t-foreach="lines.get('columns_header')[0]" t-as="column_header">
+                        <th t-att-class="'header_month o_account_report_column_header ' + (column_header.get('class', ''))"
+                            t-att-style="column_header.get('style', '')"
+                            t-att-colspan="column_header.get('colspan')"
+                            t-att-rowspan="column_header.get('rowspan')">
+                            <t t-raw="column_header.get('name')"/>
+                        </th>
+                    </t>
+                </tr>
+
+                <tr class="o_account_report_column_header">
+                    <t t-foreach="lines.get('columns_header')[0]" t-as="column_header">
+                        <t t-if="not column_header_first">
+                            <th class="o_account_report_column_header">Actual</th>
+                            <th class="o_account_report_column_header">Budget</th>
+                            <th class="o_account_report_column_header">Variance</th>
+                            <th class="o_account_report_column_header">% of Budget</th>
+                        </t>
+                    </t>
+                </tr>
+            </thead>
+        </t>
+    </template>
+
+    <!--LINE TEMPLATE-->
+    <template id="line_template_budget_report_screen" inherit_id="account_budget_advanced.line_template_budget_entry_screen" primary="True">
+        <xpath expr='//t[@t-as="column"]/td' position="replace">
+            <td t-att-class="'o_account_report_line ' +
+            (column.get('class', lines.get('columns_header')[-1][int(column_index/4)+line.get('colspan', 1)].get('class', '')) +
+            (line.get('unfoldable') and ' o_foldable_total' or '')) + ('' if hierarchies_enabled else ' o_account_report_line_indent')
+            + (' budget_cell' if not (column_index+1)%4 else '')"
+                t-att-style="column.get('style', lines.get('columns_header')[-1][int(column_index/4)+line.get('colspan', 1)].get('style', ''))"
+                t-att-data-id="line.get('id')"
+                t-att-data-positive="line.get('positive')"
+                t-att-data-formulas="line.get('formulas')"
+                t-att-data-code="line.get('code')"
+                t-att-data-parent-id="line.get('parent_id')"
+                t-att-data-total-id="line.get('total_id')">
+                <span t-att-class="'o_account_report_column_value ' + (column.get('color_class', '') if not (column_index+1)%4 else '')"
+                      t-att-title="column.get('title')">
+                    <t t-esc="str(column.get('name')) + (' %' if not (column_index+1)%4 else '')"/>
+                </span>
+            </td>
+        </xpath>
+    </template>
+
+    <!--SEARCH TEMPLATE-->
+    <template id="search_template_date_filter_budget_report">
+        <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+            <span class="fa fa-calendar" title="Dates" role="img" aria-label="Dates"/>
+            <t t-if="options['groupby']">
+                <span style="text-transform: capitalize;" t-esc="options['groupby']['filter']"/>
+            </t>
+        </a>
+        <div class="dropdown-menu o_filters_menu" role="menu">
+            <t t-if="options['groupby']">
+                <a role="menuitem" class="dropdown-item js_account_report_groupby_filter" title="Monthly" data-filter="Monthly">Monthly</a>
+                <a role="menuitem" class="dropdown-item js_account_report_groupby_filter" title="Quarterly" data-filter="Quarterly">Quarterly</a>
+                <a role="menuitem" class="dropdown-item js_account_report_groupby_filter" title="Yearly" data-filter="Yearly">Yearly</a>
+                <div role="separator" class="dropdown-divider"></div>
+                <a role="menuitem" class="dropdown-item js_account_report_groupby_filter" title="Whole Budget" data-filter="Whole Budget">Whole Budget</a>
+            </t>
+        </div>
+    </template>
+
+
+    <template id="search_template_budget_report_screen" inherit_id="account_reports.search_template">
+        <xpath expr="//div" position="after">
+            <div class="btn-group o_dropdown o_account_reports_filter_groupby" t-if="options.get('groupby') != None">
+                <t t-call="account_budget_advanced.search_template_date_filter_budget_report"/>
+            </div>
+        </xpath>
+    </template>
+</odoo>

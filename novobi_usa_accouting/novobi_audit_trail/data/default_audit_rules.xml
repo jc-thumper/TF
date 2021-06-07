@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <!--Tracking changes in Journal Entries-->
+        <record id="audit_rule_track_journal_entries" model="audit.trail.rule">
+            <field name="name">Track changes in Invoices/Journal Entries</field>
+            <field name="model_id" ref="account.model_account_move"></field>
+            <field name="is_track_create">True</field>
+            <field name="is_track_write">True</field>
+            <field name="is_track_unlink">True</field>
+            <field name="is_tracking_all_fields">False</field>
+            <field name="state">confirmed</field>
+            <field name="tracking_field_ids"
+                   eval="[(6,0,
+                   [ref('account.field_account_move__ref'),
+                   ref('account.field_account_move__state'),
+                   ref('account.field_account_move__name'),
+                   ref('account.field_account_move__partner_id'),
+                   ref('account.field_account_move__amount_total'),
+                   ref('account.field_account_move__invoice_date'),
+                   ref('account.field_account_move__invoice_date_due'),
+                   ref('account.field_account_move__invoice_user_id'),
+                   ref('account.field_account_move__invoice_payment_term_id'),
+                   ref('account.field_account_move__invoice_payment_state'),
+                   ref('sale.field_account_move__team_id')
+                   ])]"></field>
+        </record>
+
+        <record id="audit_rule_track_journal_items" model="audit.trail.rule">
+            <field name="name">Track changes in Invoice/Journal Items</field>
+            <field name="model_id" ref="account.model_account_move_line"></field>
+            <field name="is_track_create">True</field>
+            <field name="is_track_write">True</field>
+            <field name="is_track_unlink">True</field>
+            <field name="is_tracking_all_fields">False</field>
+            <field name="parent_field_id" ref="account.field_account_move_line__move_id"/>
+            <field name="state">confirmed</field>
+            <field name="tracking_field_ids"
+                   eval="[(6,0,
+                   [ref('account.field_account_move_line__account_id'),
+                   ref('account.field_account_move_line__partner_id'),
+                   ref('account.field_account_move_line__date'),
+                   ref('account.field_account_move_line__debit'),
+                   ref('account.field_account_move_line__credit'),
+                   ref('account.field_account_move_line__name'),
+                   ref('account.field_account_move_line__analytic_account_id'),
+                   ref('account.field_account_move_line__analytic_tag_ids'),
+                   ref('account.field_account_move_line__product_id'),
+                   ref('account.field_account_move_line__quantity'),
+                   ref('account.field_account_move_line__account_id')
+                   ])]"></field>
+        </record>
+
+        <!--Tracking changes in Payments-->
+        <record id="audit_rule_track_payments" model="audit.trail.rule">
+            <field name="name">Track changes in Payments</field>
+            <field name="model_id" ref="account.model_account_payment"></field>
+            <field name="is_track_create">True</field>
+            <field name="is_track_write">True</field>
+            <field name="is_track_unlink">True</field>
+            <field name="is_tracking_all_fields">False</field>
+            <field name="state">confirmed</field>
+            <field name="tracking_field_ids"
+                   eval="[(6,0,
+                   [ref('account.field_account_payment__payment_method_id'),
+                   ref('account.field_account_payment__journal_id'),
+                   ref('account.field_account_payment__payment_date'),
+                   ref('account.field_account_payment__partner_id'),
+                   ref('account.field_account_payment__currency_id'),
+                   ref('account.field_account_payment__communication'),
+                   ref('account.field_account_payment__state'),
+                   ref('account.field_account_payment__amount'),
+                   ref('account.field_account_payment__name'),
+                   ref('account.field_account_payment__move_name'),
+                   ref('l10n_us_accounting.field_account_payment__open_invoice_ids'),
+                   ref('l10n_us_accounting.field_account_payment__check_number_text'),
+                   ])]"></field>
+        </record>
+    </data>
+</odoo>

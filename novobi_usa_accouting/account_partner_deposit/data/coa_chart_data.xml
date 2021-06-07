@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <function model="res.company" name="create_new_accounting_data"/>
+
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'l10n_generic_coa'), ('name', 'in', ['prepayments', 'configurable_chart_template'])]"/>
+            </function>
+            <value eval="{'noupdate': False}"/>
+        </function>
+
+        <record id="l10n_generic_coa.prepayments" model="account.account.template">
+            <field eval="True" name="reconcile"/>
+        </record>
+
+        <function name="write" model="ir.model.data">
+            <function name="search" model="ir.model.data">
+                <value eval="[('module', '=', 'l10n_generic_coa'), ('name', 'in', ['prepayments', 'configurable_chart_template'])]"/>
+            </function>
+            <value eval="{'noupdate': True}"/>
+        </function>
+
+        <record id="conf_customer_deposit" model="account.account.template">
+            <field name="code">111400</field>
+            <field name="name">Customer Deposit</field>
+            <field eval="True" name="reconcile"/>
+            <field name="user_type_id" ref="account.data_account_type_current_liabilities"/>
+            <field name="chart_template_id" ref="l10n_generic_coa.configurable_chart_template"/>
+        </record>
+
+        <record id="l10n_generic_coa.configurable_chart_template" model="account.chart.template">
+            <field name="property_account_customer_deposit_id" ref="conf_customer_deposit"/>
+            <field name="property_account_vendor_deposit_id" ref="l10n_generic_coa.prepayments"/>
+        </record>
+    </data>
+</odoo>

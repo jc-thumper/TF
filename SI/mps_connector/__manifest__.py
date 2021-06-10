@@ -15,6 +15,6 @@
         # ============================== VIEWS ================================
     ],
     'qweb': ['static/src/xml/*.xml'],
-    'application': True,
-    'post_init_hook': 'init_forecast_result_from_mps_data',
+    'application': False,
+    'post_init_hook': 'setup_mps_connector',
 }

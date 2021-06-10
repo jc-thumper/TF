@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from . import mps_connector
+from . import inherit_mrp_production_schedule

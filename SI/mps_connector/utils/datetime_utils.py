@@ -25,11 +25,12 @@ def find_index_of_time_range(date_value, date_range):
     return -1
 
 
-def get_date_range_for_all_period_dict(number_of_cols, date_value=None):
+def get_date_range_for_all_period_dict(num_of_cols, date_value=None):
     """
-
-    :param number_of_cols:
-    :type number_of_cols: int
+        Generate the date_range from current time (as default) to the next num_of_cols'th period
+        for all type of period
+    :param num_of_cols:
+    :type num_of_cols: int
     :param date_value:
     :type date_value: datetime
     :return: {
@@ -42,11 +43,11 @@ def get_date_range_for_all_period_dict(number_of_cols, date_value=None):
     date_value = date_value or datetime.now()
 
     date_range_dict = {
-        period_type: get_date_range_by_num_of_cols(date_value, period_type, number_of_cols)
+        period_type: get_date_range_by_num_of_cols(date_value, period_type, num_of_cols)
         for period_type, _ in PeriodType.LIST_PERIODS
     }
     date_range_str_dict = {
-        period_type: get_date_range_by_num_of_cols(date_value, period_type, number_of_cols, True)
+        period_type: get_date_range_by_num_of_cols(date_value, period_type, num_of_cols, True)
         for period_type, _ in PeriodType.LIST_PERIODS
     }
 

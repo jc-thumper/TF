@@ -180,10 +180,9 @@ class DemandClassificationResult(models.Model):
             obj=self, model=self.env[self._name], created_date=created_date)
         number_of_record = len(new_records)
 
-
         from odoo.tools import config
-        threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                 DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+        threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                     DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
         if number_of_record < threshold_trigger_queue_job:
             product_clsf_info_obj.sudo().update_product_classification_infos(

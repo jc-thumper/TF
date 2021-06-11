@@ -1,16 +1,20 @@
 {
-    'name': 'TF Master Production Scheduler',
+    'name': 'TF Manufacturing',
     'version': '1.0',
     'website': 'https://www.novobi.com',
     'category': '',
     'author': 'Novobi LLC',
     'depends': [
-        'mrp_mps',
+        'stock',
+        'mrp',
     ],
     'description': '',
     'data': [
-        'views/assets.xml',
-        'views/import_mps_views.xml',
+        'security/ir.model.access.csv',
+
+        'views/stock_warehouse_orderpoint_views.xml',
+
+        'wizard/sync_reordering_rule_to_mps_views.xml',
     ],
     'images': [],
     'demo': [],

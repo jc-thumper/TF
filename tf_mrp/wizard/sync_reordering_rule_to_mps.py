@@ -1,7 +1,7 @@
 from odoo import api, fields, models, _
 
 
-class SyncRRToMPS(models.Model):
+class SyncRRToMPS(models.TransientModel):
     _name = "sync.rr.mps"
     _description = 'Sync data from reodering rule to mps'
 

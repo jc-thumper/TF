@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="tf_mrp_production_view_form_inherit" model="ir.ui.view">
+        <field name="name">tf_mrp.production.view.form.inherit</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="after">
+                <field name="is_changed_bom" invisible="1"/>
+                <div class="alert alert-warning text-center" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('is_changed_bom', '=', False)]}">
+                    WARNING: ECO changed the BOM structure, Please check again or go to chatter to see the new BOM.
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

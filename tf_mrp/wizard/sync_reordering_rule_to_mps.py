@@ -6,8 +6,8 @@ class SyncRRToMPS(models.Model):
     _description = 'Sync data from reodering rule to mps'
 
     def run_sync(self):
-        lot_stock_ids = self.env['stock.warehouse'].search([]).mapped('lot_stock_id')
-        reordering_rules = self.env['stock.warehouse.orderpoint'].search([('location_id', 'in', lot_stock_ids.ids)])
+        lot_stock_ids = self.env['stock.warehouse'].search([]).mapped('lot_stock_id').ids
+        reordering_rules = self.env['stock.warehouse.orderpoint'].search([('location_id', 'in', lot_stock_ids)])
         product_ids = reordering_rules.mapped('product_id').ids
         mp_schedules = self.env['mrp.production.schedule'].search([('product_id', 'in', product_ids)])
 

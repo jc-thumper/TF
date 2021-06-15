@@ -24,5 +24,4 @@
     <menuitem id="menu_action_tf_product_category_report"
               action="action_tf_product_category_report"
               parent="stock.menu_warehouse_report" sequence="100"/>
-
 </odoo>

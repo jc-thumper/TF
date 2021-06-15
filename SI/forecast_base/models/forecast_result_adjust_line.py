@@ -298,8 +298,8 @@ class ForecastResultAdjustLine(models.Model):
             number_of_record = len(line_ids)
 
             from odoo.tools import config
-            threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                     DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+            threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
             if number_of_record < threshold_trigger_queue_job:
                 self.env['forecast.result.adjust'].sudo()\
@@ -328,8 +328,8 @@ class ForecastResultAdjustLine(models.Model):
             forecast_result_adjust_env = self.env['forecast.result.adjust'].sudo()
 
             from odoo.tools import config
-            threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                     DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+            threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
             if number_of_record <= threshold_trigger_queue_job:
                 forecast_result_adjust_env.sudo()\
@@ -353,8 +353,8 @@ class ForecastResultAdjustLine(models.Model):
                 number_of_record = len(line_ids)
 
                 from odoo.tools import config
-                threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
                 if number_of_record < threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
@@ -688,14 +688,17 @@ class ForecastResultAdjustLine(models.Model):
             forecast_level_obj = self.env['forecast.level.strategy'].sudo().create_obj(forecast_level=forecast_level)
 
             updated_ids = forecast_level_obj \
-                .update_records_for_forecast_result_adjust_line(created_date=created_date,
-                                                                **{
-                                                                    'current_time': cur_time,
-                                                                    'create_uid': self.env.ref('base.partner_root').id,
-                                                                    'create_date': cur_time,
-                                                                    'write_uid': self.env.ref('base.partner_root').id,
-                                                                    'write_date': cur_time
-                                                                })
+                .update_records_for_forecast_result_adjust_line(
+                    obj=self, model=self.env['forecast.result.adjust.line'],
+                    created_date=created_date,
+                    **{
+                        'current_time': cur_time,
+                        'create_uid': self.env.ref('base.partner_root').id,
+                        'create_date': cur_time,
+                        'write_uid': self.env.ref('base.partner_root').id,
+                        'write_date': cur_time
+                    }
+                )
 
             _logger.info("%s records have been updated in Forecast Result Adjust Line table: %s",
                          len(updated_ids), updated_ids)
@@ -706,8 +709,8 @@ class ForecastResultAdjustLine(models.Model):
                 number_of_record = len(updated_ids)
 
                 from odoo.tools import config
-                threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
                 if number_of_record < threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
@@ -768,8 +771,8 @@ class ForecastResultAdjustLine(models.Model):
                 number_of_record = len(line_ids)
 
                 from odoo.tools import config
-                threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
                 if number_of_record < threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \

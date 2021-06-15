@@ -132,7 +132,7 @@ class ForecastResult(models.Model):
         forecast_level = kwargs.get('forecast_level')
         if forecast_level:
             forecast_result_adjust_line_obj = self.env['forecast.result.adjust.line'].sudo()
-            forecast_result_adjust_line_obj.with_delay(max_retries=12)\
+            forecast_result_adjust_line_obj\
                 .update_forecast_adjust_line_table(
                     created_date,
                     **{
@@ -266,21 +266,18 @@ class ForecastResult(models.Model):
         try:
             sql_query = """
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_idx_forecast_result
-                ON forecast_result (product_id, pub_time, start_date)
+                ON forecast_result (product_id, pub_time, start_date, period_type)
                 WHERE company_id is NULL AND warehouse_id is NULL AND lot_stock_id is NULL;
 
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_company_idx_forecast_result
-                ON forecast_result (product_id, company_id, pub_time, start_date)
+                ON forecast_result (product_id, company_id, pub_time, start_date, period_type)
                 WHERE warehouse_id is NULL AND lot_stock_id is NULL;
 
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_company_warehouse_idx_forecast_result
-                ON forecast_result (product_id, company_id, warehouse_id, pub_time, start_date);
+                ON forecast_result (product_id, company_id, warehouse_id, pub_time, start_date, period_type);
 
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_company_warehouse_lot_stock_idx_forecast_result
-                ON forecast_result (product_id, company_id, warehouse_id, lot_stock_id, pub_time, start_date);
-
-                CREATE UNIQUE INDEX IF NOT EXISTS forecast_result_product_id_company_id_warehouse_id
-                ON forecast_result (product_id, company_id, warehouse_id, lot_stock_id, pub_time, start_date);                
+                ON forecast_result (product_id, company_id, warehouse_id, lot_stock_id, pub_time, start_date, period_type);                
             """
             t1 = time()
             self.env.cr.execute(sql_query)

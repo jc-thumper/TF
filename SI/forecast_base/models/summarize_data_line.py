@@ -82,8 +82,8 @@ class SummarizeDataLine(models.Model):
                 number_of_record = len(segment_ids)
 
                 from odoo.tools import config
-                threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
 
                 if number_of_record < threshold_trigger_queue_job:
                     self.sudo().update_adjust_line_table(segment_ids)

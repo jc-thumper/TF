@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="component_usage_report">
+        <field name="name">component.usage.report</field>
+        <field name="model">stock.move.line</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id"/>
+                <field name="reference"/>
+                <field name="qty_done"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="component_usage_stock_move_line_view_search" model="ir.ui.view">
+        <field name="name">component.usage.stock.move.line.search</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.stock_move_line_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='location_dest_id']" position="after">
+                <field name="categ_id" string="Category"/>
+                <field name="work_center_id" string="Work Center"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

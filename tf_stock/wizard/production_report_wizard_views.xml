@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_production_report_wizard" model="ir.ui.view">
+        <field name="name">Production Report</field>
+        <field name="model">production.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Production Filter">
+                <group>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </group>
+                <footer>
+                    <button name="get_report" string="Get Report" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_production_report_wizard" model="ir.actions.act_window">
+        <field name="name">Production Report</field>
+        <field name="res_model">production.wizard</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_production_report_wizard"/>
+    </record>
+
+    <menuitem id="menu_production_wizard" parent="stock.menu_warehouse_report" sequence="130" action="action_production_report_wizard"/>
+</odoo>

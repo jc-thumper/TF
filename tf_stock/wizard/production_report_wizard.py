@@ -3,7 +3,7 @@ from odoo.exceptions import UserError
 
 
 class ProductionWizard(models.TransientModel):
-    _name = "production.wizard"
+    _name = "mrp.production.report.wizard"
     _description = 'Open the popup to allow user choose start date and end date'
 
     start_date = fields.Datetime(string='Start Date', default=fields.Datetime.now())

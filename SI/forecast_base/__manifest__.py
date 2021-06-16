@@ -33,6 +33,7 @@
         'views/inherit_res_config_settings_view.xml',
         'views/forecast_group_views.xml',
         'views/company_views.xml',
+        'views/product_views.xml',
         'views/demand_type_views.xml',
         'views/service_level_views.xml',
         'views/demand_forecast_tree_view.xml',

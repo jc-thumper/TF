@@ -4,9 +4,9 @@
             <field name="model">product.product</field>
             <field name="arch" type="xml">
                 <tree>
-                    <field name="name"/>
+                    <field name="display_name"/>
                     <field name="qty_available"/>
-                    <field name="virtual_available"/>
+                    <field name="virtual_available" string="Forecasted"/>
                     <field name="reserved_quantity"/>
                 </tree>
             </field>

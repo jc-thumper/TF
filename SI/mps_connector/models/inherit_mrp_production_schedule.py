@@ -24,7 +24,15 @@ class MrpProductionSchedule(models.Model):
     def init_forecast_result_from_mps_data(self, demand_fore_data_dict=None):
         """
             Synchronizing data from MPS to Forecast Base
-        :param demand_fore_data_dict:
+        :param demand_fore_data_dict: {
+            (product_id, company_id, warehouse_id): [
+                {
+                    'date': date
+                    'forecast_qty': the demand forecast value
+                },
+                ...
+            ]
+        }
         :type demand_fore_data_dict: dict
         :return:
         :rtype:
@@ -98,7 +106,15 @@ class MrpProductionSchedule(models.Model):
         """
             With the MPS data, create the Product Forecast Configuration for all products
             in the MPS
-        :param demand_fore_data_dict:
+        :param demand_fore_data_dict: {
+            (product_id, company_id, warehouse_id): [
+                {
+                    'date': date
+                    'forecast_qty': the demand forecast value
+                },
+                ...
+            ]
+        }
         :type demand_fore_data_dict: dict
         :return:
         :rtype:
@@ -273,8 +289,13 @@ class MrpProductionSchedule(models.Model):
         """
             Return a dict contains all companies' mps settings included period_type and
             num_of_cols
-        :return:
-        :rtype:
+        :return: {
+            company_id: {
+                'period_type': company.manufacturing_period,
+                'num_of_cols': company.manufacturing_period_to_display,
+            }
+        }
+        :rtype: dict
         """
         mps_settings_dict = {}
         companies = self.env['res.company'].search([])
@@ -293,11 +314,11 @@ class MrpProductionSchedule(models.Model):
     def _get_product_fore_config_dict(self):
         """
             Get all the products' forecast configuration included id
-            and period_type_custom
+            and period_type
         :return: {
             (product_id, company_id, warehouse_id): {
                 'id': product_fore_config.id
-                'period_type': product_fore_config.period_type_custom
+                'period_type': product_fore_config.period_type
             }
         }
         :rtype: dict

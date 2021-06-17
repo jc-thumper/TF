@@ -20,7 +20,7 @@
             <xpath expr="//field[@name='location_dest_id']" position="after">
                 <field name="categ_id" string="Category"/>
                 <field name="work_center_id" string="Work Center"/>
-                <field name="seller_id" string="Vendor"/>
+                <field name="vendor_id" string="Vendor"/>
             </xpath>
         </field>
     </record>

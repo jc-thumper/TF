@@ -10,6 +10,7 @@
     ],
     'description': '',
     'data': [
+        'views/res_config_setting_views.xml',
     ],
     'images': [],
     'demo': [],

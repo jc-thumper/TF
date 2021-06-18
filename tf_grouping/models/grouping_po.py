@@ -54,10 +54,11 @@ class PurchaseStockInherit(models.Model):
 
             domain = rule._make_po_get_domain(procurement.company_id, procurement.values, partner)
 
-            if procurement[7].get('move_dest_ids') and procurement[7].get('move_dest_ids')[0].bom_origin_id:
-                domain = list(domain)
-                domain.append(('bom_origin_id', '=', procurement[7].get('move_dest_ids')[0].bom_origin_id))
-                domain = tuple(domain)
+            if self.env.company.allow_grouping_bom and partner.id in self.env.company.vendor_ids.ids:
+                if procurement[7].get('move_dest_ids') and procurement[7].get('move_dest_ids')[0].bom_origin_id:
+                    domain = list(domain)
+                    domain.append(('bom_origin_id', '=', procurement[7].get('move_dest_ids')[0].bom_origin_id))
+                    domain = tuple(domain)
 
             procurements_by_po_domain[domain].append((procurement, rule))
 
@@ -77,10 +78,13 @@ class PurchaseStockInherit(models.Model):
                 # the same domain for PO and the _prepare_purchase_order method
                 # should only uses the common rules's fields.
                 vals = rules[0]._prepare_purchase_order(company_id, origins, [p.values for p in procurements])
-                if len(list(domain)) > 5:
-                    vals.update({'bom_origin_id': list(list(domain)[5])[2]})
-                elif len(list(domain)) > 4:
-                    vals.update({'bom_origin_id': list(list(domain)[4])[2]})
+
+                if self.env.company.allow_grouping_bom:
+                    if len(list(domain)) > 5:
+                        vals.update({'bom_origin_id': list(list(domain)[5])[2]})
+                    elif len(list(domain)) > 4:
+                        vals.update({'bom_origin_id': list(list(domain)[4])[2]})
+
                 # The company_id is the same for all procurements since
                 # _make_po_get_domain add the company in the domain.
                 # We use SUPERUSER_ID since we don't want the current user to be follower of the PO.

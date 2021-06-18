@@ -25,12 +25,13 @@ class MrpProductionInherit(models.Model):
                 })
             production._generate_finished_moves()
 
-            if not production.move_dest_ids:
-                bom_origin_id = production.bom_id.id
-            else:
-                bom_origin_id = production.move_dest_ids.bom_origin_id
-            production.move_raw_ids.write({'bom_origin_id': bom_origin_id})
-            production.move_finished_ids.write({'bom_origin_id': bom_origin_id})
+            if self.env.company.allow_grouping_bom:
+                if not production.move_dest_ids:
+                    bom_origin_id = production.bom_id.id
+                else:
+                    bom_origin_id = production.move_dest_ids.bom_origin_id
+                production.move_raw_ids.write({'bom_origin_id': bom_origin_id})
+                production.move_finished_ids.write({'bom_origin_id': bom_origin_id})
 
             production.move_raw_ids._adjust_procure_method()
             (production.move_raw_ids | production.move_finished_ids)._action_confirm()

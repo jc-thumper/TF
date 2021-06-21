@@ -9,7 +9,9 @@
             <xpath expr="//field[@name='kanban_dashboard_graph']" position="attributes">
                 <attribute name="widget">journal_data</attribute>
             </xpath>
-
+            <xpath expr="//kanban/templates" position="before">
+                <field name="kanban_right_info_graph" />
+            </xpath>
             <xpath expr="//t[@t-name='JournalBodyBankCash']/div[hasclass('o_kanban_primary_right')]" position="replace">
                 <!-- On the right, show other common informations/actions -->
                 <div class="col-7 o_kanban_primary_right" style="height:100%; width:100%;">

@@ -10,6 +10,7 @@
     'description': '',
     'data': [
         'report/product_category_report.xml',
+        'report/critical_inventory_report_views.xml',
     ],
     'images': [],
     'demo': [],

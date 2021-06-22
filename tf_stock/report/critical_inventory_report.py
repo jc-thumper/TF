@@ -16,9 +16,10 @@ class CriticalReport(models.Model):
                 record.is_qoh_critical = True
 
     def _search_qoh_critical(self, operator, value):
+        product_ids = []
         if operator == '=' and value:
-            products = self.env['product.product'].search([('critical_threshold', '>', 0)]).filtered(lambda p: p.qty_available < p.critical_threshold)
-        return [('id', 'in', products.ids)]
+            product_ids = self.env['product.product'].search([('critical_threshold', '>', 0)]).filtered(lambda p: p.qty_available < p.critical_threshold).ids
+        return [('id', 'in', product_ids)]
 
     def button_view_rfq(self):
         self.ensure_one()

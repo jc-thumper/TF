@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Menu-->
+    <menuitem
+            id="menu_optimal_operations"
+            name="Optimal Operations"
+            parent="stock.menu_stock_warehouse_mgmt"
+            sequence="100"/>
+</odoo>

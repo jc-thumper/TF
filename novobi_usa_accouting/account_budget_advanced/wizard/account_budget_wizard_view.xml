@@ -1,0 +1,139 @@
+<odoo>
+    <!--Default Wizard-->
+    <record id="account_budget_wizard_form_view" model="ir.ui.view">
+        <field name='name'>account_budget_wizard_form_view</field>
+        <field name='model'>account.budget.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <p>
+                    Please select one option
+                </p>
+
+                <field name="action_type" required="1" widget="radio"/>
+
+                <footer>
+                    <button string='Ok' name="view_or_create_form" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--View Wizard-->
+    <record id="account_budget_view_wizard_form_view" model="ir.ui.view">
+        <field name='name'>account_budget_view_wizard_form_view</field>
+        <field name='model'>account.budget.wizard</field>
+        <field name="priority" eval="50"/>
+        <field name="arch" type="xml">
+            <form>
+                <p>
+                    Please select one budget to view
+                </p>
+
+                <group>
+                    <field name="crossovered_budget_id" required="1" widget="selection"/>
+                    <field name="budget_type" invisible="1"/>
+                </group>
+
+                <footer>
+                    <button string='Ok' name="apply" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--Create Wizard-->
+    <record id="account_budget_create_wizard_form_view" model="ir.ui.view">
+        <field name='name'>account_budget_create_wizard_form_view</field>
+        <field name='model'>account.budget.wizard</field>
+        <field name="priority" eval="50"/>
+        <field name="arch" type="xml">
+            <form>
+                <h1>
+                    <field name="name" required="1" placeholder="Name"/>
+                </h1>
+                <group>
+                    <group>
+                        <field name="action_type" invisible="1"/>
+                        <field name="budget_type" required="1" />
+                        <field name="analytic_account_id" widget="selection"/>
+                    </group>
+                    <group>
+                        <label for="start_month" string="Start"/>
+                        <div>
+                            <field name="start_month" class="oe_inline" required="1"/>
+                            <field name="start_year" class="oe_inline offset-1" required="1" nolabel="1"/>
+                        </div>
+
+                        <label for="end_month" string="End"/>
+                        <div>
+                            <field name="end_month" class="oe_inline" required="1"/>
+                            <field name="end_year" class="oe_inline offset-1" required="1" nolabel="1"/>
+                        </div>
+                    </group>
+                </group>
+                <field name="previous_data" /> <strong>Create budget from same period last year's actual data</strong>
+
+
+                <footer>
+                    <button string='Create' name="apply" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--Import Wizard-->
+    <record id="account_budget_import_wizard_form_view" model="ir.ui.view">
+        <field name='name'>account_budget_import_wizard_form_view</field>
+        <field name='model'>account.budget.wizard</field>
+        <field name="priority" eval="50"/>
+        <field name="arch" type="xml">
+            <form>
+                <strong>Import instruction</strong>
+
+                <ul>
+                    <li>Download the template using our export feature.</li>
+                    <li>Use Excel to edit your budget.</li>
+                    <li>Choose the file to import below:</li>
+                </ul>
+
+                <group>
+                    <field name="import_file" required="1" nolabel="1"/>
+                </group>
+
+                <footer>
+                    <button string='Import' name="import_budget" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--ACTION-->
+    <record id="action_account_budget_wizard" model="ir.actions.act_window">
+        <field name="name">Budgets</field>
+        <field name="res_model">account.budget.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account_budget_wizard_form_view"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem action="action_account_budget_wizard" id="menu_account_budget_wizard" name="Budgets"
+              parent="account.menu_finance_entries_management" sequence="25"/>
+
+    <record id="action_usa_budget_entry" model="ir.actions.client">
+        <field name="name">Budget Entry</field>
+        <field name="tag">usa_budget_entry</field>
+        <field name="context">{'model': 'usa.budget.entry'}</field>
+        <field name="target">main</field>
+    </record>
+
+    <record id="action_usa_budget_report" model="ir.actions.client">
+        <field name="name">Budget vs. Actuals</field>
+        <field name="tag">usa_budget_report</field>
+        <field name="context">{'model': 'usa.budget.report'}</field>
+        <field name="target">current</field>
+    </record>
+</odoo>

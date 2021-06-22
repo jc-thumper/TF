@@ -47,7 +47,6 @@ class ProductBOMInfo(models.Model):
          'Keep Constraints check the MO Paths should be Unique on a Company.'),
     ]
 
-    @api.model_cr
     def init(self):
         self._cr.execute("""SELECT indexname FROM pg_indexes WHERE indexname = 'used_in_comp_mo_path'""")
         if not self._cr.fetchone():

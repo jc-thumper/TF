@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.alert.setting</field>
+        <field name="model">res.config.settings</field>
+        <field name="type">form</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <div id="sms_detail_label" position="after">
+                <div class="content-group">
+                    <div class="row">
+                        <label for="twilio_token" string="Token" class="col-md-3 o_light_label"/>
+                        <field name="twilio_token"/>
+                    </div>
+                    <div class="row">
+                        <label for="twilio_acc_sid" string="Account SID" class="col-md-3 o_light_label"/>
+                        <field name="twilio_acc_sid"/>
+                    </div>
+                    <div class="row">
+                        <label for="twilio_source_phone_number" string="Phone Number" class="col-md-3 o_light_label"/>
+                        <field name="twilio_source_phone_number"/>
+                    </div>
+                    <div class="row">
+                        <label for="twilio_format_mess" string="Format SMS Message" class="col-md-3 o_light_label"/>
+                        <field name="twilio_format_mess"/>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

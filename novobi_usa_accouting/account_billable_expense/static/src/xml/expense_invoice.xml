@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="account_billable_expense.assign_expense_btn">
+		<button class="btn btn-sm btn-link expense-btn" style="background-color: Transparent;">
+            <t t-esc="widget.value" />
+        </button>
+    </t>
+</templates>

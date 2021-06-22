@@ -1,0 +1,17 @@
+<odoo>
+    <record id="account_reports.account_financial_current_year_earnings_line_2" model="account.financial.html.report.line">
+        <field name="hide_in_budget" eval="True"/>
+    </record>
+
+    <record id="account_reports.account_financial_current_year_earnings_line_1" model="account.financial.html.report.line">
+        <field name="hide_in_budget" eval="True"/>
+    </record>
+
+    <record id="account_reports.account_financial_previous_year_earnings0" model="account.financial.html.report.line">
+        <field name="hide_in_budget" eval="True"/>
+    </record>
+
+    <record id="account_reports.account_financial_unaffected_earnings0" model="account.financial.html.report.line">
+        <field name="hide_in_budget" eval="True"/>
+    </record>
+</odoo>

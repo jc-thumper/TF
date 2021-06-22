@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Add option to open Purchase Order from Billable Expense-->
+    <template id="line_caret_expense_purchase" inherit_id="account_billable_expense.line_caret_expense">
+        <li role="presentation" position="after">
+            <li t-if="line['caret_options'] == 'purchase.expenses'">
+                <a role="menuitem" tabindex="-1" t-att-data-id="line['id']"
+                   data-object="purchase.order" action="open_purchase_expense" class="dropdown-item" >View Purchase Order
+                </a>
+            </li>
+        </li>
+    </template>
+</odoo>

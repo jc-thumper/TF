@@ -1,0 +1,38 @@
+<odoo>
+    <template id="template_followup_deposit_report" inherit_id="account_followup.template_followup_report">
+        <xpath expr="//div[hasclass('table-responsive')]" position="attributes">
+            <attribute name="class">table-responsive mb-5</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('table-responsive')]" position="inside">
+            <table name="deposit_section" class="o_account_reports_table mt-5" t-if="partner.customer_deposit_aml_ids">
+                <thead>
+                    <tr class="o_account_report_column_header">
+                        <th class="o_account_report_column_header">Deposits</th>
+                        <th class="o_account_report_column_header date" style="text-align:center; white-space:nowrap;">Date</th>
+                        <th class="o_account_report_column_header" style="text-align:right; white-space:nowrap;">Communication</th>
+                        <th class="o_account_report_column_header date" style="text-align:center; white-space:nowrap;" t-if="not context.get('print_mode')">Excluded</th>
+                        <th class="o_account_report_column_header number" style="text-align:right; white-space:nowrap;">Total</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <t t-if="lines.get('lines')">
+                        <t t-call="{{model._get_templates()['line_template']}}">
+                            <t t-set="deposit_line" t-value="True"/>
+                        </t>
+                    </t>
+                </tbody>
+            </table>
+        </xpath>
+    </template>
+
+    <template id="line_template_followup_deposit_report" inherit_id="account_followup.line_template_followup_report">
+        <xpath expr="//tr" position="attributes">
+            <attribute name="t-if">(not deposit_line and not line.get('deposit_line', False)) or (deposit_line and line.get('deposit_line', False))</attribute>
+        </xpath>
+
+        <xpath expr="//a[hasclass('o_change_expected_date')]" position="attributes">
+            <attribute name="t-if">not deposit_line</attribute>
+        </xpath>
+    </template>
+</odoo>

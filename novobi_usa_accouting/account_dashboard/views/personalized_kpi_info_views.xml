@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="personalized_kpi_info_form" model="ir.ui.view">
+        <field name="name">personalized.kpi.info.form</field>
+        <field name="model">personalized.kpi.info</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet string="Personalized KPI Info">
+                    <field name="icon_kpi" class="oe_avatar" widget="image" style="background-color: gray;"/>
+                    <group col="4">
+                        <field name="name" modifiers="{}"/>
+                        <field name="selected" modifiers="{}"/>
+                        <field name="period_type" modifiers="{}"/>
+                        <field name="unit" modifiers="{}"/>
+                        <field name="green_on_positive" modifiers="{}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_personalized_kpi" model="ir.actions.act_window">
+        <field name="name">Personalized KPI</field>
+        <field name="res_model">personalized.kpi.info</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="personalized_kpi_menu"
+              name="Personal KPI Configuration"
+              parent="account.account_management_menu"
+              action="action_personalized_kpi"
+              sequence="2"
+              groups="account.group_account_user"/>
+
+</odoo>

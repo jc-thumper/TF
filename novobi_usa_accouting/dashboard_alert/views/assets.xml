@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets_modify_kpi_alert_backend"
+              name="modify_kpi_alert_assets"
+              inherit_id="web.assets_backend">
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/dashboard_alert/static/src/js/kpi_header_extend.js"/>
+<!--            <script type="text/javascript" src="/dashboard_alert/static/src/js/alert_info_dialog.js"/>-->
+            <script type="text/javascript" src="/dashboard_alert/static/src/js/message_dialog.js"/>
+
+        </xpath>
+    </template>
+
+    <template id="assets_frontend_dashboard_alert"
+              name="Dashboard Alert Assets FrontEnd"
+              inherit_id="web.assets_frontend">
+        <xpath expr="script[last()]" position="after">
+            <script type="text/javascript" src="/dashboard_alert/static/src/js/alert_form.js"/>
+            <script type="text/javascript" src="/dashboard_alert/static/src/js/message_dialog.js"/>
+            <link rel="stylesheet" type="text/scss" href="/dashboard_alert/static/src/scss/alert_setting_template.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/account_dashboard/static/src/scss/account_dashboard.scss"/>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,8 @@
+<odoo>
+	<template id="template" name="billable_expense_template" inherit_id="web.assets_backend">
+		<xpath expr="script[last()]" position="after">
+			<script type="text/javascript" src="/account_billable_expense/static/src/js/expense_invoice.js"/>
+			<script type="text/javascript" src="/account_billable_expense/static/src/js/section_and_note_fields_backend.js"/>
+		</xpath>
+	</template>
+</odoo>

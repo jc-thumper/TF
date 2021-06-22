@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template">
+    <t t-name="AmountSearchRange">
+        <button type="button" class="dropdown-item o_add_filter_amount o_closed_menu_amount" aria-expanded="false"><t t-esc="title_display"></t></button>
+        <div class="o_add_filter_menu_amount dropdown-item-text o_filter_condition">
+            <input id="min_val" class="o_input" pattern="[0-9]+([\.][0-9]+)?" step="0.01" value="0.0" placeholder="Min value" type="number"/>
+            <input id="max_val" class="o_input" pattern="[0-9]+([\.][0-9]+)?" step="0.01" value="0.0" placeholder="Max value" type="number"/>
+            <button class="btn btn-primary o_apply_filter_amount" type="button">Apply</button>
+        </div>
+    </t>
+</templates>

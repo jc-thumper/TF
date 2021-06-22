@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates>
+
+    <t t-name="CFP.template_content">
+        <div class="o_cfp_template_content"></div>
+    </t>
+
+    <t t-name="CFP.Buttons">
+        <button type="button" class="btn btn-primary o_btn_export">Export (XLS)</button>
+    </t>
+
+    <t t-name="CFP.optionButton">
+        <div class="o_dropdown dropdown o_cfp_period_filter">
+            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                <span class="fa fa-calendar"/>
+                Period:
+                <t t-if="period == 'month'">Monthly</t>
+                <t t-elif="period == 'week'">Weekly</t>
+                <t t-elif="period == 'day'">Daily</t>
+                <t t-else="">Weekly</t>
+            </a>
+            <div class="dropdown-menu o_filters_menu" role="menu">
+                <a role="menuitem" data-value="month"
+                   t-attf-class="dropdown-item #{'o_cfp_option_period' + (period == 'month' and ' selected' or '')}">
+                    Monthly
+                </a>
+                <a role="menuitem" data-value="week"
+                   t-attf-class="dropdown-item #{'o_cfp_option_period' + (period == 'week' and ' selected' or '')}">
+                    Weekly
+                </a>
+                <a role="menuitem" data-value="day"
+                   t-attf-class="dropdown-item #{'o_cfp_option_period' + (period == 'day' and ' selected' or '')}">
+                    Daily
+                </a>
+            </div>
+        </div>
+
+        <div class="o_dropdown dropdown o_cfp_set_period">
+            <a type="button" class="dropdown-toggle o_btn_set_period">
+                <span class="fa"/>
+                Number of Periods:
+                <t t-esc="num_period"/>
+            </a>
+        </div>
+
+        <div class="o_dropdown dropdown o_cfp_transaction_filter">
+            <a type="button" class="dropdown-toggle" data-toggle="dropdown">
+                <span class="fa fa-filter"/>
+                Transaction Types
+            </a>
+            <div class="dropdown-menu" role="menu">
+                <table>
+                    <td>
+                        <b>Cash In</b>
+                        <t t-foreach="cash_in" t-as="row">
+                            <a role="menuitem" class="dropdown-item">
+                                <label class="checkbox-inline">
+                                    <input class="o_cfp_option_transaction_type" type="checkbox"
+                                           t-att-data-value="row['code']" t-att-data-id="row['id']" checked="checked"
+                                           t-if="row['is_show']">
+                                        <t t-esc="row['name']"/>
+                                    </input>
+                                    <input class="o_cfp_option_transaction_type" type="checkbox"
+                                           t-att-data-value="row['code']" t-att-data-id="row['id']" t-else="">
+                                        <t t-esc="row['name']"/>
+                                    </input>
+                                </label>
+                            </a>
+                        </t>
+                    </td>
+
+                    <td>
+                        <b>Cash Out</b>
+                        <t t-foreach="cash_out" t-as="row">
+                            <a role="menuitem" class="dropdown-item">
+                                <label class="checkbox-inline">
+                                    <input class="o_cfp_option_transaction_type" type="checkbox"
+                                           t-att-data-value="row['code']" t-att-data-id="row['id']" checked="checked"
+                                           t-if="row['is_show']">
+                                        <t t-esc="row['name']"/>
+                                    </input>
+                                    <input class="o_cfp_option_transaction_type" type="checkbox"
+                                           t-att-data-value="row['code']" t-att-data-id="row['id']" t-else="">
+                                        <t t-esc="row['name']"/>
+                                    </input>
+                                </label>
+                            </a>
+                        </t>
+                    </td>
+                </table>
+                <table>
+                    <td>
+                        <b>Options</b>
+                        <t t-foreach="none_cash" t-as="row">
+                            <a role="menuitem" class="dropdown-item">
+                                <label class="checkbox-inline">
+                                    <input class="o_cfp_option_transaction_type" type="checkbox"
+                                           t-att-data-value="row['code']" t-att-data-id="row['id']" checked="checked"
+                                           t-if="row['is_show']">
+                                        <t t-esc="row['name']"/>
+                                    </input>
+                                    <input class="o_cfp_option_transaction_type" type="checkbox"
+                                           t-att-data-value="row['code']" t-att-data-id="row['id']" t-else="">
+                                        <t t-esc="row['name']"/>
+                                    </input>
+                                </label>
+                            </a>
+                        </t>
+                    </td>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>

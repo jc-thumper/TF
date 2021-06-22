@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--MAIN TEMPLATE to call LINE TEMPLATE-->
+        <template id="template_usa_bank_reconciliation" inherit_id="account_reports.main_template" primary="True">
+            <!--Sort Table-->
+            <xpath expr="//table/.." position="attributes">
+                <attribute name="class">table-responsive table-reconciliation</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_account_reports_page')]" position="attributes">
+                <attribute name="style">width:100%; margin:0; padding-top:0; padding-bottom:0</attribute>
+                <attribute name="class">container-fluid o_account_reports_page o_account_reports_no_print</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_account_reports_header')]" position="attributes">
+                <attribute name="class">o_account_reports_header usa_bank_reconciliation</attribute>
+            </xpath>
+
+            <xpath expr="//table[hasclass('o_account_reports_table')]" position="replace">
+                <table id="aml_table" class="o_account_reports_table table-sorter">
+                    <thead>
+                        <tr>
+                            <t t-foreach="lines.get('columns_header')[0]" t-as="column_header">
+                                <th>
+                                    <span>
+                                        <t t-if="column_header_first">Number</t>
+                                        <t t-elif="column_header_last"/>
+                                        <t t-else=""><t t-raw="column_header.get('name')"/></t>
+                                    </span>
+                                </th>
+                            </t>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <t t-if="lines.get('lines')">
+                            <t t-call="l10n_us_accounting.line_template_usa_bank_reconciliation" />
+                        </t>
+                    </tbody>
+                </table>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_account_reports_summary')]" position="attributes">
+                <attribute name="style">display:none</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_account_reports_summary')]" position="after">
+                <div id='action-buttons' class="mb16">
+                    <button class="btn btn-primary edit-info"
+                            t-att-data-id="bank_reconciliation_data_id">Edit Info</button>
+                    <button class="btn btn-primary bank-reconcile"
+                            t-att-data-id="bank_reconciliation_data_id">Reconcile</button>
+                    <button class="btn btn-secondary close-without-save"
+                            t-att-data-id="bank_reconciliation_data_id">Close without saving</button>
+                    <div class="pull-right">
+                        <button class="btn btn-primary" id="select_all">Select All</button>
+                        <button class="btn btn-primary" id="deselect_all">Deselect All</button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-5">
+                        <strong>Statement Ending Date:</strong> <span t-esc="today"/><br/>
+                        <strong>Beginning Balance:</strong> <span id="beginning_balance" t-esc="formatted_beginning"
+                                                                  t-att-data-value="beginning_balance"/>
+                    </div>
+
+                    <div class="col-offset-7">
+                        <strong>Ending Balance:</strong> <span id="ending_balance" t-esc="formatted_ending"
+                                                               t-att-data-value="ending_balance"/><br/>
+                        <strong>Cleared Balance:</strong> <span id="cleared_balance"/><br/>
+                        <strong>Difference:</strong> <span id="difference_amount" style="color:red"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-5">
+                        <strong>Items you have marked cleared:</strong>
+                    </div>
+                </div>
+                <div class="row mb8">
+                    <div style="margin-left: 9%;">
+                        <strong><span id="no_payments"/> Cleared Payments:</strong> <span id="cleared_payments"/><br/>
+                        <strong><span id="no_deposits"/> Cleared Deposits:</strong> <span id="cleared_deposits"/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+
+        <!--LINE TEMPLATE to render checkbox-->
+        <template id="line_template_usa_bank_reconciliation" inherit_id="account_reports.line_template" primary="True">
+            <!--Hide name column
+            <xpath expr='//td[@t-att-data-id="line[&apos;id&apos;]"]' position="attributes">
+                <attribute name="style">display:none</attribute>
+                <attribute name="t-att-data-model">line['model']</attribute>
+            </xpath>-->
+
+            <xpath expr='//td[@t-att-data-id="line[&apos;id&apos;]"]' position="attributes">
+                <attribute name="t-att-class">'reconcile_td_number ' + 'o_account_report_line ' + (line.get('unfoldable') and 'js_account_report_foldable' or '')</attribute>
+                <attribute name="t-att-data-model">line['model']</attribute>
+            </xpath>
+
+            <xpath expr="//span[hasclass('o_account_report_column_value')]/.." position="attributes">
+                <attribute name="t-att-class">'reconcile_td_' + str(column_index) + ' o_account_report_line ' + (column.get('class', lines.get('columns_header')[-1][column_index+line.get('colspan', 1)].get('class', '')))</attribute>
+            </xpath>
+
+            <xpath expr="//span[hasclass('o_account_report_column_value')]" position="replace">
+                <span class="o_account_report_column_value">
+                    <t t-if="column.get('blocked') != None">
+                        <input t-if="column['blocked'] == False" type="checkbox" name="blocked"
+                               t-att-value="column['blocked']" t-att-debit="column['debit']"
+                               t-att-credit="column['credit']"
+                               t-att-checkbox-model="line['model']"
+                               t-att-checkbox-id="line['id']"
+                               class="report-checkbox"
+                        />
+                        <input t-if="column['blocked'] != False" type="checkbox" name="blocked"
+                               t-att-value="column['blocked']" t-att-debit="column['debit']"
+                               t-att-credit="column['credit']" checked="checked"
+                               t-att-checkbox-model="line['model']"
+                               t-att-checkbox-id="line['id']"
+                               class="report-checkbox"
+                        />
+                    </t>
+                    <t t-if="column.get('blocked') == None">
+                        <t t-raw="column.get('name')"/>
+                    </t>
+                </span>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_account_reports_domain_dropdown')]/*[last()]" position="before">
+<!--                <li t-if="line['caret_options'] == 'account.batch.payment'">-->
+<!--                    <a role="menuitem" tabindex="-1" t-att-data-id="line['id']" data-object="account.batch.payment"-->
+<!--                       action="open_batch_deposit_document" class="dropdown-item">View Batch Payment</a>-->
+<!--                </li>-->
+                <li t-if="line['caret_options'] in ['account.move', 'account.invoice.in', 'account.invoice.out', 'account.payment']">
+                    <a role="menuitem" tabindex="-1" t-att-data-id="line['id']" action="open_document"
+                       groups="account.group_account_user" class="dropdown-item">View Journal Entry</a>
+                </li>
+            </xpath>
+        </template>
+    </data>
+</odoo>

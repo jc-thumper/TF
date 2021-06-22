@@ -1,0 +1,36 @@
+.summary_title_report_usa {
+  background-color: #ccecdb;
+  padding: 10px;
+  color: #005326;
+  border: 3px solid white;
+  text-align: right;
+  width: 120px;
+}
+
+.summary_title_total_report_usa {
+  font-weight: bold;
+  background-color: #ccecdb;
+  padding: 10px;
+  color: #005326;
+  border: 3px solid white;
+  text-align: right;
+  width: 120px;
+}
+
+.summary_values_report_usa {
+  width: 100px;
+  color: #000;
+  padding-right: 10px;
+  text-align: right;
+}
+
+.summary_values_total_report_usa {
+  font-weight: bold;
+  width: 100px;
+  color: #000;
+  padding-right: 10px;
+  text-align: right;
+}
+.o_account_reports_level0_no_border {
+    border-bottom: none !important;
+}

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_audit_trail_log_tree" model="ir.actions.act_window">
+        <field name="name">Audit Logs</field>
+        <field name="res_model">audit.trail.log</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem id="menu_audit_logs" name="Audit Logs"
+              parent="menu_audit" action="action_audit_trail_log_tree"/>
+
+    <record id="view_audit_trail_log_form" model="ir.ui.view">
+        <field name="name">audit.trail.log.form</field>
+        <field name="model">audit.trail.log</field>
+        <field name="arch" type="xml">
+            <form string="Audit Logs" create="false" edit="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <label for="res_name"/>
+                            <div class="o_row">
+                                <span>
+                                    <field name="res_reference" widget="reference"
+                                           attrs="{'invisible': [('res_reference', '=', '')]}"/>
+                                    <field name="res_name" attrs="{'invisible': [('res_reference', '!=', '')]}"/>
+                                </span>
+                                <span>
+                                    <button name="action_open_all_logs" icon="fa-arrow-right" type="object"
+                                            string="All Audit Logs" class="btn-link"/>
+                                </span>
+                            </div>
+                            <field name="parent_reference" widget="reference" string="Original Trans. No."
+                                   attrs="{'invisible': [('parent_reference', '=', '')]}"/>
+                            <field name="operation"/>
+                            <field name="author_id"/>
+                            <field name="res_partner_id"/>
+                            <field name="model_id" options="{'no_open': True}"/>
+                            <field name="rule_id"/>
+                        </group>
+                        <group>
+                            <field name="res_id" invisible="1"/>
+                            <field name="res_create_date"/>
+                            <field name="create_date"/>
+                            <field name="res_field_name"/>
+                            <field name="res_old_value"/>
+                            <field name="res_new_value"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_audit_trail_log_tree" model="ir.ui.view">
+        <field name="name">audit.trail.log.tree</field>
+        <field name="model">audit.trail.log</field>
+        <field name="arch" type="xml">
+            <tree string="Changed Fields" default_order="name desc"
+                  create="false" import="false"
+                  decoration-danger="operation == 'unlink'">
+                <field name="create_date"/>
+                <field name="res_create_date"/>
+                <field name="name"/>
+                <field name="author_id"/>
+                <field name="res_partner_id"/>
+                <field name="operation"/>
+                <field name="res_name"/>
+                <field name="parent_name" string="Original Trans. No."/>
+                <field name="model_id"/>
+                <field name="res_field_name"/>
+                <field name="res_old_value"/>
+                <field name="res_new_value"/>
+                <field name="res_id" invisible="1"/>
+                <field name="rule_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_audit_trail_log_search" model="ir.ui.view">
+        <field name="name">audit.trail.log.search</field>
+        <field name="model">audit.trail.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="res_name" string="Resource Name"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="author_id"/>
+                <field name="res_partner_id"/>
+                <field name="res_field_name"/>
+                <field name="rule_id"/>
+                <filter name="filter_create_logs" string="Create Operations" domain="[('operation', '=', 'create')]"/>
+                <filter name="filter_edit_logs" string="Edit Operations" domain="[('operation', '=', 'write')]"/>
+                <filter name="filter_delete_logs" string="Delete Operations" domain="[('operation', '=', 'unlink')]"/>
+                <separator/>
+                <group expand="0" string="Group By...">
+                    <filter string="Author" name="group_by_author" domain="[]" context="{'group_by': 'author_id'}"/>
+                    <filter string="Partner" name="group_by_partner" domain="[]"
+                            context="{'group_by': 'res_partner_id'}"/>
+                    <filter string="Resource Name" name="group_by_log_name" domain="[]"
+                            context="{'group_by': 'res_name'}"/>
+                    <filter string="Tracking Model" name="group_by_res_model" domain="[]"
+                            context="{'group_by': 'model_id'}"/>
+                    <filter string="Audit Rule" name="group_by_rule" domain="[]"
+                            context="{'group_by': 'rule_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>

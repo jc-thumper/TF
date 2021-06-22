@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record model="ir.rule" id="personalize_kpi_info_rule">
+            <field name="name">Personalized KPI Journal</field>
+            <field name="model_id" ref="account_dashboard.model_personalized_kpi_info"/>
+            <field name="global" eval="True"/>
+            <field name="domain_force">[('user_id','=',user.id),'|',('company_id','=',False),('company_id','in',user.company_ids.ids)]</field>
+        </record>
+
+    </data>
+</odoo>

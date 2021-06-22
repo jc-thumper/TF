@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--Add option to open Bill from Billable Expense-->
+        <template id="line_caret_expense" inherit_id="account_reports.line_caret_options">
+            <li role="presentation" position="after">
+                <li t-if="line['caret_options'] == 'billable.expenses'">
+                    <a role="menuitem" tabindex="-1" t-att-data-id="line['id']"
+                       data-object="account.move" action="open_bill_expense" class="dropdown-item" >View Bill
+                    </a>
+                </li>
+            </li>
+        </template>
+
+        <!--MAIN TEMPLATE to call LINE TEMPLATE-->
+        <template id="template_billable_expense_report" inherit_id="account_reports.main_template" primary="True">
+            <!--Remove UNPOSTED warning-->
+            <xpath expr="//div[hasclass('alert', 'alert-info')]" position="replace"/>
+
+            <xpath expr="//tbody" position="replace">
+                <t t-if="lines.get('lines')">
+                    <t t-call="account_billable_expense.line_template_billable_expense_report" />
+                </t>
+            </xpath>
+        </template>
+
+        <!--LINE TEMPLATE to render checkbox-->
+        <template id="line_template_billable_expense_report" inherit_id="account_reports.line_template" primary="True">
+            <xpath expr="//span[hasclass('o_account_report_column_value')]" position="replace">
+                <span class="o_account_report_column_value">
+                    <t t-if="column.get('blocked') != None">
+                        <input t-if="column['blocked'] == False" type="checkbox" name="blocked"
+                               t-att-value="column['blocked']" disabled="disabled" />
+                        <input t-if="column['blocked'] != False" type="checkbox" name="blocked"
+                               t-att-value="column['blocked']" checked="checked" disabled="disabled" />
+                    </t>
+                    <t t-if="column.get('blocked') == None">
+                        <t t-raw="column.get('name')"/>
+                    </t>
+                </span>
+            </xpath>
+        </template>
+
+        <!-- Hide filter by date n Search Template -->
+        <template id="search_template_expense" inherit_id="account_reports.search_template" primary="True">
+            <xpath expr="//div[hasclass('o_account_reports_filter_date')]" position="attributes">
+                <attribute name="class">btn-group o_dropdown o_account_reports_filter_date invisible</attribute>
+            </xpath>
+        </template>
+    </data>
+</odoo>

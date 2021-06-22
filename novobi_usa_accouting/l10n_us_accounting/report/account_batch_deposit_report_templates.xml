@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="print_batch_payment_fund_included" inherit_id="account_batch_payment.print_batch_payment">
+    <xpath expr='//tr[@t-foreach="page[&apos;payments&apos;]"]' position="replace">
+        <tr t-foreach="page['payments']" t-as="payment">
+            <td class="text-left"><t t-esc="payment['partner']"/></td>
+            <td class="text-left"><t t-esc="payment['date']" t-options='{"widget": "date"}'/></td>
+            <td class="text-left"><t t-esc="payment['communication']"/></td>
+            <td class="text-right"><t t-esc="payment['amount']"
+                                      t-options="{'widget': 'monetary', 'display_currency': page['currency']}"/></td>
+        </tr>
+    </xpath>
+</template>
+</odoo>

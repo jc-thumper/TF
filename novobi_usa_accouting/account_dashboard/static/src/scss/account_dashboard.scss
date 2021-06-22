@@ -1,0 +1,508 @@
+$color-db-green: #00A09D;
+$color-db-purple: #875a7b;
+$color-db-orange: #f19848;
+$color-db-blue: #649ce7;
+
+.o_dashboard_graph.o_journal {
+    margin: 0 !important;
+}
+
+.o_kanban_primary_right .journal_info {
+    justify-content: unset;
+}
+
+.journal_info canvas {
+    margin-top: -10px;
+}
+
+.content_kanban_view.o_graph_barchart {
+    min-height: unset !important;
+}
+
+$kpi-border-color: lighten(lightgrey, 5%);
+.kpi_value {
+    font-size: 30px;
+    white-space: nowrap;
+}
+.img-kpi-tile {
+    border-radius: 50%;
+    border: 1px solid $kpi-border-color !important;
+    object-fit: cover !important;
+    width: 50px;
+    height: 50px;
+}
+.img-kpi-trend {
+    height: 25px;
+}
+.panel-background {
+    background: linear-gradient(transparent 65%, $color-db-green 35%) no-repeat;
+}
+.text-kpi-title {
+    color: white !important;
+}
+.panel {
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    .panel-footer {
+        padding: 10px 15px;
+        background-color: #f5f5f5;
+        border-top: 1px solid #ddd;
+        border-bottom-right-radius: 3px;
+        border-bottom-left-radius: 3px;
+    }
+}
+//.panel-footer {
+//    padding: 10px 15px;
+//    background-color: #f5f5f5;
+//    border-top: 1px solid #ddd;
+//    border-bottom-right-radius: 3px;
+//    border-bottom-left-radius: 3px;
+//}
+.custom_button {
+    padding: 2px 8px;
+    color: #875a7b;
+    background-color: white;
+    cursor: pointer;
+    outline: none;
+    border-color: #875a7b;
+    border: 1px solid;
+    border-radius: 12px;
+}
+.custom_button:hover {
+    color: white;
+    background-color: #875a7b;
+    border-color: #875a7b;
+}
+.custom_button:active {
+    background-color: #492e40;
+    color: white;
+    border-color: #492e40;
+}
+.text_break {
+    box-sizing: border-box;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding-top: 30px;
+    font-weight: 500;
+}
+.text_period_type {
+    font-weight: 500;
+    font-size: 14px;
+}
+.items_header {
+    //display: flex !important;
+    width: 100%;
+    -webkit--webkit-flex-flow: row wrap;
+    flex-flow: row wrap;
+    -webkit-flex-flow: row wrap;
+    flex-flow: row wrap;
+    -webkit-box-pack: start;
+    -webkit-box-pack: start;
+    justify-content: flex-start;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    align-content: stretch;
+    overflow-x: visible;
+    .card_item {
+        //padding: 8px !important;
+        //flex: 1;
+        //min-width: 220px !important;
+        -webkit-box-flex: 1;
+        -webkit-flex: 1 1 auto;
+        flex: 1 1 auto;
+        min-width: 230px;
+        margin: 4px 8px;
+        position: relative;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-flow: column nowrap;
+        flex-flow: column nowrap;
+        justify-content: space-between;
+        width: 15.5%;
+
+        .hidden_item {
+            visibility: hidden;
+            height: 0;
+        }
+        .panel-custom {
+            margin: 0px !important;
+            height: 100%;
+            border-color: $kpi-border-color;
+            border-width: 2px;
+            .panel-heading {
+                height: 100%;
+                color: black;
+                padding: 10px 15px;
+                border-bottom: 1px solid transparent;
+                .comparison {
+                    .comparison_left {
+                        padding-right: 0px;
+                    }
+                    .comparison_right {
+                        padding-left: 12px;
+                        .comparison_label {
+                            position: absolute;
+                            bottom: 0px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.o_kanban_view.o_kanban_dashboard.o_account_dashboard_kanban {
+    $sale-table-spacing: 10px;
+    //$o-horizontal-padding: 16px;
+    //$o-kanban-record-margin: $o-horizontal-padding/2;
+    $odoo-view-background-color: #ffffff;
+    $screen-sm:                  768px;
+    $screen-sm-min:              $screen-sm;
+    $odoo-brand-optional     : #21b799;
+    $odoo-brand-lightsecondary: #e2e2e0;
+
+    .o_kanban_record {
+        //width: 30% !important;
+        min-height: 250px;
+    }
+    &.o_kanban_ungrouped {
+        .o_kanban_record {
+            min-width: 450px !important;
+            width: 30% !important;
+        }
+    }
+
+    .o_account_dashboard {
+        //margin: (0 - $o-kanban-record-margin) ($o-kanban-record-margin - $o-horizontal-padding) $o-kanban-record-margin;
+        //margin: 5px 10px 10px;
+        //.o-flex(1, 0, 100%);
+        flex: 1 0 100%;
+        //width: 100%;
+        //padding: 10px ($o-horizontal-padding - $sale-table-spacing);
+
+        background-color: $odoo-view-background-color;
+        position: relative;
+
+        .o_welcome_message {
+            width: 100%;
+            @include o-position-absolute($left: 0, $top: 0);
+            display: flex;
+            justify-content: center;
+
+            .o_welcome_image {
+                padding: 20px;
+            }
+            .o_welcome_content > a {
+                color: white;
+                display: inline-block;
+            }
+        }
+
+        > .o_demo {
+            opacity: 0.07;
+        }
+
+        > div {
+            display: inline-block;
+            vertical-align: top;
+            @media (min-width: $screen-sm-min) {
+                width: 100%;
+            }
+
+            > table {
+                margin-bottom: 0;
+                table-layout: fixed;
+                border-spacing: $sale-table-spacing 0px;
+                border-collapse: separate;
+                > tbody > tr > td {
+                    vertical-align: middle;
+                    text-align: center;
+                    border-top: 1px solid $odoo-view-background-color;
+                    width: 25%;
+
+                    height: 33px;
+
+                    span {
+                        display: inline;
+                    }
+
+                    a:hover {
+                        text-decoration: none;
+                    }
+
+                    &.o_main {
+                        background-color: $odoo-brand-optional;
+                        &:hover {
+                            background-color: darken($odoo-brand-optional, 10%);
+                        }
+                        a {
+                            color: white;
+                        }
+                    }
+                    &.o_warning {
+                        background-color: orange;
+                        &:hover {
+                            background-color: darken(orange, 10%);
+                        }
+                        a {
+                            color: white;
+                        }
+                    }
+                    &.o_secondary {
+                        background-color: $odoo-brand-lightsecondary;
+                        &:hover {
+                            background-color: darken($odoo-brand-lightsecondary, 10%);
+                        }
+                        a {
+                            color: black;
+                        }
+                    }
+                    &.o_highlight, .o_highlight {
+                        font-size: 20px;
+                    }
+                    &.o_text {
+                        text-align: left;
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+.nvd3.nv-scatter .nv-groups .nv-point {
+    stroke-opacity: .5 !important;
+    stroke-width: 4px !important;
+}
+
+.o_account_dashboard_sla_failed {
+    display: inline-block;
+    height: 12px;
+    width: 12px;
+    border-radius: 6px;
+    color: $red;
+}
+
+.bottom_align {
+    //position: absolute;
+    //bottom: 0px;
+}
+
+.content_kanban_view {
+    //height: 240px !important;
+    width: 100%;
+    min-height: 150px;
+    max-height: 100%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+////////////////////////////////////////////////////////////////////
+.slides {
+    list-style: none;
+    margin: 12px;
+    padding: 0;
+    width: 95%;
+}
+.content_kpis_selected {
+    overflow-y: scroll;
+    height: 400px;
+    overflow: auto;
+}
+.slide {
+    padding: 4px 16px;
+    background-color: #dae0e6;
+    margin: 0 0 8px;
+    text-align: left;
+    color: #000000;
+}
+
+.slide-placeholder {
+    background: #e6e6e6;
+    position: relative;
+}
+.slide-placeholder:after {
+    content: " ";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 15px;
+    background-color: #FFF;
+}
+
+////////////////////////
+// Less for kpi header
+////////////////////////
+.journal_header_setting {
+    display: block;
+    top: auto;
+    width: 80%;
+    min-width: 280px;
+}
+
+#setting_header_btn {
+    cursor: pointer;
+    font-size: 18px;
+    padding-left: 8px;
+}
+
+.close_setting_header_btn {
+    display: flex;
+    right: 8px;
+    cursor: pointer;
+    position: absolute;
+    z-index: 1000;
+
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+}
+
+.select_all_kpis_header_btn {
+    position: absolute;
+    display: flex;
+    bottom: 8px;
+    right: 8px;
+}
+
+
+.title_group_kpis {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.content-header {
+    display: flex;
+}
+
+.content_group_kpis {
+    display: flex;
+    list-style: none;
+    margin: 12px;
+    padding: 0;
+    width: 95%;
+}
+.journal_info {
+    //height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.ignore-padding-left {
+    padding-left: 0px !important;
+}
+
+
+///////// Selection /////////
+.custom-select {
+    position: relative;
+    font-family: Arial;
+}
+.custom-select select {
+    display: none; /*hide original SELECT element:*/
+}
+.select-selected {
+    background-color: DodgerBlue;
+}
+/*style the arrow inside the select element:*/
+.select-selected:after {
+    position: absolute;
+    content: "";
+    top: 14px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-color: #fff transparent transparent transparent;
+}
+/*point the arrow upwards when the select box is open (active):*/
+.select-selected.select-arrow-active:after {
+    border-color: transparent transparent #fff transparent;
+    top: 7px;
+}
+/*style the items (options), including the selected item:*/
+.select-items div,.select-selected {
+    color: #ffffff;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-color: transparent transparent rgba(0, 0, 0, 0.1) transparent;
+    cursor: pointer;
+    user-select: none;
+}
+/*style items (options):*/
+.select-items {
+    position: absolute;
+    background-color: DodgerBlue;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+}
+/*hide the items when the select box is closed:*/
+.select-hide {
+    display: none;
+}
+.select-items div:hover, .same-as-selected {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.background_field_select {
+    width: unset;
+    float: right;
+    border-width: 1px;
+    border-style: solid;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin: 4px;
+    margin-top: 30px;
+}
+
+.format_field_select {
+    font-weight: 500;
+    color: black;
+    border: 0px;
+    padding-right: 12px;
+    overflow: hidden;
+    position: relative;
+    background: url(/account_dashboard/static/src/img/select_arrow.png) no-repeat right;
+    -webkit-appearance: none !important;
+    appearance:none;
+    background-size: 12px 12px;
+}
+.format_field_select:after{
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #f00;
+    position: absolute;
+    top: 40%;
+    right: 5px;
+    content: "";
+    z-index: 98;
+}
+.format_field_select select{
+    width: 220px;
+    border: 0;
+    position: relative;
+    z-index: 99;
+    background: none;
+}

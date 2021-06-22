@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="action_report_billable_expense" model="ir.actions.client">
+            <field name="name">Pending Billable Expense</field>
+            <field name="tag">account_report</field>
+            <field name="context" eval="{'model': 'billable.expense.report'}"/>
+        </record>
+
+        <menuitem id="menu_action_account_report_billable_expense"
+                  name="Pending Billable Expense" action="action_report_billable_expense"
+                  parent="account_reports.account_reports_partners_reports_menu" groups="account.group_account_user"/>
+    </data>
+</odoo>

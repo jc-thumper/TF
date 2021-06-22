@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates xml:space="preserve">
+    <t t-name="JournalDataItemView">
+        <div class="journal_info">
+
+            <div>
+                <!--Card contain time period selection-->
+                <t t-if="data.selection.length > 0">
+                    <div class="clearfix mb-2">
+                        <div class="background_field_select">
+                            <select class="format_field_select" id="Period" name="Period">
+                                <!--Show option in selection-->
+                                <t t-foreach="data.selection" t-as="item">
+                                    <!--Default option-->
+                                    <t t-if="item.d">
+                                        <option selected=""><t t-esc="item.n"/></option>
+                                    </t>
+                                    <t t-else="">
+                                        <option><t t-esc="item.n"/></option>
+                                    </t>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                </t>
+                <div class="row">
+                    <div class="col-5 o_kanban_primary_left">
+                    </div>
+                    <div class="col-7 o_kanban_primary_right">
+                        <div class="info-view"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content_kanban_view"/>
+        </div>
+    </t>
+
+    <t t-name="InfoView">
+        <t t-foreach="info" t-as="line">
+            <div class="row">
+                <div class="col-7">
+                    <a type="object" name="open_action" context="{'search_default_draft': '1'}">
+                        <span t-attf-title="#{line.name}">
+                            <t t-esc="line.name"/></span>
+                    </a>
+                </div>
+                <div class="col-5 text-right">
+                    <span><t t-esc="line.summarize"/></span>
+                </div>
+            </div>
+        </t>
+    </t>
+</templates>

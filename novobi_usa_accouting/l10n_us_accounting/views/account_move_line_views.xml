@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--Tree View-->
+    <record id="view_move_line_tree_1099" model="ir.ui.view">
+        <field name="name">view.move.line.tree.1099</field>
+        <field name="model">account.move.line</field>
+        <field eval="1000" name="priority"/>
+        <field name="arch" type="xml">
+            <tree string="Journal Items" create="false" editable="top">
+                <field name="date" readonly="1"/>
+                <field name="move_id" required="0" groups="account.group_account_user" readonly="1"/>
+                <field name="journal_id" options='{"no_open":True}' readonly="1"/>
+                <field name="name" readonly="1"/>
+                <field name="ref" readonly="1"/>
+                <field name="statement_id" invisible="1" readonly="1"/>
+                <field name="partner_id" options='{"no_open":True}' readonly="1"/>
+                <field name="account_id" options='{"no_open":True}' domain="[('company_id', '=', company_id)]"
+                       groups="account.group_account_user" readonly="1"/>
+                <field name="analytic_account_id" groups="account.group_account_user" readonly="1"/>
+                <field name="analytic_tag_ids" widget="many2many_tags" groups="analytic.group_analytic_tags"
+                       readonly="1"/>
+                <field name="reconciled" invisible="1" readonly="1"/>
+                <field name="full_reconcile_id" readonly="1"/>
+                <field name="debit" readonly="1"/>
+                <field name="credit" readonly="1"/>
+                <field name="amount_currency" readonly="1" groups="base.group_multi_currency"/>
+                <field name="currency_id" readonly="1" invisible="1"/>
+                <field name="date_maturity" readonly="1"/>
+                <field name="company_currency_id" invisible="1" readonly="1"/>
+                <field name="company_id" invisible="1" readonly="1"/>
+                <field name="eligible_for_1099"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_eligible_1099_search" model="ir.ui.view">
+        <field name="name">view.eligible.1099.search</field>
+        <field name="model">account.move.line</field>
+        <field name="inherit_id" ref="account.view_account_move_line_filter"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="name" position="before">
+                <filter name="filter_eligible_1099_lines" domain="[('eligible_for_1099', '=', True)]"
+                        string="Eligible Transactions Only"/>
+                <separator/>
+            </field>
+        </field>
+    </record>
+
+    <record id="action_see_detailed_move_lines" model="ir.actions.act_window">
+        <field name="name">Journal Items</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_id" ref="view_move_line_tree_1099"/>
+        <field name="view_mode">tree,pivot,graph,form,kanban</field>
+        <field name="search_view_id" ref="view_eligible_1099_search"/>
+        <field name="context">{"search_default_filter_eligible_1099_lines": 1}</field>
+    </record>
+</odoo>

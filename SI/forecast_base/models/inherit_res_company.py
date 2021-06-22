@@ -76,6 +76,9 @@ class ResCompany(models.Model):
     forecast_level_id = fields.Many2one('forecast.level.strategy',
                                         string='Forecast Level Strategy',
                                         required=True)
+    forecast_level = fields.Char(string="Forecast Level",
+                                 compute='_compute_forecast_level',
+                                 search='_search_forecast_level')
 
     ###############################
     # ONCHANGE FIELDS
@@ -92,6 +95,11 @@ class ResCompany(models.Model):
     ###############################
     # COMPUTED FIELDS
     ###############################
+    def _compute_forecast_level(self):
+        for record in self:
+            if not record.forecast_level:
+                record.forecast_level = record.forecast_level_id.name
+
     @api.depends('sync_time')
     def _compute_sync_time_manual(self):
         for company in self:
@@ -155,6 +163,12 @@ class ResCompany(models.Model):
 
             hour_sync_data = self._get_free_hour(order_hour)
         return hour_sync_data
+
+    ###############################
+    # SEARCH FUNCTIONS
+    ###############################
+    def _search_forecast_level(self, operator, value):
+        return [('forecast_level_id.name', operator, value)]
 
     ###############################
     # PRIVATE FUNCTIONS

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="template_usa_1099_report" inherit_id="account_reports.main_template" primary="True">
+            <xpath expr="//div[hasclass('o_account_reports_summary')]" position="attributes">
+                <attribute name="style">display:none</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_account_reports_summary')]" position="after">
+                <div id='action-buttons' class="mb16">
+                    <div class="pull-right">
+                        <button class="btn btn-primary" id="view_all_transaction" t-att-data-options="options">
+                            See All Transactions
+                        </button>
+                    </div>
+                    <br/>
+                    <br/>
+                </div>
+            </xpath>
+        </template>
+    </data>
+</odoo>

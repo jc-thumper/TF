@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+
+forecasting_config_parameter_base_user,forecasting_config_parameter_base_user,engine_connector.model_forecasting_config_parameter,base.group_user,1,0,0,0
+forecasting_config_settings_base_user,forecasting_config_settings_base_user,engine_connector.model_forecasting_config_settings,base.group_user,1,0,0,0

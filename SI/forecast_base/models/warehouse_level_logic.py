@@ -909,7 +909,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
         return updated_ids
 
     def get_conflict_fields_for_forecast_result(self, **kwargs):
-        return ['product_id', 'company_id', 'warehouse_id', 'pub_time', 'start_date']
+        return ['product_id', 'company_id', 'warehouse_id', 'pub_time', 'start_date', 'period_type']
 
     def update_records_for_forecast_result_adjust_line(self, obj, model, created_date, **kwargs):
         """ Function create/update table forecast_result_adjust_line from table forecast_result data which are

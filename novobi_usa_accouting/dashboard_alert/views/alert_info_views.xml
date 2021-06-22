@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="alert_info_popup_form" model="ir.ui.view">
+        <field name="name">alert.info.popup.form</field>
+        <field name="model">alert.info</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <center>
+                        <group>
+                            <group>
+                                <field name="condition" required="1" attrs="{'readonly':[('is_creator', '=', 'in_not_creator')]}"/>
+                                <field name="subject" required="1" attrs="{'readonly':[('is_creator', '=', 'in_not_creator')]}"/>
+                                <field name="creator_id" readonly="1" required="1"/>
+                            </group>
+                            <group>
+                                <field name="value" required="1"
+                                       attrs="{'readonly':[('is_creator', '=', 'in_not_creator')]}"/>
+                                <field name="cond_time_send" required="1" attrs="{'readonly':[('is_creator', '=', 'in_not_creator')]}"/>
+                                <field name="is_creator" invisible="1" attrs="{'readonly':[('is_creator', '=', 'in_not_creator')]}"/>
+                                <field name="recipient_ids"
+                                       widget="many2many_tags"
+                                       options="{'color_field': 'color'}"
+                                       attrs="{'invisible' : [('is_creator', '=', 'in_not_creator')]}"/>
+                            </group>
+                        </group>
+                    </center>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="alert_info_popup_search" model="ir.ui.view">
+        <field name="name">alert.info.popup.search</field>
+        <field name="model">alert.info</field>
+        <field name="arch" type="xml">
+            <search string="Alerts">
+                <field name="subject" string="Alerts"/>
+                <field name="self_active"/>
+                <filter name="active_self_created"
+                        string="Subscribed or Self-created"
+                        domain="['|', ('self_active','=',True), ('is_creator', 'in', ['is_creator', 'is_not_recipient'])]"
+                        help="Show active or self-created alerts"/>
+                <filter name="active" string="Subscribed" domain="[('self_active','=',True)]" help="Show active alerts"/>
+                <filter name="inactive" string="Unsubscribed" domain="[('self_active','=',False)]" help="Show inactive alerts"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="alert_info_popup_tree" model="ir.ui.view">
+        <field name="name">alert.info.popup.tree</field>
+        <field name="model">alert.info</field>
+        <field name="arch" type="xml">
+            <tree default_order="condition,value">
+                <field name="condition"/>
+                <field name="subject"/>
+                <field name="creator_id"/>
+                <field name="is_creator" invisible="1"/>
+
+                <field name="cond_time_send"/>
+                <field name="formatted_value"/>
+                <field name="self_active" widget="boolean_toggle" attrs="{'invisible': [('is_creator', '=', 'is_not_recipient')]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="alert_info_popup_form_action"
+            model="ir.actions.act_window">
+        <field name="name">alert.info.popup.form.action</field>
+        <field name="res_model">alert.info</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="dashboard_alert.alert_info_popup_tree"/>
+        <field name="target">new</field>
+    </record>
+</odoo>

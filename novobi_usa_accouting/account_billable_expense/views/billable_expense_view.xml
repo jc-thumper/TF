@@ -1,0 +1,33 @@
+<odoo>
+    <record id="billable_expenses_tree" model="ir.ui.view">
+        <field name="name">billable_expenses_tree</field>
+        <field name="model">billable.expenses</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="currency_id" invisible="1" />
+                <field name="invoice_currency_id" invisible="1" />
+                <field name="invoice_line_id" invisible="1"/>
+                <field name="bill_date" />
+                <field name="description" string="Line Item Description" />
+                <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" invisible="1"/>
+                <field name="amount_currency" widget="monetary" options="{'currency_field': 'invoice_currency_id'}" string="Amount"/>
+                <field name="source_document" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="billable_expenses_form" model="ir.ui.view">
+        <field name="name">billable_expenses_form</field>
+        <field name="model">billable.expenses</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="description" readonly="1"/>
+                    <field name="amount" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="customer_id" context="{'res_partner_search_mode': 'customer'}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

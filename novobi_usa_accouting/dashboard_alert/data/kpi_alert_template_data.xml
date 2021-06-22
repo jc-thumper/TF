@@ -1,0 +1,137 @@
+<odoo>
+    <record id="dashboard_alert.kpi_alert_mail_template" model="mail.template">
+        <field name="name">KPI Alert Mail</field>
+        <field name="model_id" ref="dashboard_alert.model_alert_channel"/>
+        <field name="auto_delete" eval="True"/>
+        <field name="email_from">${user.email}</field>
+        <field name="body_html"><![CDATA[
+        <tbody>
+                <!-- HEADER -->
+                <tr>
+                    <td align="center" style="min-width: 590px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                            <tr><td valign="middle">
+                                <span style="font-size: 10px;">KPIs Alert Information</span><br/>
+                                <span style="font-size: 20px; font-weight: bold;">
+                                    ${ctx.get('subject')}
+                                </span>
+                            </td><td valign="middle" align="right">
+                                <img src="/logo.png?company=${ctx.get('comp_info').id}" style="padding: 0px; margin: 0px; height: auto; width: 80px;" alt="${ctx.get('comp_info').name}"/>
+                            </td></tr>
+                            <tr><td colspan="2" style="text-align:center;">
+                                <hr width="100%" style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin: 16px 0px 16px 0px;"/>
+                            </td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <!-- CONTENT -->
+                <tr>
+                    <td align="center" style="min-width: 590px;">
+                        <table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; padding: 0px 8px 0px 8px; border-collapse:separate;">
+                            <tr><td valign="top" style="font-size: 13px;">
+                                <div>
+                                    Dear ${ctx.get('user_receive')},<br /><br />
+                                    ${ctx.get('kpi_id_name')} of ${ctx.get('comp_info').name} was ${ctx.get('condition_info')}.
+
+                                    <table style="border-spacing: 0; width: 100%; max-width: 600px;">
+                                        <tr>
+                                            <td style="border-collapse: collapse; background-color: #ffffff; border-left: 1px solid #e7e7e7; border-right: 1px solid #e7e7e7; line-height: 21px; padding: 0 20px 10px 20px; text-align: left;"><br/>
+                                                <span style="color: #3d466e; font-size: 18px; font-weight: 500; line-height: 23px;">
+                                                    ${ctx.get('kpi_id_name')}
+                                                </span>
+
+                                                <span style="float: right;">
+                                                    <a href="${ctx.get('server_link')}"
+                                                        style="white-space:nowrap;text-decoration:none;color:#4996b2"
+                                                        target="_blank">
+                                                        View more
+                                                    </a>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border-collapse: collapse; margin: 0; padding:0;">
+                                                <table style="width: 100%;
+                                    border-spacing: 0;
+                                    background-color: #f9f9f9;
+                                    border: 1px solid #e7e7e7;
+                                    border-top: none;">
+                                                    <tr>
+                                                        <td style="border-collapse: collapse; margin: 0; padding: 0; border-top: 2px solid #9a5b82;">
+                                                            <table style="width: 100%; border-spacing: 0; margin: 0; padding: 0;">
+                                                                <tr>
+                                                                    <td style="border-collapse: collapse; padding: 20px; text-align: center;">
+                                                                        <span style="color: #9a5b82; font-size: 35px; font-weight: bold; text-decoration: none; line-height: 36px;">${ctx.get('kpi_value')}</span><br/>
+                                                                        <span style="color: #888888; display: inline-block; font-size: 12px; line-height: 18px; text-transform: uppercase;">${ctx.get('period_type')}</span>
+                                                                        % if ctx.get('gap_value_change', 0) != 0.0:
+                                                                        <span style="color: #888888; display: block; font-size: 12px; line-height: 18px; text-transform: uppercase;">
+                                                                            % if ctx.get('gap_value_change', 0) > 0.0:
+                                                                            <span style="color: #0bbc22;">▲</span>${ctx.get('margin')}
+                                                                            % endif
+                                                                            % if ctx.get('gap_value_change', 0) < 0.0:
+                                                                            <span style="color: #ff0000;">▼</span>${ctx.get('margin')}
+                                                                            %endif
+                                                                        </span>
+                                                                        % else
+                                                                        <span style="color: #888888; display: block; font-size: 12px; line-height: 18px; text-transform: uppercase;">
+                                                                            NO CHANGE
+                                                                        </span>
+                                                                        %endif
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!--% set order = 0-->
+                                    <p style="font-family:'Benton Sans',Verdana,Arial,sans-serif;color:#4996b2">
+                                        % for btn in ctx.get('list_btn'):
+                                            % if loop.index > 1:
+                                            <a>&nbsp;&nbsp;|&nbsp;&nbsp;</a>
+                                            % endif
+                                            <!--% set order = order + 1-->
+                                            <a href="${btn.url}"
+                                                style="white-space:nowrap;text-decoration:none;color:#4996b2"
+                                                target="_blank">
+                                                ${btn.name}
+                                            </a>
+                                        % endfor
+                                    </p>
+
+                                </div>
+                            </td></tr>
+                            <tr><td style="text-align:center;">
+                                <hr width="100%" style="background-color:rgb(204,204,204);border:medium none;clear:both;display:block;font-size:0px;min-height:1px;line-height:0; margin: 16px 0px 16px 0px;"/>
+                            </td></tr>
+                        </table>
+                    </td>
+                </tr>
+                <!--&lt;!&ndash; FOOTER &ndash;&gt;-->
+                <!--<tr>-->
+                    <!--<td align="center" style="min-width: 590px;">-->
+                        <!--<table border="0" cellpadding="0" cellspacing="0" width="590" style="min-width: 590px; background-color: white; font-size: 11px; padding: 0px 8px 0px 8px; border-collapse:separate;">-->
+                            <!--<tr><td valign="middle" align="left">-->
+                                <!--${ctx.get('comp_info').name}-->
+                            <!--</td></tr>-->
+                            <!--<tr><td valign="middle" align="left" style="opacity: 0.7;">-->
+                                <!--${ctx.get('comp_info').phone}-->
+                                <!--% if ctx.get('comp_info').email-->
+                                <!--| <a href="'mailto:%s' % ${ctx.get('comp_info').email}" style="text-decoration:none; color: #454748;">${ctx.get('comp_info').email}</a>-->
+                                <!--% endif-->
+                                <!--% if ctx.get('comp_info').website-->
+                                <!--| <a href="'%s' % ${ctx.get('comp_info').website}" style="text-decoration:none; color: #454748;">-->
+                                <!--${ctx.get('comp_info').website}-->
+                            <!--</a>-->
+                                <!--% endif-->
+                            <!--</td></tr>-->
+                        <!--</table>-->
+                    <!--</td>-->
+                <!--</tr>-->
+            </tbody>
+]]></field>
+    </record>
+
+</odoo>

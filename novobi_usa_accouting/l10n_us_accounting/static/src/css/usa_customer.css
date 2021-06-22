@@ -1,0 +1,55 @@
+.contact-address-type {
+    color: purple;
+}
+
+.open-payment-usa {
+    cursor: pointer;
+}
+
+.remove-payment-usa {
+    cursor: pointer;
+    color: white;
+    background-color: grey;
+    font-size: 12px;
+    padding: 4px;
+    border-radius: 5px;
+    margin-left: 4px;
+}
+
+.remove-payment-usa:hover {
+    background-color: red;
+}
+
+.payment-line {
+    margin-right: 5px;
+    line-height: 25px;
+}
+
+.payment-date {
+    line-height: 15px;
+}
+
+.o_payment_label {
+    padding-right: 0px;
+}
+
+.left-col {
+    width: 250px;
+    padding-right: 40px;
+}
+
+.right-col {
+    width: 100px;
+}
+
+.o_apply_filter_amount {
+    margin-top: 10px;
+}
+
+.text_margin_bottom {
+    margin-bottom: 0px;
+}
+
+.max-content-table-amount {
+    width: 100%;
+}

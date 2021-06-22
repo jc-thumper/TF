@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="tf_product_category_report">
+        <field name="name">tf.product.category_report</field>
+        <field name="model">product.product</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="display_name"/>
+                <field name="qty_available"/>
+                <field name="virtual_available" string="Forecasted"/>
+                <field name="reserved_quantity"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_tf_product_category_report" model="ir.actions.act_window">
+        <field name="name">Product Category Report</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="tf_product_category_report"/>
+        <field name="domain">[('type', '=', 'product')]</field>
+        <field name="context">{'group_by': 'categ_id'}</field>
+    </record>
+
+    <menuitem id="menu_action_tf_product_category_report"
+              action="action_tf_product_category_report"
+              parent="stock.menu_warehouse_report" sequence="100"/>
+
+</odoo>

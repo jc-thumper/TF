@@ -248,8 +248,8 @@ class ForecastResultDaily(models.Model):
             number_of_record = len(line_ids)
 
             from odoo.tools import config
-            threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                     DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+            threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
             allow_trigger_queue_job = config.get('allow_trigger_queue_job',
                                                  ALLOW_TRIGGER_QUEUE_JOB)
 

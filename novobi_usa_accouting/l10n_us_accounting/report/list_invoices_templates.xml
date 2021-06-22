@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+            id="account_invoice_report_list_invoices"
+            model="account.move"
+            string="List of Transactions"
+            report_type="qweb-pdf"
+            name="l10n_us_accounting.account_invoice_view_tree"
+            file="l10n_us_accounting.account_invoice_view_tree"
+    />
+    <template id="l10n_us_accounting.account_invoice_view_tree">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div>
+                        Date:
+                        <span t-esc="context_timestamp(datetime.datetime.today()).strftime('%m/%d/%y')"/>
+                    </div>
+                    <center>
+                        <h2 class="title-list" style="margin-bottom:50px;">
+                            <span>List of </span>
+                            <t t-if="docs[0].is_write_off">
+                                <span>Write-offs</span>
+                            </t>
+                            <t t-else="">
+                                <span t-field="docs[0].type"/><span>s</span>
+                            </t>
+                        </h2>
+                    </center>
+                    <div class="row">
+                        <table class="table table-condensed" name="invoice_line_table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer/Vendor</th>
+                                    <th>Number</th>
+                                    <th>Salesperson</th>
+                                    <th>Total</th>
+                                    <th>Amount Due</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="docs" t-as="o">
+                                    <td>
+                                        <span t-field="o.invoice_date"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.partner_id"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.user_id"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.amount_total"/>
+                                    </td>
+                                    <td>
+                                        <span t-field="o.amount_residual"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

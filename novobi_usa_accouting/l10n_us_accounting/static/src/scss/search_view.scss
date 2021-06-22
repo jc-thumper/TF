@@ -1,0 +1,35 @@
+.o_search_options {
+  .o_closed_menu_amount {
+    position: relative;
+    a {
+        &:before {
+          @include o-caret-right;
+          @include o-position-absolute($top: 50%, $left: 10px);
+          margin-top: (-$caret-width);
+      }
+    }
+  }
+
+  .o_filters_menu {
+
+    .input_range {
+      @include o-search-options-dropdown-custom-item;
+      margin-bottom: 8px;
+      .o_or_filter { // or between conditions
+        display: none; // hidden for the first condition
+        @include o-position-absolute($top: 7px, $left: -18px);
+      }
+    }
+    .input_range + .input_range {
+      .input_range {
+        display: block; // displayed from second condition
+      }
+    }
+
+
+    .o_add_filter_menu_amount { // apply and add buttons
+      display: none; // Needed by the webclient
+      @include o-search-options-dropdown-custom-item;
+    }
+  }
+}

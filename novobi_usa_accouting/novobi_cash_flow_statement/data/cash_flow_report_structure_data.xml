@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="cash.flow.report.structure" id="cash_flow_report_structure_record">
+            <field name="name">Advance Cash Flow Statement</field>
+        </record>
+    </data>
+</odoo>

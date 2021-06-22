@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add Write Off Bad Debt form content -->
+    <record id="view_account_write_off_bad_debt_form_usa" model="ir.ui.view">
+        <field name="name">account_write_off_bad_debt_form_usa</field>
+        <field name="model">account.invoice.refund.usa</field>
+        <field name="arch" type="xml">
+            <form string="Write Off">
+                <group>
+                    <group>
+                        <field name="reason"/>
+                        <label for="write_off_amount"/>
+                        <div name="write_off_amount_div" class="o_row">
+                            <field name="write_off_amount"/>
+                            <field name="company_currency_id" options="{'no_create': True, 'no_open': True}" groups="base.group_multi_currency"/>
+                        </div>
+                    </group>
+                    <group>
+                        <field name="date" string="Write Off Date"/>
+                        <field name="account_id" domain="[('company_id', '=', company_id), ('deprecated', '=', False)]" groups="account.group_account_user"/>
+                        <field name="company_id" options="{'no_create': True}" invisible="1"/>
+                    </group>
+                </group>
+                <footer>
+                    <button string='Create and Apply' name="action_write_off" type="object" class="btn-primary"
+                            context="{'create_and_apply': True}"/>
+                    <button string='Create and View' name="action_write_off" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <!-- Add Write Off Bad Debt popup -->
+    <record id="action_account_write_off_bad_debt_usa" model="ir.actions.act_window">
+        <field name="name">Write Off</field>
+        <field name="res_model">account.invoice.refund.usa</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_account_write_off_bad_debt_form_usa"/>
+        <field name="context">{'is_write_off': True}</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

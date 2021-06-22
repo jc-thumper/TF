@@ -5,6 +5,7 @@ from datetime import datetime
 from odoo import api, fields, _, models
 
 from ..utils.datetime_utils import get_date_range_by_num_of_cols, find_index_of_time_range
+from ..utils.string_utils import get_correct_period_type
 from ...si_core.utils.string_utils import PeriodType
 from ...si_core.utils.datetime_utils import convert_from_datetime_to_str_datetime
 
@@ -20,14 +21,24 @@ class MrpProductionSchedule(models.Model):
     ###############################
     # INIT FUNCTION
     ###############################
-    def init_forecast_result_from_mps_data(self):
+    def init_forecast_result_from_mps_data(self, demand_fore_data_dict=None):
         """
             Synchronizing data from MPS to Forecast Base
+        :param demand_fore_data_dict: {
+            (product_id, company_id, warehouse_id): [
+                {
+                    'date': date
+                    'forecast_qty': the demand forecast value
+                },
+                ...
+            ]
+        }
+        :type demand_fore_data_dict: dict
         :return:
         :rtype:
         """
         # Get all the MPS demand forecast value
-        demand_fore_data_dict = self.get_demand_fore_data_dict()
+        demand_fore_data_dict = demand_fore_data_dict or self.get_demand_fore_data_dict()
 
         # Init the MPS demand forecast data for all companies
         if demand_fore_data_dict:
@@ -90,6 +101,65 @@ class MrpProductionSchedule(models.Model):
                     'created_date': created_date,
                     'forecast_level': forecast_level
                 })
+
+    def init_product_fore_config_from_mps_data(self, demand_fore_data_dict=None):
+        """
+            With the MPS data, create the Product Forecast Configuration for all products
+            in the MPS
+        :param demand_fore_data_dict: {
+            (product_id, company_id, warehouse_id): [
+                {
+                    'date': date
+                    'forecast_qty': the demand forecast value
+                },
+                ...
+            ]
+        }
+        :type demand_fore_data_dict: dict
+        :return:
+        :rtype:
+        """
+        # Get all the MPS demand forecast value
+        demand_fore_data_dict = demand_fore_data_dict or self.get_demand_fore_data_dict()
+
+        # Create the product forecast configuration for all products in MPS
+        if demand_fore_data_dict:
+            prod_fore_config_env = self.env['product.forecast.config'].sudo()
+
+            # Get all companies mps settings info
+            mps_settings_dict = self.get_all_companies_mps_settings()
+
+            # Get the product forecast configuration dict to prevent duplicate issue
+            product_config_dict = self._get_product_fore_config_dict()
+            new_demand_fore_data_dict = {
+                key: value
+                for key, value in demand_fore_data_dict.items()
+                if key not in product_config_dict
+            }
+
+            new_prod_fore_config = []
+            # Generate the configuration
+            for key, _ in new_demand_fore_data_dict.items():
+                product_id, company_id, warehouse_id = key
+                company_period_type = mps_settings_dict.get(company_id, {})\
+                    .get('period_type', 'daily')
+
+                new_prod_fore_config.append({
+                    'product_id': product_id,
+                    'company_id': company_id,
+                    'warehouse_id': warehouse_id,
+
+                    'auto_update': False,
+                    'period_type_custom': company_period_type,
+                    'period_type': company_period_type,
+                    'frequency_custom': company_period_type,
+                    'frequency': company_period_type,
+                    'no_periods_custom': 0
+                })
+
+            # Create the Product Forecast Configuration
+            if new_prod_fore_config:
+                prod_fore_config_env.create(new_prod_fore_config)
 
     ###############################
     # HELPER FUNCTION
@@ -214,3 +284,64 @@ class MrpProductionSchedule(models.Model):
             mps_demand_forecast_dict[(product_id, company_id, warehouse_id)] = data
 
         return mps_demand_forecast_dict
+
+    def get_all_companies_mps_settings(self):
+        """
+            Return a dict contains all companies' mps settings included period_type and
+            num_of_cols
+        :return: {
+            company_id: {
+                'period_type': company.manufacturing_period,
+                'num_of_cols': company.manufacturing_period_to_display,
+            }
+        }
+        :rtype: dict
+        """
+        mps_settings_dict = {}
+        companies = self.env['res.company'].search([])
+
+        for company in companies:
+            period_type = get_correct_period_type(company.manufacturing_period) or PeriodType.WEEKLY_TYPE
+            num_of_cols = company.manufacturing_period_to_display
+
+            mps_settings_dict.setdefault(company.id, {
+                'period_type': period_type,
+                'num_of_cols': num_of_cols
+            })
+
+        return mps_settings_dict
+
+    def _get_product_fore_config_dict(self):
+        """
+            Get all the products' forecast configuration included id
+            and period_type
+        :return: {
+            (product_id, company_id, warehouse_id): {
+                'id': product_fore_config.id
+                'period_type': product_fore_config.period_type
+            }
+        }
+        :rtype: dict
+        """
+        product_config_dict = {}
+        product_configs = self.env['product.forecast.config'].search([])
+        for config in product_configs:
+            config_id = config.id
+            product_id = config.product_id.id
+            company_id = config.company_id.id
+            warehouse_id = config.warehouse_id.id
+
+            if config.auto_update and config.forecast_group_id:
+                period_type = config.forecast_group_id.period_type
+            else:
+                period_type = config.period_type_custom
+
+            product_config_dict.setdefault(
+                (product_id, company_id, warehouse_id),
+                {
+                    'id': config_id,
+                    'period_type': period_type
+                }
+            )
+
+        return product_config_dict

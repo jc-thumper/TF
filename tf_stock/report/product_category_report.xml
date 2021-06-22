@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
     <record model="ir.ui.view" id="tf_product_category_report">
         <field name="name">tf.product.category_report</field>

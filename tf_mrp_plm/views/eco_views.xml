@@ -5,7 +5,7 @@
             <div>
                 <div class="mt16">
                     <p>
-                        ECO create the new BOM - <a href="#" data-oe-model="mrp.bom" t-att-data-oe-id="bom.id"><t t-esc="bom.display_name"/></a>
+                        Current BOM is replaced due to a validated ECO, please check the new BOM: <a href="#" data-oe-model="mrp.bom" t-att-data-oe-id="bom.id"><t t-esc="bom.display_name"/></a>
                     </p>
                 </div>
             </div>

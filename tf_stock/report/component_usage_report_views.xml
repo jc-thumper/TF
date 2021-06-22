@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record model="ir.ui.view" id="component_usage_report">
+    <record model="ir.ui.view" id="mrp_component_usage_report">
         <field name="name">component.usage.report</field>
         <field name="model">stock.move.line</field>
         <field name="arch" type="xml">

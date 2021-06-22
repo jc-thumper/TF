@@ -1,18 +1,24 @@
 from odoo import api, fields, models, _
 
-import time
-from datetime import timedelta
-
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
-    vendor_id = fields.Many2one('res.partner', string='Main Vendor', store=True, compute='_compute_main_vendor')
+    vendor_id = fields.Many2one(
+        comodel_name='res.partner',
+        string='Main Vendor',
+        compute='_compute_main_vendor',
+        store=True,
+        help="Technical field for getting first vendor set on product"
+    )
 
     @api.depends('seller_ids', 'seller_ids.sequence')
     def _compute_main_vendor(self):
         for record in self:
-            record.vendor_id = record.seller_ids[:1].name.id
+            if not record.seller_ids:
+                record.vendor_id = False
+            else:
+                record.vendor_id = record.seller_ids[0].name
 
 
 class ComponentUsageReport(models.Model):
@@ -23,9 +29,11 @@ class ComponentUsageReport(models.Model):
     work_center_id = fields.Many2one('mrp.workcenter', 'Work Center', related='workorder_id.workcenter_id')
 
     def _search_vendor(self, operator, value):
+        sml_ids = []
         if operator == 'ilike':
-            vendors_ids = self.env['res.partner'].search([('name', 'ilike', value)]).ids
-            products_ids = self.env['product.product'].search([('vendor_id', 'in', vendors_ids)]).ids
-            sml_ids = self.env['stock.move.line'].search([('product_id', 'in', products_ids)]).ids
+            vendors = self.env['res.partner'].search([('name', 'ilike', value)])
+            products = self.env['product.product'].search([('vendor_id', 'in', vendors.ids)])
+            sml = self.env['stock.move.line'].search([('product_id', 'in', products.ids)])
+            sml_ids = sml.ids
 
         return [('id', 'in', sml_ids)]

@@ -6,8 +6,8 @@
         <field name="arch" type="xml">
             <form string="Production Filter">
                 <group>
-                    <field name="start_date"/>
-                    <field name="end_date"/>
+                    <field name="start_date" required="1"/>
+                    <field name="end_date" required="1"/>
                 </group>
                 <footer>
                     <button name="get_report" string="Get Report" type="object" class="btn-primary"/>

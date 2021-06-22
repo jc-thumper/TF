@@ -17,7 +17,8 @@ class ExcelExportInherit(ExcelExport, http.Controller):
                 if not row[index_demand_forecast]:
                     row[index_demand_forecast] = 0
                 if row[index] and row[index] < datetime.datetime.today().date():
-                    for i in range(0, index):
+                    # Exclude Forecasted quantity at date/ID
+                    for i in range(0, index - 1):
                         rows[row_index + 1][i] = row[i]
                 else:
                     results.append(row)

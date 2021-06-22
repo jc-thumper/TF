@@ -91,7 +91,7 @@ class ProductForecastConfig(models.Model):
     ###############################
     __auto_update_config = True
     _rec_name = 'warehouse_id'
-    product_clsf_info_id = fields.Many2one('product.classification.info', required=True)
+    product_clsf_info_id = fields.Many2one('product.classification.info')
 
     forecast_group_id = fields.Many2one('forecast.group',
                                         related='product_clsf_info_id.forecast_group_id',

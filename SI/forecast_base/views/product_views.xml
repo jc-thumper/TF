@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="forecast_base_product_view_form" model="ir.ui.view">
+        <field name="name">forecast.base.product.form</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id"
+               ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='purchase']" position="after">
+                <page string="Forecasting" name="forecasting">
+                    <group name="product_forecast_config" string="Product Forecast Configuration">
+                        <field name="forecast_config_ids" colspan="2" nolabel="1">
+                            <tree editable="bottom" create="0" delete="0">
+                                <field name="warehouse_id" readonly="1"/>
+                                <field name="period_type" readonly="1"/>
+                            </tree>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

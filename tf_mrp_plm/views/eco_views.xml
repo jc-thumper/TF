@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <template id="exception_change_eco">
+            <div>
+                <div class="mt16">
+                    <p>
+                        Current BOM is replaced due to a validated ECO, please check the new BOM: <a href="#" data-oe-model="mrp.bom" t-att-data-oe-id="bom.id"><t t-esc="bom.display_name"/></a>
+                    </p>
+                </div>
+            </div>
+        </template>
+    </data>
+</odoo>

@@ -11,7 +11,7 @@ class MrpEco(models.Model):
             mos = self.env['mrp.production'].search([('bom_id', '=', self.bom_id.id), ('state', '=', 'confirmed')])
             if mos:
                 render_context = {
-                    'bom': self.bom_id,
+                    'bom': self.new_bom_id,
                 }
                 mos.write({'is_changed_bom': True})
                 mos.activity_schedule_with_view('mail.mail_activity_data_warning', user_id=mos.user_id.id or self.env.uid,

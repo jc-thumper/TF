@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//header" position="after">
                 <field name="is_changed_bom" invisible="1"/>
-                <div class="alert alert-warning text-center" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('bom_id.active', '=', True)]}">
+                <div class="alert alert-warning text-center" role="alert" style="margin-bottom:0px;" attrs="{'invisible': [('is_changed_bom', '=', False)]}">
                     An ECO changed the BOM structure, Please check again or go to chatter to see the new BOM.
                 </div>
             </xpath>

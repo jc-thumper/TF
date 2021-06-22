@@ -69,8 +69,8 @@ class ProductForecastConfig(models.Model):
 
     def get_selected_field(self):
         return ['id', 'product_id', 'company_id', 'warehouse_id', 'period_type_custom',
-                           'no_periods_custom', 'frequency_custom', 'auto_update', 'create_date', 'next_call',
-                           'write_date']
+                'no_periods_custom', 'frequency_custom', 'auto_update', 'create_date', 'next_call',
+                'write_date']
 
     def get_prod_fore_conf_records(self, domain, order_by, limit):
         """
@@ -609,18 +609,18 @@ class ProductForecastConfig(models.Model):
                         if gap_dates < min_available_gap:
                             available_date = last_receive_result + timedelta(days=math.ceil(min_available_gap))
                             raise ValidationError(_('The Next Execution Date of product %s '
-                                                  'in warehouse %s current is next %s day(s), should be after %s.',
-                                                   (product_name,
-                                                    warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT),)
-                                                ))
+                                                    'in warehouse %s current is next %s day(s), should be after %s.',
+                                                    (product_name,
+                                                     warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT),)
+                                                    ))
 
                         if gap_dates > max_available_gap:
                             available_date = last_receive_result + timedelta(days=math.ceil(max_available_gap))
                             raise ValidationError(_('The Next Execution Date of product %s '
-                                                  'in warehouse "%s" current is next %s day(s), it should be before %s.',
-                                                   (product_name,
+                                                    'in warehouse "%s" current is next %s day(s), it should be before %s.',
+                                                    (product_name,
                                                      warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT), )
-                                                ))
+                                                    ))
 
     def _is_auto_update_config(self):
         auto_update = True

@@ -14,7 +14,7 @@ from psycopg2.extensions import AsIs
 from odoo.tools import float_compare
 from odoo.addons.si_core.utils import database_utils, datetime_utils
 from odoo.addons.si_core.utils.string_utils import PeriodType
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo import models, fields, api, _
 
@@ -708,13 +708,15 @@ class ForecastResultAdjustLine(models.Model):
                 from odoo.tools import config
                 threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
                                                          DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
+                        .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(updated_ids, call_from_engine=True)
                 else:
                     self.env['forecast.result.daily'].sudo() \
-                        .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(updated_ids, call_from_engine=True)
 
             # commit new change to the database

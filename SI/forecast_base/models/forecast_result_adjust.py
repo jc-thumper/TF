@@ -354,22 +354,7 @@ class ForecastResultAdjust(models.Model):
     ###############################
     # PRIVATE FUNCTIONS
     ###############################
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_forecast_result_base_on_lines(self, line_ids, update_time=False, call_from_engine=False):
-        try:
-            # NOTE: avoid using the method ``browse``, this function still return a record set for all record
-            # even if this record id doesn't exits in the database
-            lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])
-            self.update_forecast_result(lines, update_time, call_from_engine)
-        except Exception as e:
-            _logger.exception('function update_forecast_result_base_on_write_time have some exception: %s' % e)
-            raise RetryableJobError('Must be retried later')
-
-    def update_forecast_result(self, lines, update_time=False, call_from_engine=False):
+    def _update_forecast_result(self, lines, update_time=False, call_from_engine=False):
         """ Function update table `forecast_result_adjust` base on `lines`,
         Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
 
@@ -588,3 +573,29 @@ class ForecastResultAdjust(models.Model):
             # Step 3: search any forecast result adjust item have been satisfied
             fras = self.search(fras_domain)
             fras.update_adjust_related_info()
+
+    ###############################
+    # JOB FUNCTIONS
+    ###############################
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_forecast_result_base_on_lines(self, line_ids, update_time=False, call_from_engine=False):
+        """ Function update table `forecast_result_adjust` base on `lines`,
+        Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
+
+        :param list[int] line_ids:
+        :param bool update_time:
+        :param bool call_from_engine:
+        :return:
+        """
+        try:
+            # NOTE: avoid using the method ``browse``, this function still return a record set for all record
+            # even if this record id doesn't exits in the database
+            lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])
+            self._update_forecast_result(lines, update_time, call_from_engine)
+        except Exception as e:
+            _logger.exception('function update_forecast_result_base_on_lines have some exception: %s' % e)
+            raise RetryableJobError('Must be retried later')

@@ -368,8 +368,8 @@ class ResCompany(models.Model):
         return companies
 
     def get_forecast_level_by_company(self, company_ids):
-        """
-        Get forecast level by company dict
+        """ Get the forecast level for each company and return as a dict
+
         :param company_ids:
         :type company_ids: list(int)
         :return:

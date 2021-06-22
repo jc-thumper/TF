@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_component_usage_public,component_usage_public,tf_stock.model_mrp_component_usage_report_wizard,,1,0,0,0
+access_component_usage_user,component_usage_user,tf_stock.model_mrp_component_usage_report_wizard,base.group_user,1,1,1,1
+access_production.wizard_public,production.wizard_public,tf_stock.model_mrp_production_report_wizard,,1,0,0,0
+access_production.wizard_user,cproduction.wizard_user,tf_stock.model_mrp_production_report_wizard,base.group_user,1,1,1,1

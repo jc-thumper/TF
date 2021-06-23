@@ -69,16 +69,16 @@ class MrpProductionSchedule(models.Model):
                             forecast_qty = line.get('forecast_qty')
 
                             company_fore_result_data.append({
-                                "product_id": product_id,
-                                "company_id": company_id,
-                                "warehouse_id": warehouse_id,
-                                "lot_stock_id": None,
-                                "algorithm": None,
-                                "period_type": period_type,
-                                "pub_time": now,
-                                "start_date": start_date,
-                                "end_date": end_date,
-                                "forecast_result": forecast_qty,
+                                'product_id': product_id,
+                                'company_id': company_id,
+                                'warehouse_id': warehouse_id,
+                                'lot_stock_id': None,
+                                'algorithm': None,
+                                'period_type': period_type,
+                                'pub_time': now,
+                                'start_date': start_date,
+                                'end_date': end_date,
+                                'forecast_result': forecast_qty,
                             })
 
                 # 1. Transform data
@@ -86,21 +86,22 @@ class MrpProductionSchedule(models.Model):
                     list_data=company_fore_result_data
                 )
 
-                # 2. Get time when records are created in the database
-                created_date = company_transformed_fore_result_data[0].get('create_date')
+                if company_transformed_fore_result_data:
+                    # 2. Get time when records are created in the database
+                    created_date = company_transformed_fore_result_data[0].get('create_date')
 
-                # 3. Update data to the table
-                forecast_level = company.forecast_level_id.name
-                fore_result_env.create_or_update_records(
-                    vals=company_transformed_fore_result_data,
-                    forecast_level=forecast_level
-                )
+                    # 3. Update data to the table
+                    forecast_level = company.forecast_level_id.name
+                    fore_result_env.create_or_update_records(
+                        vals=company_transformed_fore_result_data,
+                        forecast_level=forecast_level
+                    )
 
-                # 4. Push next actions into queue jobs if it is existing
-                fore_result_env.trigger_next_actions(**{
-                    'created_date': created_date,
-                    'forecast_level': forecast_level
-                })
+                    # 4. Push next actions into queue jobs if it is existing
+                    fore_result_env.trigger_next_actions(**{
+                        'created_date': created_date,
+                        'forecast_level': forecast_level
+                    })
 
     def init_product_fore_config_from_mps_data(self, demand_fore_data_dict=None):
         """

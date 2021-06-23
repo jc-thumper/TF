@@ -953,7 +953,8 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                           fr.product_id IS NOT DISTINCT FROM fral.product_id AND
                           fr.warehouse_id IS NOT DISTINCT FROM fral.warehouse_id AND
                           fr.company_id IS NOT DISTINCT FROM fral.company_id AND
-                          fr.start_date = fral.start_date
+                          fr.start_date = fral.start_date AND
+                          fr.period_type = fral.period_type
                     WHERE fr.id IS NOT NULL
                     ON CONFLICT (product_id, company_id, warehouse_id, period_type, start_date)
                     DO UPDATE SET 
@@ -980,7 +981,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 updated_ids = [item.get('id') for item in obj.env.cr.dictfetchall()]
 
         except Exception as e:
-            _logger.exception("Error in the function update_records_for_summarize_data_line.", exc_info=True)
+            _logger.exception("Error in the function update_records_for_forecast_result_adjust_line.", exc_info=True)
             raise e
         return updated_ids
 

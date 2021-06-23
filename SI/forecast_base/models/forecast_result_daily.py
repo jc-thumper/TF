@@ -167,23 +167,23 @@ class ForecastResultDaily(models.Model):
         self.env.cr.execute(sql_query, sql_params)
         self.env.cr.commit()
 
-    def convert_forecast_result_to_daily_value(self, fral_ids):
+    def convert_forecast_result_to_daily_value(self, frals):
         """
         Convert forecast value from the table Forecast Result Adjust Line to daily value
         base on each period type
-        :param list[int] fral_ids: list of record id in the table Forecast Result Adjust Line
+        :param list[int] frals: list of record id in the table Forecast Result Adjust Line
         :return: None
         """
-        unique_fral_ids = np.unique(fral_ids).tolist()
+        unique_fral_ids = np.unique(frals).tolist()
 
         # get company_id from ids of Forecast Result Adjust Line
-        fral_ids = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
-                                                                       ['id', 'company_id'])
+        frals = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
+                                                                    ['id', 'company_id'])
 
         fral_records = [{
             'id': record.get('id'),
             'company_id': record.get('company_id')[0]
-        } for record in fral_ids]
+        } for record in frals]
 
         company_ids = list(set([item.get('company_id') for item in fral_records]))
 
@@ -202,7 +202,7 @@ class ForecastResultDaily(models.Model):
             if filtered_fral_ids:
                 forecast_level_obj.create_or_update_records_in_forecast_result_daily(obj=self, model_name=self._name,
                                                                                      line_ids=filtered_fral_ids)
-        self.rounding_forecast_value(fral_ids)
+        self.rounding_forecast_value(unique_fral_ids)
 
     def rounding_forecast_value(self, line_ids=None):
         """
@@ -220,7 +220,8 @@ class ForecastResultDaily(models.Model):
                         ON prod.product_tmpl_id = tmpl.id
                       JOIN uom_uom uu
                         ON tmpl.uom_id = uu.id
-                    WHERE frd.forecast_adjust_line_id = line.id AND line.id IN %s AND prod.id = line.product_id;""", (tuple(line_ids), ))
+                    WHERE frd.forecast_adjust_line_id = line.id AND line.id IN %s AND prod.id = line.product_id;""",
+                             (tuple(line_ids), ))
             self._cr.commit()
 
     @job(retry_pattern={1: 1 * 60,
@@ -240,7 +241,7 @@ class ForecastResultDaily(models.Model):
         try:
             # mark rows are processing
             self.update_status_of_records(line_ids, is_active=False)
-            self.convert_forecast_result_to_daily_value(fral_ids=line_ids)
+            self.convert_forecast_result_to_daily_value(frals=line_ids)
             # mark rows are done
             self.update_status_of_records(line_ids, is_active=True)
 

@@ -111,35 +111,6 @@ class ForecastResultAdjustLine(models.Model):
          "A summarize data can only be assigned to one adjustment record!"),
     ]
 
-    def init(self):
-        # Adding Index
-        self._cr.execute("""
-            SELECT indexname FROM pg_indexes 
-            WHERE indexname = 'forecast_result_adjust_line_pcw_id_ed_idx'
-        """)
-        if not self._cr.fetchone():
-            self._cr.execute("""
-                CREATE INDEX forecast_result_adjust_line_pcw_id_ed_idx 
-                ON forecast_result_adjust_line (product_id, company_id, warehouse_id, end_date)
-            """)
-
-        self._cr.execute("""
-                    SELECT indexname FROM pg_indexes 
-                    WHERE indexname = 'forecast_result_adjust_line_create_date_idx'
-                """)
-        if not self._cr.fetchone():
-            self._cr.execute("""
-                        CREATE INDEX forecast_result_adjust_line_create_date_idx 
-                        ON forecast_result_adjust_line (create_date)
-                    """)
-
-        # Adding Constrain
-        self._cr.execute('SELECT indexname FROM pg_indexes WHERE indexname = %s', ('forcasting_fral_rule_id',))
-        if not self._cr.fetchone():
-            self._cr.execute(
-                """CREATE UNIQUE INDEX forcasting_fral_rule_id ON forecast_result_adjust_line 
-                (product_id, company_id, warehouse_id, period_type, start_date)""")
-
     ###############################
     # ONCHANGE FUNCTIONS
     ###############################
@@ -931,3 +902,35 @@ class ForecastResultAdjustLine(models.Model):
         _logger.info('List of constrain columns use for forecast result adjust line is %s' % key_columns)
 
         return key_columns
+
+    ###############################
+    # INIT FUNCTIONS
+    ###############################
+    def create_index(self):
+        # Adding Index
+        self._cr.execute("""
+            SELECT indexname FROM pg_indexes 
+            WHERE indexname = 'forecast_result_adjust_line_pcw_id_ed_idx'
+        """)
+        if not self._cr.fetchone():
+            self._cr.execute("""
+                CREATE INDEX forecast_result_adjust_line_pcw_id_ed_idx 
+                ON forecast_result_adjust_line (product_id, company_id, warehouse_id, end_date)
+            """)
+
+        self._cr.execute("""
+                    SELECT indexname FROM pg_indexes 
+                    WHERE indexname = 'forecast_result_adjust_line_create_date_idx'
+                """)
+        if not self._cr.fetchone():
+            self._cr.execute("""
+                        CREATE INDEX forecast_result_adjust_line_create_date_idx 
+                        ON forecast_result_adjust_line (create_date)
+                    """)
+
+        # Adding Constrain
+        self._cr.execute('SELECT indexname FROM pg_indexes WHERE indexname = %s', ('forcasting_fral_rule_id',))
+        if not self._cr.fetchone():
+            self._cr.execute(
+                """CREATE UNIQUE INDEX forcasting_fral_rule_id ON forecast_result_adjust_line 
+                (product_id, company_id, warehouse_id, period_type, start_date)""")

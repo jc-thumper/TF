@@ -16,4 +16,7 @@ def setup_mps_connector(cr, registry):
     mps_env.init_forecast_result_from_mps_data(demand_fore_data_dict=demand_fore_data_dict)
     # 2. Initialize the Product Forecast Configuration
     mps_env.init_product_fore_config_from_mps_data(demand_fore_data_dict=demand_fore_data_dict)
+    # 3. Summarize the historical demand in the case that don't have the available summarised data
+    # when computing the Reordering points
+    mps_env.init_summarized_historical_data()
 

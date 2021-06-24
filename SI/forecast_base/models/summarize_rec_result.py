@@ -103,7 +103,7 @@ class SummarizeRecResult(models.Model):
     def update_summarize_values_in_summarize_data_line(self, created_date, **kwargs):
         forecast_level = kwargs.get('forecast_level')
         summarize_data_line_obj = self.env['summarize.data.line'].sudo()
-        summarize_data_line_obj.with_delay(max_retries=12)\
+        summarize_data_line_obj\
             .update_summarize_data(
                 created_date=created_date,
                 **{
@@ -119,7 +119,7 @@ class SummarizeRecResult(models.Model):
         try:
             sql_query = """
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_pid_cid_wid_summarize_rec_result_idx
-                ON summarize_rec_result (product_id, company_id, warehouse_id, start_date, pub_time, period_type);               
+                ON summarize_rec_result (product_id, company_id, warehouse_id, start_date, period_type);               
             """
             t1 = time()
             self.env.cr.execute(sql_query)

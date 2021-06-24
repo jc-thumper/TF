@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
 
 from odoo import api, fields, _, models
@@ -381,6 +381,60 @@ class MrpProductionSchedule(models.Model):
 
         return mps_settings_dict
 
+    def create_forecast_result_for_all_periods(self, product_forecast_obj):
+        """
+
+        :param product_forecast_obj:
+        :type product_forecast_obj: MrpProductForecast
+        :return:
+        :rtype:
+        """
+        mps = product_forecast_obj.production_schedule_id
+        mps_product_fores = mps.forecast_ids
+
+        product_id = mps.product_id.id
+        warehouse_id = mps.warehouse_id.id
+
+        company = mps.company_id
+        company_id = company.id
+
+        now = datetime.now()
+        forecast_datetime = datetime.combine(product_forecast_obj.date, datetime.min.time())
+
+        fore_result_env = self.env['forecast.result']
+
+        # Generate an empty forecast result for all period type
+        fore_result_data = []
+        for period_type, _ in PeriodType.LIST_PERIODS:
+            start_date, end_date = get_start_end_date_value(forecast_datetime, period_type)
+            fore_result_data.append({
+                'product_id': product_id,
+                'company_id': company_id,
+                'warehouse_id': warehouse_id,
+                'lot_stock_id': None,
+                'algorithm': None,
+                'period_type': period_type,
+                'pub_time': now,
+                'start_date': convert_from_datetime_to_str_datetime(start_date),
+                'end_date': convert_from_datetime_to_str_datetime(end_date),
+                'forecast_result': 0,
+            })
+
+        # Update forecast result for all period
+        for fore_result_item in fore_result_data:
+            start_date = fore_result_item.get('start_date')
+            end_date = fore_result_item.get('end_date')
+
+            product_fores_in_period = mps_product_fores.filtered(
+                lambda pro_fore: start_date <= convert_from_datetime_to_str_datetime(pro_fore.date) <= end_date
+            )
+
+            fore_result_item['forecast_result'] = sum(product_fores_in_period.mapped('forecast_qty'))
+
+        self._create_or_update_model_data(company=company,
+                                          data=fore_result_data,
+                                          model=fore_result_env)
+
     ###############################
     # PRIVATE FUNCTION
     ###############################
@@ -637,3 +691,24 @@ class MrpProductionSchedule(models.Model):
                 'created_date': created_date,
                 'forecast_level': forecast_level
             })
+
+
+class MrpProductForecast(models.Model):
+    _inherit = "mrp.product.forecast"
+
+    ###############################
+    # FUNCTION
+    ###############################
+    @api.model
+    def create(self, values):
+        res = super(MrpProductForecast, self).create(values)
+        res.update_forecast_result()
+        return res
+
+    def write(self, values):
+        res = super(MrpProductForecast, self).write(values)
+        self.update_forecast_result()
+        return res
+
+    def update_forecast_result(self):
+        self.env['mrp.production.schedule'].create_forecast_result_for_all_periods(self)

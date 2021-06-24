@@ -20,7 +20,13 @@ class MrpProductionSchedule(models.Model):
     ###############################
     # CONSTANT FUNCTION
     ###############################
-    MIN_NUMBER_OF_COLS_MPS = 6
+    NO_POINT_FORECAST_RESULT_DATA = {
+        PeriodType.DAILY_TYPE: 180,
+        PeriodType.WEEKLY_TYPE: 26,
+        PeriodType.MONTHLY_TYPE: 6,
+        PeriodType.QUARTERLY_TYPE: 2,
+        PeriodType.YEARLY_TYPE: 1
+    }
 
     NO_POINT_SUMMARIZED_DATA = {
         PeriodType.DAILY_TYPE: 25,
@@ -60,11 +66,14 @@ class MrpProductionSchedule(models.Model):
             companies = self.env['res.company'].search([])
             for company in companies:
                 company_id = company.id
-                num_of_cols = max(company.manufacturing_period_to_display, self.MIN_NUMBER_OF_COLS_MPS)
+                company_no_cols = company.manufacturing_period_to_display
 
                 # Summarize demand forecast for all period type
                 company_fore_result_data = []
                 for period_type, _ in PeriodType.LIST_PERIODS:
+                    num_of_cols = max(company_no_cols,
+                                      self.NO_POINT_FORECAST_RESULT_DATA.get(period_type, company_no_cols))
+
                     product_demand_fore_dict = self.summarize_demand_fore_by_period(
                         period_type=period_type,
                         company_id=company_id,
@@ -239,11 +248,7 @@ class MrpProductionSchedule(models.Model):
         }
         :rtype: dict
         """
-        num_of_cols = max(num_of_cols, self.MIN_NUMBER_OF_COLS_MPS) \
-            if num_of_cols is not None \
-            else max(self.env['res.company'].search([('id', '=', company_id)], limit=1).manufacturing_period_to_display,
-                     self.MIN_NUMBER_OF_COLS_MPS)
-
+        # Get the demand forecast dict
         demand_fore_data_dict = demand_fore_data_dict or self.get_demand_fore_data_dict()
 
         now = datetime.now()
@@ -297,8 +302,17 @@ class MrpProductionSchedule(models.Model):
         """
         mps_demand_forecast_dict = {}
 
+        # Get the product' info from MPS
+        self._cr.execute("""
+            SELECT product_id, company_id, warehouse_id
+            FROM mrp_production_schedule;
+        """)
+        for line in self._cr.dictfetchall():
+            key = (line.get('product_id'), line.get('company_id'), line.get('warehouse_id'))
+            mps_demand_forecast_dict.setdefault(key, {})
+
         # Get the demand forecast data from MPS
-        query = """
+        sql_query = """
             SELECT mps.product_id, mps.company_id, mps.warehouse_id, 
                    forecast.forecast_qty, forecast.date
             FROM mrp_production_schedule mps
@@ -307,28 +321,37 @@ class MrpProductionSchedule(models.Model):
         """
 
         if date_from and date_to:
-            query += """
+            sql_query += """
                     AND forecast.date >= {}
                     AND forecast.date <= {}
             """.format(date_from, date_from)
 
-        query += """
+        sql_query += """
             ORDER BY forecast.date ASC
         """
-        self._cr.execute(query)
+        self._cr.execute(sql_query)
 
         for line in self._cr.dictfetchall():
-            product_id = line.get('product_id')
-            company_id = line.get('company_id')
-            warehouse_id = line.get('warehouse_id')
+            key = (line.get('product_id'), line.get('company_id'), line.get('warehouse_id'))
 
-            data = mps_demand_forecast_dict.get((product_id, company_id, warehouse_id)) or []
+            data = mps_demand_forecast_dict.get(key) or []
             data.append({
                 'date': line.get('date'),
                 'forecast_qty': line.get('forecast_qty')
             })
 
-            mps_demand_forecast_dict[(product_id, company_id, warehouse_id)] = data
+            mps_demand_forecast_dict[key] = data
+
+        # If the product is in the MPS, but there's no demand forecast point for that products,
+        # create a fake demand forecast point with forecast_qty is 0 and date is current date
+        # to keep the MPS continuing to calculate the forecast demand for that product
+        now = datetime.now().date()
+        for key, data in mps_demand_forecast_dict.items():
+            if not data:
+                mps_demand_forecast_dict[key] = [{
+                    'date': now,
+                    'forecast_qty': 0
+                }]
 
         return mps_demand_forecast_dict
 

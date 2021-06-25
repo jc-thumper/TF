@@ -271,12 +271,14 @@ class ForecastResultAdjustLine(models.Model):
             from odoo.tools import config
             threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                          DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record < threshold_trigger_queue_job:
-                self.env['forecast.result.adjust'].sudo()\
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12) \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
             else:
-                self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12) \
+                self.env['forecast.result.adjust'].sudo()\
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
 
         return lines
@@ -301,12 +303,14 @@ class ForecastResultAdjustLine(models.Model):
             from odoo.tools import config
             threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                          DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record <= threshold_trigger_queue_job:
-                forecast_result_adjust_env.sudo()\
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                forecast_result_adjust_env.sudo().with_delay(max_retries=12) \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
             else:
-                forecast_result_adjust_env.sudo().with_delay(max_retries=12) \
+                forecast_result_adjust_env.sudo()\
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
 
         return lines
@@ -326,14 +330,17 @@ class ForecastResultAdjustLine(models.Model):
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                              DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(line_ids, call_from_engine=True)
-                else:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(line_ids, call_from_engine=True)
+                else:
+                    self.env['forecast.result.daily'].sudo() \
+                        .update_forecast_result_daily(line_ids, call_from_engine=True)
+
             return res
         else:
             return
@@ -746,14 +753,17 @@ class ForecastResultAdjustLine(models.Model):
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                              DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(lines.ids, call_from_engine=True)
-                else:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(lines.ids, call_from_engine=True)
+                else:
+                    self.env['forecast.result.daily'].sudo() \
+                        .update_forecast_result_daily(lines.ids, call_from_engine=True)
+
         except Exception:
             _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)
             raise RetryableJobError('Must be retried later')

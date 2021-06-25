@@ -8,6 +8,8 @@ from pytz import timezone, UTC
 
 from odoo import api, fields, models
 
+from odoo.addons import decimal_precision as dp
+
 from ..utils.config_utils import ForecastLevelLogicConfig
 from odoo.addons.si_core.utils.datetime_utils import DEFAULT_DATE_FORMAT
 
@@ -82,12 +84,16 @@ class ResCompany(models.Model):
 
     quotation_included = fields.Boolean(default=False)
     quotation_affect_days = fields.Integer(required=True, default=0,
-                                           help="A quotation will be considered as a sales order if its creation date is"
-                                                "within the previous \"Quotation Affect Days\" days from today's date.\n"
-                                                "These special quotations will be summarized when the system runs the forecast engine.")
+                                           help="A quotation will be considered as a sales order if its creation "
+                                                "date is within the previous \"Quotation Affect Days\" days from "
+                                                "today's date.\n"
+                                                "These special quotations will be summarized when the system runs the "
+                                                "forecast engine.")
     quotation_affect_percentage = fields.Float(required=True, default=0.0,
-                                               help="\"Quotation Affect Percentage\" determines what percentage of ordered quantity in a special quotation "
-                                                    "will be treated as the sales order quantity when running forecast.")
+                                               help="\"Quotation Affect Percentage\" determines what percentage of "
+                                                    "ordered quantity in a special quotation will be treated as the "
+                                                    "sales order quantity when running forecast.",
+                                               digits=dp.get_precision('Adjust Percentage'))
 
     ###############################
     # ONCHANGE FIELDS

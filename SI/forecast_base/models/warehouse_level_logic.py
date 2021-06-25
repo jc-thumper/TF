@@ -856,7 +856,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             raise e
 
     def get_conflict_fields_for_summarize_rec_result(self, **kwargs):
-        return ['product_id', 'company_id', 'warehouse_id', 'start_date', 'period_type']
+        return ['product_id', 'company_id', 'warehouse_id', 'start_date', 'period_type', 'pub_time']
 
     def get_latest_records_dict_for_summarize_rec_result(self, obj, model, created_date, **kwargs):
         data_dict = []

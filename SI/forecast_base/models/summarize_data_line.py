@@ -6,7 +6,7 @@ import math
 from odoo.addons.queue_job.job import job
 from odoo.addons.queue_job.exception import RetryableJobError
 
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo import models, fields, api
 
@@ -84,11 +84,14 @@ class SummarizeDataLine(models.Model):
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                              DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
-                    self.sudo().update_adjust_line_table(segment_ids)
-                else:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.sudo().with_delay(max_retries=12).update_adjust_line_table(segment_ids)
+                else:
+                    self.sudo().update_adjust_line_table(segment_ids)
+
         except Exception:
             _logger.exception('Function update_summarize_data have some exception', exc_info=True)
             raise RetryableJobError('Must be retried later')

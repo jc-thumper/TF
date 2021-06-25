@@ -8,7 +8,7 @@ from odoo.addons.si_core.utils.string_utils import get_table_name
 from odoo.addons.si_core.utils.database_utils import get_db_cur_time, append_log_access_fields_to_data
 from odoo.addons.si_core.utils.request_utils import get_key_value_in_dict
 
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from psycopg2 import IntegrityError
 from time import time
@@ -183,9 +183,12 @@ class DemandClassificationResult(models.Model):
         from odoo.tools import config
         threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                      DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+        allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                             ALLOW_TRIGGER_QUEUE_JOB)
 
-        if number_of_record < threshold_trigger_queue_job:
-            product_clsf_info_obj.sudo().update_product_classification_infos(
+        if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+            product_clsf_info_obj.sudo().with_delay(max_retries=12) \
+                .update_product_classification_infos(
                 json_data=new_records, recomputed_fields=['demand_clsf_id'],
                 source_table='demand_classification_result',
                 **{
@@ -195,16 +198,15 @@ class DemandClassificationResult(models.Model):
                 }
             )
         else:
-            product_clsf_info_obj.sudo().with_delay(max_retries=12)\
-                .update_product_classification_infos(
-                    json_data=new_records, recomputed_fields=['demand_clsf_id'],
-                    source_table='demand_classification_result',
-                    **{
-                        'forecast_level': forecast_level,
-                        'created_date': created_date,
-                        'update_active': True
-                    }
-                )
+            product_clsf_info_obj.sudo().update_product_classification_infos(
+                json_data=new_records, recomputed_fields=['demand_clsf_id'],
+                source_table='demand_classification_result',
+                **{
+                    'forecast_level': forecast_level,
+                    'created_date': created_date,
+                    'update_active': True
+                }
+            )
 
     ###############################
     # MODEL FUNCTIONS

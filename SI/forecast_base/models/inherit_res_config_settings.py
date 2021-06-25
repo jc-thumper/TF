@@ -32,9 +32,37 @@ class ResConfigSettings(models.TransientModel):
                                         related='company_id.forecast_level_id',
                                         required=True,
                                         readonly=False)
+
+    quotation_included = fields.Boolean(related='company_id.quotation_included', readonly=False)
+    quotation_affect_days = fields.Integer(related='company_id.quotation_affect_days', readonly=False)
+    quotation_affect_percentage = fields.Float(related='company_id.quotation_affect_percentage', readonly=False)
+
     ########################################################
     # ONCHANGE FUNCTIONS
     ########################################################
+    @api.onchange('quotation_included')
+    def _onchange_quotation_included(self):
+        company_id = self.env.user.company_id
+
+        if company_id.quotation_included == self.quotation_included \
+                and company_id.quotation_affect_days == self.quotation_affect_days \
+                and company_id.quotation_affect_percentage == self.quotation_affect_percentage:
+            return
+
+        if not self.quotation_included:
+            self.quotation_affect_days = 0
+            self.quotation_affect_percentage = 0
+        else:
+            self.quotation_affect_days = 90
+            self.quotation_affect_percentage = 90
+
+    @api.onchange('quotation_affect_percentage')
+    def _onchange_quotation_affect_percentage(self):
+        if self.quotation_affect_percentage > 100:
+            self.quotation_affect_percentage = 100
+
+        if self.quotation_affect_percentage < 0:
+            self.quotation_affect_percentage = 0
 
     #################################
     # MODEL FUNCTIONS

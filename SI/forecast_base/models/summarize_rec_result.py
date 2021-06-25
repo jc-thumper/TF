@@ -9,6 +9,8 @@ from odoo.addons import decimal_precision as dp
 from odoo.addons.si_core.utils.database_utils import get_db_cur_time, append_log_access_fields_to_data
 from odoo.addons.si_core.utils.request_utils import get_key_value_in_dict
 
+from ..utils.config_utils import ALLOW_TRIGGER_QUEUE_JOB
+
 from time import time
 from psycopg2 import IntegrityError
 
@@ -103,13 +105,27 @@ class SummarizeRecResult(models.Model):
     def update_summarize_values_in_summarize_data_line(self, created_date, **kwargs):
         forecast_level = kwargs.get('forecast_level')
         summarize_data_line_obj = self.env['summarize.data.line'].sudo()
-        summarize_data_line_obj.with_delay(max_retries=12)\
-            .update_summarize_data(
-                created_date=created_date,
-                **{
-                    'forecast_level': forecast_level
-                }
-           )
+
+        from odoo.tools import config
+        allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                             ALLOW_TRIGGER_QUEUE_JOB)
+
+        if allow_trigger_queue_job:
+            summarize_data_line_obj.with_delay(max_retries=12)\
+                .update_summarize_data(
+                    created_date=created_date,
+                    **{
+                        'forecast_level': forecast_level
+                    }
+               )
+        else:
+            summarize_data_line_obj\
+                .update_summarize_data(
+                    created_date=created_date,
+                    **{
+                        'forecast_level': forecast_level
+                    }
+                )
 
     ###############################
     # INITIAL FUNCTIONS
@@ -119,7 +135,7 @@ class SummarizeRecResult(models.Model):
         try:
             sql_query = """
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_pid_cid_wid_summarize_rec_result_idx
-                ON summarize_rec_result (product_id, company_id, warehouse_id, start_date, pub_time, period_type);               
+                ON summarize_rec_result (product_id, company_id, warehouse_id, start_date, period_type, pub_time);               
             """
             t1 = time()
             self.env.cr.execute(sql_query)

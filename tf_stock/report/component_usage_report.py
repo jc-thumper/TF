@@ -25,7 +25,7 @@ class ComponentUsageReport(models.Model):
     _inherit = 'stock.move.line'
 
     categ_id = fields.Many2one('product.category', 'Product Category', related='product_id.categ_id', store=True)
-    vendor_id = fields.Many2one('product.product', 'Product Vendor', search='_search_vendor', store=False)
+    vendor_id = fields.Many2one('res.partner', 'Product Vendor', search='_search_vendor', store=False)
     work_center_id = fields.Many2one('mrp.workcenter', 'Work Center', related='workorder_id.workcenter_id')
 
     def _search_vendor(self, operator, value):

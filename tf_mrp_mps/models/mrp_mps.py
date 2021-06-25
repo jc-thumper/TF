@@ -38,7 +38,6 @@ class MrpProductionScheduleInherit(models.Model):
                     ProductForecast .create({
                         'forecast_qty': 0,
                         'date': forecast_vals['date_stop'],
-                        'replenish_qty': 0,
                         'production_schedule_id': production_schedule_id,
                     })
         return res

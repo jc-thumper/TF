@@ -300,9 +300,9 @@ class ProductClassificationInfo(models.Model):
                         self.env['product.forecast.config'].sudo() \
                             .with_delay(max_retries=12) \
                             .update_comp_config_data(
-                            json_data,
-                            kwargs.get('update_active', False)
-                        )
+                                json_data,
+                                kwargs.get('update_active', False)
+                            )
                     else:
                         self.env['product.forecast.config'].sudo() \
                             .update_comp_config_data(

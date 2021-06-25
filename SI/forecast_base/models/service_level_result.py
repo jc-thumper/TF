@@ -179,13 +179,13 @@ class ServiceLevelResult(models.Model):
         if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
             product_clsf_info_obj.sudo().with_delay(max_retries=12) \
                 .update_product_classification_infos(
-                json_data=new_records, recomputed_fields=['service_level_id'],
-                source_table='service_level_result',
-                **{
-                    'forecast_level': forecast_level,
-                    'created_date': created_date
-                }
-            )
+                    json_data=new_records, recomputed_fields=['service_level_id'],
+                    source_table='service_level_result',
+                    **{
+                        'forecast_level': forecast_level,
+                        'created_date': created_date
+                    }
+                )
         else:
             product_clsf_info_obj.sudo() \
                 .update_product_classification_infos(

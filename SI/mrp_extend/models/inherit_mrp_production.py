@@ -16,6 +16,8 @@ class MrpProduction(models.Model):
     def get_manufacturing_order_data(self, company_id, warehouse_id=None, product_ids=None):
         """
             Get all the MOs in current warehouse with state not in (done, cancel)
+        :param int warehouse_id:
+        :param list[int] product_ids:
         :param int company_id:
         :return: (list[int] mo_ids, dict mo_dict)
         """
@@ -42,7 +44,7 @@ class MrpProduction(models.Model):
         if warehouse_id is not None:
             location_ids = self.env['stock.location'].get_all_locations_of_warehouse(
                 warehouse_id=warehouse_id,
-                company_id=self.env.user.company_id.id,
+                company_id=company_id,
                 is_excluded_location=True
             )
 

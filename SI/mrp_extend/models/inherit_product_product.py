@@ -11,7 +11,6 @@ _logger = logging.getLogger(__name__)
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
-
     ###############################
     # GENERAL FUNCTIONS
     ###############################
@@ -33,11 +32,10 @@ class ProductProduct(models.Model):
 
         return bom_id
 
-
     def get_open_mo_info_dict(self, warehouse_id=None):
         """ The function return the dictionary contain the open MO information of each products in product_variants
 
-        :type product_variants: ProductProduct
+        :param int warehouse_id:
         :return:
         Ex: {
                 product_id: {
@@ -192,7 +190,7 @@ class ProductProduct(models.Model):
 
                     product_id = p.product_id.id
                     production_item['fg_id'] = product_id
-                    production_item['product_qty'] = p.product_uom_id.\
+                    production_item['product_qty'] = p.product_uom_id. \
                         _compute_quantity(p.product_qty, p.product_id.uom_id)
 
                     product_mo_dict[p.id] = p
@@ -262,7 +260,7 @@ class ProductProduct(models.Model):
                             fg_item['be_reserved_qty'] = float_round(fg_item['be_reserved_qty'] + product_qty, precision_rounding=rounding)
                             fg_item['will_receive_qty'] = float_round(fg_item['will_receive_qty'] + product_qty, precision_rounding=rounding)
                             fg_item['schedule_date'] = reserved_fg_date \
-                            if cur_schedule_date is None \
+                                if cur_schedule_date is None \
                                 else min(cur_schedule_date, reserved_fg_date)
                     except ValueError:
                         continue

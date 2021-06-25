@@ -132,13 +132,13 @@ class ForecastResult(models.Model):
         forecast_level = kwargs.get('forecast_level')
         if forecast_level:
             forecast_result_adjust_line_obj = self.env['forecast.result.adjust.line'].sudo()
-            forecast_result_adjust_line_obj\
+            forecast_result_adjust_line_obj \
                 .update_forecast_adjust_line_table(
-                    created_date,
-                    **{
-                        'forecast_level': forecast_level
-                    }
-               )
+                created_date,
+                **{
+                    'forecast_level': forecast_level
+                }
+            )
         else:
             UserError('Miss the forecast_level for current company')
 

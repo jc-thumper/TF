@@ -14,7 +14,7 @@ from psycopg2.extensions import AsIs
 from odoo.tools import float_compare
 from odoo.addons.si_core.utils import database_utils, datetime_utils
 from odoo.addons.si_core.utils.string_utils import PeriodType
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo import models, fields, api, _
 
@@ -110,35 +110,6 @@ class ForecastResultAdjustLine(models.Model):
         ('summ_data_line_id_uniq', 'unique(summ_data_line_id)',
          "A summarize data can only be assigned to one adjustment record!"),
     ]
-
-    def init(self):
-        # Adding Index
-        self._cr.execute("""
-            SELECT indexname FROM pg_indexes 
-            WHERE indexname = 'forecast_result_adjust_line_pcw_id_ed_idx'
-        """)
-        if not self._cr.fetchone():
-            self._cr.execute("""
-                CREATE INDEX forecast_result_adjust_line_pcw_id_ed_idx 
-                ON forecast_result_adjust_line (product_id, company_id, warehouse_id, end_date)
-            """)
-
-        self._cr.execute("""
-                    SELECT indexname FROM pg_indexes 
-                    WHERE indexname = 'forecast_result_adjust_line_create_date_idx'
-                """)
-        if not self._cr.fetchone():
-            self._cr.execute("""
-                        CREATE INDEX forecast_result_adjust_line_create_date_idx 
-                        ON forecast_result_adjust_line (create_date)
-                    """)
-
-        # Adding Constrain
-        self._cr.execute('SELECT indexname FROM pg_indexes WHERE indexname = %s', ('forcasting_fral_rule_id',))
-        if not self._cr.fetchone():
-            self._cr.execute(
-                """CREATE UNIQUE INDEX forcasting_fral_rule_id ON forecast_result_adjust_line 
-                (product_id, company_id, warehouse_id, period_type, start_date)""")
 
     ###############################
     # ONCHANGE FUNCTIONS
@@ -300,12 +271,14 @@ class ForecastResultAdjustLine(models.Model):
             from odoo.tools import config
             threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                          DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record < threshold_trigger_queue_job:
-                self.env['forecast.result.adjust'].sudo()\
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12) \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
             else:
-                self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12) \
+                self.env['forecast.result.adjust'].sudo()\
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
 
         return lines
@@ -330,12 +303,14 @@ class ForecastResultAdjustLine(models.Model):
             from odoo.tools import config
             threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                          DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record <= threshold_trigger_queue_job:
-                forecast_result_adjust_env.sudo()\
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                forecast_result_adjust_env.sudo().with_delay(max_retries=12) \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
             else:
-                forecast_result_adjust_env.sudo().with_delay(max_retries=12) \
+                forecast_result_adjust_env.sudo()\
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
 
         return lines
@@ -355,14 +330,17 @@ class ForecastResultAdjustLine(models.Model):
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                              DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(line_ids, call_from_engine=True)
-                else:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(line_ids, call_from_engine=True)
+                else:
+                    self.env['forecast.result.daily'].sudo() \
+                        .update_forecast_result_daily(line_ids, call_from_engine=True)
+
             return res
         else:
             return
@@ -674,8 +652,8 @@ class ForecastResultAdjustLine(models.Model):
          default_channel='root.forecasting')
     def update_forecast_adjust_line_table(self, created_date, **kwargs):
         """ Create/Update forecast_result_adjust_line from data in forecast result table.
-        All the new records will have a same create_date and write_date
-        Then, update Forecast result daily
+        All the new records will have a same create_date and write_date.
+        Then, the forecast result daily will be updated
 
         :param str created_date: the created date of the rows in forecast_result table
         that we use to update update to the forecast_result_adjust_line table
@@ -710,14 +688,16 @@ class ForecastResultAdjustLine(models.Model):
 
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
+                        .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(updated_ids, call_from_engine=True)
                 else:
                     self.env['forecast.result.daily'].sudo() \
-                        .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(updated_ids, call_from_engine=True)
 
             # commit new change to the database
@@ -773,14 +753,17 @@ class ForecastResultAdjustLine(models.Model):
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                              DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
 
-                if number_of_record < threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(lines.ids, call_from_engine=True)
-                else:
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
                         .update_forecast_result_daily(lines.ids, call_from_engine=True)
+                else:
+                    self.env['forecast.result.daily'].sudo() \
+                        .update_forecast_result_daily(lines.ids, call_from_engine=True)
+
         except Exception:
             _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)
             raise RetryableJobError('Must be retried later')
@@ -929,3 +912,35 @@ class ForecastResultAdjustLine(models.Model):
         _logger.info('List of constrain columns use for forecast result adjust line is %s' % key_columns)
 
         return key_columns
+
+    ###############################
+    # INIT FUNCTIONS
+    ###############################
+    def create_index(self):
+        # Adding Index
+        self._cr.execute("""
+            SELECT indexname FROM pg_indexes 
+            WHERE indexname = 'forecast_result_adjust_line_pcw_id_ed_idx'
+        """)
+        if not self._cr.fetchone():
+            self._cr.execute("""
+                CREATE INDEX forecast_result_adjust_line_pcw_id_ed_idx 
+                ON forecast_result_adjust_line (product_id, company_id, warehouse_id, end_date)
+            """)
+
+        self._cr.execute("""
+                    SELECT indexname FROM pg_indexes 
+                    WHERE indexname = 'forecast_result_adjust_line_create_date_idx'
+                """)
+        if not self._cr.fetchone():
+            self._cr.execute("""
+                        CREATE INDEX forecast_result_adjust_line_create_date_idx 
+                        ON forecast_result_adjust_line (create_date)
+                    """)
+
+        # Adding Constrain
+        self._cr.execute('SELECT indexname FROM pg_indexes WHERE indexname = %s', ('forcasting_fral_rule_id',))
+        if not self._cr.fetchone():
+            self._cr.execute(
+                """CREATE UNIQUE INDEX forcasting_fral_rule_id ON forecast_result_adjust_line 
+                (product_id, company_id, warehouse_id, period_type, start_date)""")

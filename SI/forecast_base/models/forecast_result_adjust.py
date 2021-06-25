@@ -10,7 +10,7 @@ from odoo.addons.si_core.utils.string_utils import PeriodType
 from odoo.addons.si_core.utils import datetime_utils, database_utils
 from psycopg2.extensions import AsIs
 
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo import models, fields, api
 
@@ -354,22 +354,7 @@ class ForecastResultAdjust(models.Model):
     ###############################
     # PRIVATE FUNCTIONS
     ###############################
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_forecast_result_base_on_lines(self, line_ids, update_time=False, call_from_engine=False):
-        try:
-            # NOTE: avoid using the method ``browse``, this function still return a record set for all record
-            # even if this record id doesn't exits in the database
-            lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])
-            self.update_forecast_result(lines, update_time, call_from_engine)
-        except Exception as e:
-            _logger.exception('function update_forecast_result_base_on_write_time have some exception: %s' % e)
-            raise RetryableJobError('Must be retried later')
-
-    def update_forecast_result(self, lines, update_time=False, call_from_engine=False):
+    def _update_forecast_result(self, lines, update_time=False, call_from_engine=False):
         """ Function update table `forecast_result_adjust` base on `lines`,
         Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
 
@@ -510,13 +495,15 @@ class ForecastResultAdjust(models.Model):
             from odoo.tools import config
             threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
                                                          DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record < threshold_trigger_queue_job:
-                self.env['product.forecast.config'].sudo() \
-                    .update_execute_date(fore_result_adjust.ids, cur_time)
-            else:
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                 self.env['product.forecast.config'].sudo() \
                     .with_delay(max_retries=12).update_execute_date(fore_result_adjust.ids, cur_time)
+            else:
+                self.env['product.forecast.config'].sudo() \
+                    .update_execute_date(fore_result_adjust.ids, cur_time)
 
         return cur_time
 
@@ -588,3 +575,29 @@ class ForecastResultAdjust(models.Model):
             # Step 3: search any forecast result adjust item have been satisfied
             fras = self.search(fras_domain)
             fras.update_adjust_related_info()
+
+    ###############################
+    # JOB FUNCTIONS
+    ###############################
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_forecast_result_base_on_lines(self, line_ids, update_time=False, call_from_engine=False):
+        """ Function update table `forecast_result_adjust` base on `lines`,
+        Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
+
+        :param list[int] line_ids:
+        :param bool update_time:
+        :param bool call_from_engine:
+        :return:
+        """
+        try:
+            # NOTE: avoid using the method ``browse``, this function still return a record set for all record
+            # even if this record id doesn't exits in the database
+            lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])
+            self._update_forecast_result(lines, update_time, call_from_engine)
+        except Exception as e:
+            _logger.exception('function update_forecast_result_base_on_lines have some exception: %s' % e)
+            raise RetryableJobError('Must be retried later')

@@ -407,8 +407,8 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         def __get_records_in_forecast_result_daily(obj):
             sql_query = """
-                select forecast_adjust_line_id, date
-                from forecast_result_daily;
+                SELECT forecast_adjust_line_id, date
+                FROM forecast_result_daily;
             """
             obj.env.cr.execute(sql_query)
             records = obj.env.cr.dictfetchall()
@@ -416,10 +416,10 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         def __create_records_in_forecast_result_daily(obj, inserted_records):
             sql_query = """
-                insert into forecast_result_daily
+                INSERT INTO forecast_result_daily
                 (forecast_adjust_line_id, product_id, warehouse_id, company_id, period_type, active, 
                 date, daily_forecast_result)
-                values (
+                VALUES (
                     %(forecast_adjust_line_id)s, %(product_id)s, %(warehouse_id)s, 
                     %(company_id)s, %(period_type)s, %(active)s, %(date)s, %(daily_forecast_result)s);
             """
@@ -428,11 +428,11 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         def __update_records_in_forecast_result_daily(obj, updated_records):
             sql_query = """
-                update forecast_result_daily
-                set 
+                UPDATE forecast_result_daily
+                SET 
                     daily_forecast_result = %(daily_forecast_result)s,
                     period_type = %(period_type)s
-                where forecast_adjust_line_id = %(forecast_adjust_line_id)s and date = %(date)s;
+                WHERE forecast_adjust_line_id = %(forecast_adjust_line_id)s AND date = %(date)s;
             """
             obj.env.cr.executemany(sql_query, updated_records)
             obj.env.cr.commit()
@@ -856,7 +856,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             raise e
 
     def get_conflict_fields_for_summarize_rec_result(self, **kwargs):
-        return ['product_id', 'company_id', 'warehouse_id', 'pub_time']
+        return ['product_id', 'company_id', 'warehouse_id', 'start_date', 'period_type', 'pub_time']
 
     def get_latest_records_dict_for_summarize_rec_result(self, obj, model, created_date, **kwargs):
         data_dict = []
@@ -953,7 +953,8 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                           fr.product_id IS NOT DISTINCT FROM fral.product_id AND
                           fr.warehouse_id IS NOT DISTINCT FROM fral.warehouse_id AND
                           fr.company_id IS NOT DISTINCT FROM fral.company_id AND
-                          fr.start_date = fral.start_date
+                          fr.start_date = fral.start_date AND
+                          fr.period_type = fral.period_type
                     WHERE fr.id IS NOT NULL
                     ON CONFLICT (product_id, company_id, warehouse_id, period_type, start_date)
                     DO UPDATE SET 
@@ -980,7 +981,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 updated_ids = [item.get('id') for item in obj.env.cr.dictfetchall()]
 
         except Exception as e:
-            _logger.exception("Error in the function update_records_for_summarize_data_line.", exc_info=True)
+            _logger.exception("Error in the function update_records_for_forecast_result_adjust_line.", exc_info=True)
             raise e
         return updated_ids
 

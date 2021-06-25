@@ -5,8 +5,10 @@
         <field name="model">product.product</field>
         <field name="inherit_id" ref="product.product_normal_form_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='company_id']" position="before">
-                <field name="critical_threshold" attrs="{'invisible': [('type', '!=', 'product')]}"/>
+            <xpath expr="//group[@name='traceability']" position="before">
+                <group string="Stock Control" name="stock_control">
+                    <field name="critical_threshold" attrs="{'invisible': [('type', '!=', 'product')]}"/>
+                </group>
             </xpath>
         </field>
     </record>

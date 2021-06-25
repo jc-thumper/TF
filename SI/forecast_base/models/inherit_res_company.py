@@ -8,6 +8,8 @@ from pytz import timezone, UTC
 
 from odoo import api, fields, models
 
+from odoo.addons import decimal_precision as dp
+
 from ..utils.config_utils import ForecastLevelLogicConfig
 from odoo.addons.si_core.utils.datetime_utils import DEFAULT_DATE_FORMAT
 
@@ -80,6 +82,19 @@ class ResCompany(models.Model):
                                  compute='_compute_forecast_level',
                                  search='_search_forecast_level')
 
+    quotation_included = fields.Boolean(default=False)
+    quotation_affect_days = fields.Integer(required=True, default=0,
+                                           help="A quotation will be considered as a sales order if its creation "
+                                                "date is within the previous \"Quotation Affect Days\" days from "
+                                                "today's date.\n"
+                                                "These special quotations will be summarized when the system runs the "
+                                                "forecast engine.")
+    quotation_affect_percentage = fields.Float(required=True, default=0.0,
+                                               help="\"Quotation Affect Percentage\" determines what percentage of "
+                                                    "ordered quantity in a special quotation will be treated as the "
+                                                    "sales order quantity when running forecast.",
+                                               digits=dp.get_precision('Adjust Percentage'))
+
     ###############################
     # ONCHANGE FIELDS
     ###############################
@@ -91,6 +106,23 @@ class ResCompany(models.Model):
             else:
                 sync_time = company.sync_time_manual
             company.write({'sync_time': sync_time})
+
+    @api.onchange('quotation_included')
+    def _onchange_quotation_included(self):
+        if not self.quotation_included:
+            self.quotation_affect_days = 0
+            self.quotation_affect_percentage = 0
+        else:
+            self.quotation_affect_days = 90
+            self.quotation_affect_percentage = 90
+
+    @api.onchange('quotation_affect_percentage')
+    def _onchange_quotation_affect_percentage(self):
+        if self.quotation_affect_percentage > 100:
+            self.quotation_affect_percentage = 100
+
+        if self.quotation_affect_percentage < 0:
+            self.quotation_affect_percentage = 0
 
     ###############################
     # COMPUTED FIELDS
@@ -382,8 +414,8 @@ class ResCompany(models.Model):
         return companies
 
     def get_forecast_level_by_company(self, company_ids):
-        """
-        Get forecast level by company dict
+        """ Get the forecast level for each company and return as a dict
+
         :param company_ids:
         :type company_ids: list(int)
         :return:
@@ -416,6 +448,22 @@ class ResCompany(models.Model):
             })
 
         return companies_info
+
+    def get_so_state_affect_percentage_dict(self, company):
+        """
+
+        :param company:
+        :return:
+        :rtype: dict
+        """
+        result = {
+            'draft': {'affect_days': company.quotation_affect_days, 'affect_percentage': company.quotation_affect_percentage},
+            'sent': {'affect_days': company.quotation_affect_days, 'affect_percentage': company.quotation_affect_percentage},
+            'sale': {'affect_days': -1, 'affect_percentage': 100},
+            'done': {'affect_days': -1, 'affect_percentage': 100},
+            'cancel': {'affect_days': 0, 'affect_percentage': 0},
+        }
+        return result
 
     @api.model
     def action_close_prep_announcement_onboarding(self):

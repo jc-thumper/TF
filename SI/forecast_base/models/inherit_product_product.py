@@ -10,3 +10,4 @@ class ProductProduct(models.Model):
     # FIELDS
     ###############################
     forecast_config_ids = fields.One2many('product.forecast.config', 'product_id')
+

@@ -11,7 +11,7 @@ from odoo.addons.queue_job.exception import RetryableJobError
 from psycopg2.extensions import AsIs
 
 from odoo.addons.si_core.utils.string_utils import PeriodType
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo import models, fields, api
 
@@ -19,9 +19,6 @@ _logger = logging.getLogger(__name__)
 
 
 class ForecastResultDaily(models.Model):
-    """
-    Store daily forecasting value of each product to compute Under/Overstock Analysis Report
-    """
     _name = "forecast.result.daily"
     _description = "Forecast Result Daily"
     _log_access = False
@@ -170,26 +167,25 @@ class ForecastResultDaily(models.Model):
         self.env.cr.execute(sql_query, sql_params)
         self.env.cr.commit()
 
-    def convert_forecast_result_to_daily_value(self, fral_ids):
+    def convert_forecast_result_to_daily_value(self, frals):
         """
         Convert forecast value from the table Forecast Result Adjust Line to daily value
         base on each period type
-        :param fral_ids: list of record id in the table Forecast Result Adjust Line
-        :type fral_ids: List[int]
+        :param list[int] frals: list of record id in the table Forecast Result Adjust Line
         :return: None
         """
-        unique_fral_ids = np.unique(fral_ids).tolist()
+        unique_fral_ids = np.unique(frals).tolist()
 
         # get company_id from ids of Forecast Result Adjust Line
-        fral_records = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
-                                                                           ['id', 'company_id'])
+        frals = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
+                                                                    ['id', 'company_id'])
 
         fral_records = [{
             'id': record.get('id'),
             'company_id': record.get('company_id')[0]
-        } for record in fral_records]
+        } for record in frals]
 
-        company_ids = np.unique([item.get('company_id') for item in fral_records]).tolist()
+        company_ids = list(set([item.get('company_id') for item in fral_records]))
 
         forecast_level_dict = self.env['res.company'].sudo().get_forecast_level_by_company(company_ids=company_ids)
         forecast_level_strategy_obj = self.env['forecast.level.strategy']
@@ -206,7 +202,7 @@ class ForecastResultDaily(models.Model):
             if filtered_fral_ids:
                 forecast_level_obj.create_or_update_records_in_forecast_result_daily(obj=self, model_name=self._name,
                                                                                      line_ids=filtered_fral_ids)
-        self.rounding_forecast_value(fral_ids)
+        self.rounding_forecast_value(unique_fral_ids)
 
     def rounding_forecast_value(self, line_ids=None):
         """
@@ -224,7 +220,8 @@ class ForecastResultDaily(models.Model):
                         ON prod.product_tmpl_id = tmpl.id
                       JOIN uom_uom uu
                         ON tmpl.uom_id = uu.id
-                    WHERE frd.forecast_adjust_line_id = line.id AND line.id IN %s AND prod.id = line.product_id;""", (tuple(line_ids), ))
+                    WHERE frd.forecast_adjust_line_id = line.id AND line.id IN %s AND prod.id = line.product_id;""",
+                             (tuple(line_ids), ))
             self._cr.commit()
 
     @job(retry_pattern={1: 1 * 60,
@@ -233,19 +230,18 @@ class ForecastResultDaily(models.Model):
                         9: 30 * 60},
          default_channel='root.forecasting')
     def update_forecast_result_daily(self, line_ids, call_from_engine=False):
-        """
+        """ The function update the forecast result daily for products have just updated
+        the forecast result (in the table forecast_result_adjust_line)
 
-        :param line_ids: forecast result adjust lines id
-        :type line_ids: list[int]
-        :param call_from_engine:
-        :type: bool
+        :param list[int] line_ids: forecast result adjust lines id
+        :param bool call_from_engine:
         :return:
         """
         _logger.info("Update forecast result daily with line ids: %s", line_ids)
         try:
             # mark rows are processing
             self.update_status_of_records(line_ids, is_active=False)
-            self.convert_forecast_result_to_daily_value(fral_ids=line_ids)
+            self.convert_forecast_result_to_daily_value(frals=line_ids)
             # mark rows are done
             self.update_status_of_records(line_ids, is_active=True)
 
@@ -254,13 +250,15 @@ class ForecastResultDaily(models.Model):
 
             from odoo.tools import config
             threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record < threshold_trigger_queue_job:
-                self.env['forecast.result.adjust'].sudo(). \
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12). \
                     update_forecast_result_base_on_lines(line_ids, update_time=True, call_from_engine=call_from_engine)
             else:
-                self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12) \
+                self.env['forecast.result.adjust'].sudo() \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True, call_from_engine=call_from_engine)
 
         except Exception as e:

@@ -5,7 +5,7 @@
         <field name="model">product.product</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="display_name"/>
+                <field name="display_name" string="Product"/>
                 <field name="qty_available"/>
                 <field name="virtual_available" string="Forecasted"/>
                 <field name="reserved_quantity"/>
@@ -14,7 +14,7 @@
     </record>
 
     <record id="action_tf_product_category_report" model="ir.actions.act_window">
-        <field name="name">Product Category Report</field>
+        <field name="name">Category Summary Report</field>
         <field name="res_model">product.product</field>
         <field name="view_mode">tree</field>
         <field name="view_id" ref="tf_product_category_report"/>

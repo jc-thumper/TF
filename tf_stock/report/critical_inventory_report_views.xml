@@ -19,12 +19,12 @@
         <field name="mode">primary</field>
         <field name="arch" type="xml">
             <tree decoration-danger="is_qoh_critical == True">
-                <field name="display_name"/>
+                <field name="display_name" string="Product"/>
                 <field name="qty_available"/>
                 <field name="virtual_available" string="Forecasted Quantity"/>
                 <field name="critical_threshold"/>
-                <field name="uom_name"/>
-                <button name="button_view_rfq" type="object" string="View Orders" class="oe_highlight"/>
+                <field name="uom_name" string="UoM"/>
+                <button name="button_view_rfq" type="object" string="View Orders"/>
                 <field name="is_qoh_critical" invisible="1"/>
             </tree>
         </field>

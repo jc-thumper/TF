@@ -19,13 +19,16 @@ from psycopg2 import DatabaseError
 from odoo.addons.si_core.utils.string_utils import random_pass, hash_password, check_password
 from odoo.addons.si_core.utils.response_message_utils import HTTP_400_BAD_REQUEST, create_response_message
 from odoo.addons.si_core.utils.request_utils import ServerAPIv1, ServerAPICode, DOMAIN_SERVER_SI
+from odoo.addons.si_core.utils.datetime_utils import DEFAULT_DATE_FORMAT, convert_from_str_date_to_datetime
 
-from ..utils.config_utils import MAX_RETRIES_ON_REGISTER_FAILURE, INSTANTLY_UPDATE_DEFAULT
+from ..utils.string_utils import ExpirationState
+from ..utils.config_utils import MAX_RETRIES_ON_REGISTER_FAILURE, INSTANTLY_UPDATE_DEFAULT, NO_SAFETY_EXPIRE_DATE
 
 from odoo.addons.queue_job.exception import RetryableJobError
 from odoo.addons.queue_job.job import job
 
 _logger = logging.getLogger(__name__)
+
 
 class SIConfigSettings(models.TransientModel):
     """
@@ -435,6 +438,92 @@ class SIConfigSettings(models.TransientModel):
         decoded_text = decrypted.decode()
         return decoded_text
 
+    def _request_sync_license_info(self):
+        """
+            This function is used for synchronizing license info with server
+        :return: dict
+        """
+        get_param = self.env['forecasting_config_parameter'].sudo().get_param
+
+        # Get all expiration variables from local
+        expiration_state = get_param('forecasting.expiration_state', ExpirationState.UN_REGISTERED)
+        expiration_days_left = get_param('forecasting.expiration_days_left', 0)
+        forecasting_service_plan = get_param('forecasting.forecasting_service_plan', '')
+
+        # If register timeout, don't need to sync license info
+        if expiration_state == ExpirationState.UN_REGISTERED_TIMEOUT:
+            return
+
+        # If not register timeout
+        direct_order_url = ServerAPIv1.get_api_url(ServerAPICode.CHECK_LICENSE_KEY)
+        headers = {
+            'Content-type': 'application/json',
+        }
+
+        auth_content = SIConfigSettings.get_auth_content(self)
+        # If there's auth_info -> Successful register to server
+        if auth_content:
+            # Request server to get the license info
+            json_body = json.dumps(auth_content)
+            response = requests.post(direct_order_url, data=json_body, headers=headers, timeout=60)
+            try:
+                result = response.json()
+            except Exception as e:
+                _logger.error("There some problems when parsing JSON in _request_sync_license_info function.", exc_info=True)
+                raise e
+
+            # Check the license info
+            license_response_code = result.get('license_response_code', '')
+            if license_response_code == ExpirationState.NOT_LICENSED:
+                expiration_state = ExpirationState.NOT_LICENSED
+
+            elif license_response_code == ExpirationState.LICENSED:
+                data = result.get('data', [{}])[0]
+
+                odoo_now_str = datetime.now().date().strftime(DEFAULT_DATE_FORMAT)
+                expiry_date_str = data.get('expiry_date', False)
+                converted_expiry_date = convert_from_str_date_to_datetime(expiry_date_str).date()
+                number_of_diff_date = (converted_expiry_date - datetime.now(tz=timezone.utc).date()).days
+
+                expiry_reason = data.get('expiry_reason', '7-day-free trial')
+                expiration_days_left = number_of_diff_date
+                forecasting_service_plan = expiry_reason
+
+                # If the expiration date is today
+                if number_of_diff_date == 0:
+                    expiration_state = ExpirationState.WILL_BE_EXPIRED_TODAY
+
+                # If the expiration date is in the past
+                elif expiry_date_str < odoo_now_str:
+                    expiration_state = ExpirationState.EXPIRED
+
+                    # The license has expired. Set the limit of forecast item to default value
+
+                # If the license has not expired, but it is in the un-safe period
+                elif number_of_diff_date <= NO_SAFETY_EXPIRE_DATE:
+                    expiration_state = ExpirationState.NO_SAFETY_EXPIRED
+
+                # Unless, it's in the safety period
+                else:
+                    expiration_state = ExpirationState.LICENSED
+            else:
+                expiration_state = ExpirationState.UN_REGISTERED
+        else:
+            # If the cron reach the MAX_RETRIES_ON_REGISTER_FAILURE -> The cron no longer runnable
+            ir_cron = self.env['ir.cron'].with_context(active_test=False).search(
+                [('cron_name', 'like', 'Retry: Register SI service%')],
+                limit=1,
+            )
+            register_cron_number_call = ir_cron.numbercall
+            if register_cron_number_call == 0:
+                expiration_state = ExpirationState.UN_REGISTERED_TIMEOUT
+
+        set_param = self.env['forecasting_config_parameter'].sudo().set_param
+
+        set_param('forecasting.expiration_state', expiration_state)
+        set_param('forecasting.expiration_days_left', expiration_days_left)
+        set_param('forecasting.forecasting_service_plan', forecasting_service_plan)
+
     ########################################################
     # CRON JOB
     ########################################################
@@ -503,3 +592,10 @@ class SIConfigSettings(models.TransientModel):
             except Exception as e:
                 _logger.exception(_('There was some problems when register SI server.'), exc_info=True)
                 raise e
+
+    def _cron_request_sync_license_info(self):
+        """
+            This cron will run once a day to update license info automatically
+        :return: dict
+        """
+        self._request_sync_license_info()

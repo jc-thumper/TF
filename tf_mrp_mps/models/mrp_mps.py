@@ -29,8 +29,9 @@ class MrpProductionScheduleInherit(models.Model):
         res = super(MrpProductionScheduleInherit, self).get_production_schedule_view_state()
         ProductForecast  = self.env['mrp.product.forecast']
         for production_schedule in res:
-            production_schedule_id = production_schedule['id']
-            future_forecasts = self.env['mrp.production.schedule'].browse(production_schedule_id).forecast_ids.filtered(lambda f: f.date > fields.Date.today())
+            schedule = self.env['mrp.production.schedule'].browse(production_schedule['id'])
+            today = fields.Date.today()
+            future_forecasts = schedule.forecast_ids.filtered(lambda f: f.date > today)
             dates = [f.date for f in future_forecasts]
             forecast_values_list = production_schedule['forecast_ids']
             for forecast_vals in forecast_values_list:
@@ -38,6 +39,6 @@ class MrpProductionScheduleInherit(models.Model):
                     ProductForecast .create({
                         'forecast_qty': 0,
                         'date': forecast_vals['date_stop'],
-                        'production_schedule_id': production_schedule_id,
+                        'production_schedule_id': schedule.id,
                     })
         return res

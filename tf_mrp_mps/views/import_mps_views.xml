@@ -5,6 +5,7 @@
             <field name="arch" type="xml">
                 <tree>
                     <field name="product_id"/>
+                    <field name="forecast_ids"/>
                 </tree>
             </field>
         </record>

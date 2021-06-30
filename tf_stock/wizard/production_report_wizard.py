@@ -22,7 +22,7 @@ class ProductionWizard(models.TransientModel):
                   ('move_id.picking_type_id', 'in', mrp_picking_types.ids),
                   ('location_id', 'in', production_locations.ids)]
 
-        context = {'group_by': ['categ_id', 'product_id']}
+        context = {'group_by': ['categ_id', 'product_id'], 'create': False, 'edit': False}
         action = {
             'type': 'ir.actions.act_window',
             'views': [(tree_view_id, 'tree')],

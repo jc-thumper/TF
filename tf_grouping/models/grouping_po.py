@@ -1,9 +1,11 @@
-from odoo import api, fields, models, _, SUPERUSER_ID
-from odoo.exceptions import UserError
 from collections import defaultdict
 from dateutil.relativedelta import relativedelta
 from itertools import groupby
 
+from odoo import api, fields, models, _, SUPERUSER_ID
+from odoo.exceptions import UserError
+
+from odoo.addons.purchase_stock.models.stock_rule import StockRule
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -54,11 +56,13 @@ class PurchaseStockInherit(models.Model):
 
             domain = rule._make_po_get_domain(procurement.company_id, procurement.values, partner)
 
+            ###################################################
+            # Add bom_id into domain search the PO
+            ###################################################
             if self.env.company.allow_grouping_bom and partner.id in self.env.company.vendor_ids.ids:
-                if procurement[7].get('move_dest_ids') and procurement[7].get('move_dest_ids')[0].bom_origin_id:
-                    domain = list(domain)
-                    domain.append(('bom_origin_id', '=', procurement[7].get('move_dest_ids')[0].bom_origin_id))
-                    domain = tuple(domain)
+                if procurement.values.get('move_dest_ids') and procurement.values.get('move_dest_ids')[:1] \
+                        and procurement.values.get('move_dest_ids')[:1].bom_origin_id:
+                    domain = domain + (('bom_origin_id', '=', procurement.values.get('move_dest_ids')[:1].bom_origin_id), )
 
             procurements_by_po_domain[domain].append((procurement, rule))
 
@@ -79,11 +83,13 @@ class PurchaseStockInherit(models.Model):
                 # should only uses the common rules's fields.
                 vals = rules[0]._prepare_purchase_order(company_id, origins, [p.values for p in procurements])
 
+                ###################################################
+                # Add bom_id into PO
+                ###################################################
                 if self.env.company.allow_grouping_bom:
-                    if len(list(domain)) > 5:
-                        vals.update({'bom_origin_id': list(list(domain)[5])[2]})
-                    elif len(list(domain)) > 4:
-                        vals.update({'bom_origin_id': list(list(domain)[4])[2]})
+                    if procurements[:1][0].values.get('move_dest_ids') and procurements[:1][0].values.get('move_dest_ids')[:1] \
+                            and procurements[:1][0].values.get('move_dest_ids')[:1][0].bom_origin_id:
+                        vals.update({'bom_origin_id': procurements[:1][0].values.get('move_dest_ids')[:1][0].bom_origin_id})
 
                 # The company_id is the same for all procurements since
                 # _make_po_get_domain add the company in the domain.
@@ -132,3 +138,5 @@ class PurchaseStockInherit(models.Model):
                         procurement.product_uom, procurement.company_id,
                         procurement.values, po))
             self.env['purchase.order.line'].sudo().create(po_line_values)
+
+    StockRule._run_buy = _run_buy

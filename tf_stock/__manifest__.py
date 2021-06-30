@@ -1,5 +1,5 @@
 {
-    'name': 'TF MPS',
+    'name': 'TF Stock',
     'version': '1.0',
     'website': 'https://www.novobi.com',
     'category': '',

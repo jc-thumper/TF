@@ -4,6 +4,8 @@ from odoo.tools.misc import split_every
 
 from odoo import api, fields, models, _
 
+from odoo.addons.stock.models.stock_move import StockMove
+from odoo.addons.stock.models.stock_rule import ProcurementGroup
 
 class StockPickingTypeInherit(models.Model):
     _inherit = 'stock.picking.type'
@@ -90,6 +92,8 @@ class StockMoveInherit(models.Model):
                                          or (move.reservation_date and move.reservation_date <= fields.Date.today())))._action_assign()
         return moves
 
+    StockMove._action_confirm = _action_confirm
+
 
 class ProcurementGroup(models.Model):
     _inherit = 'procurement.group'
@@ -99,6 +103,7 @@ class ProcurementGroup(models.Model):
         domain = expression.AND([domain, [('reservation_date', '<=', fields.Date.today())]])
         return domain
 
+    # Copy from odoo.addons.stock.stock_rule
     @api.model
     def _run_scheduler_tasks(self, use_new_cursor=False, company_id=False):
         # Minimum stock rules
@@ -119,3 +124,5 @@ class ProcurementGroup(models.Model):
         self.env['stock.quant']._quant_tasks()
         if use_new_cursor:
             self._cr.commit()
+
+    ProcurementGroup._run_scheduler_tasks = _run_scheduler_tasks

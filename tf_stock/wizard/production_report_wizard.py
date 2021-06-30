@@ -13,11 +13,14 @@ class ProductionWizard(models.TransientModel):
         self.ensure_one()
         if self.start_date > self.end_date:
             raise UserError(_('End date must be gather than Start Date.'))
+
         tree_view_id = self.env.ref('tf_stock.mrp_production_report').id
-        domain = [('date', '<=', self.end_date), ('date', '>=', self.start_date)]
-        domain += [('reference', 'ilike', 'WH/MO')]
-        production_location = self.env['stock.location'].search([('name', 'ilike', 'Production')])
-        domain += [('location_id', '=', production_location.id)]
+        production_locations = self.env['stock.location'].search([('usage', '=', 'production')])
+
+        domain = [('date', '<=', self.end_date), ('date', '>=', self.start_date),
+                  ('move_id.picking_type_id.code', '=', 'mrp_operation'),
+                  ('location_id', 'in', production_locations.ids)]
+
         context = {'group_by': ['categ_id', 'product_id']}
         action = {
             'type': 'ir.actions.act_window',

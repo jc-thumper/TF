@@ -37,6 +37,28 @@ class MrpProductionSchedule(models.Model):
     }
 
     ###############################
+    # EXTEND FUNCTION
+    ###############################
+    @api.model
+    def create(self, values):
+        res = super(MrpProductionSchedule, self).create(values)
+
+        # After creating the MRP Production Schedule, the demand forecast value of the MPS is empty,
+        # we have to create a empty demand forecast to let the calculation continuing
+        if res:
+            now = datetime.now().date()
+            demand_fore_data_dict = {
+                (res.product_id.id, res.company_id.id, res.warehouse_id.id): [{
+                    'date': now,
+                    'forecast_qty': 0
+                }]
+            }
+            # Call the init function with the demand_fore_data_dict only contains one product
+            self.init_forecast_result_from_mps_data(demand_fore_data_dict=demand_fore_data_dict)
+
+        return res
+
+    ###############################
     # INIT FUNCTION
     ###############################
     def init_forecast_result_from_mps_data(self, demand_fore_data_dict=None):
@@ -292,7 +314,7 @@ class MrpProductionSchedule(models.Model):
         :return: {
             (product_id, company_id, warehouse_id): [
                 {
-                    'date': date
+                    'date': date,
                     'forecast_qty': the demand forecast value
                 },
                 ...
@@ -381,7 +403,7 @@ class MrpProductionSchedule(models.Model):
 
         return mps_settings_dict
 
-    def create_forecast_result_for_all_periods(self, product_forecast_obj):
+    def create_fore_res_for_all_periods_based_on_product_fore(self, product_forecast_obj):
         """
 
         :param product_forecast_obj:
@@ -711,4 +733,4 @@ class MrpProductForecast(models.Model):
         return res
 
     def update_forecast_result(self):
-        self.env['mrp.production.schedule'].create_forecast_result_for_all_periods(self)
+        self.env['mrp.production.schedule'].create_fore_res_for_all_periods_based_on_product_fore(self)

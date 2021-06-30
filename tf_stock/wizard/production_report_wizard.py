@@ -1,3 +1,5 @@
+from odoo.tools.profiler import profile
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
@@ -9,6 +11,7 @@ class ProductionWizard(models.TransientModel):
     start_date = fields.Datetime(string='Start Date')
     end_date = fields.Datetime(string='End Date')
 
+    @profile
     def get_report(self):
         self.ensure_one()
         if self.start_date > self.end_date:
@@ -16,9 +19,10 @@ class ProductionWizard(models.TransientModel):
 
         tree_view_id = self.env.ref('tf_stock.mrp_production_report').id
         production_locations = self.env['stock.location'].search([('usage', '=', 'production')])
+        mrp_picking_types = self.env["stock.picking.type"].search([('code', '=', 'mrp_operation')])
 
         domain = [('date', '<=', self.end_date), ('date', '>=', self.start_date),
-                  ('move_id.picking_type_id.code', '=', 'mrp_operation'),
+                  ('move_id.picking_type_id', 'in', mrp_picking_types.ids),
                   ('location_id', 'in', production_locations.ids)]
 
         context = {'group_by': ['categ_id', 'product_id']}

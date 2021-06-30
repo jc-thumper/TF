@@ -15,9 +15,10 @@ class ComponentUsageWizard(models.TransientModel):
             raise UserError(_('End date must be gather than Start Date.'))
         tree_view_id = self.env.ref('tf_stock.mrp_component_usage_report').id
         production_locations = self.env['stock.location'].search([('usage', '=', 'production')])
+        mrp_picking_types = self.env["stock.picking.type"].search([('code', '=', 'mrp_operation')])
 
         domain = [('date', '<=', self.end_date), ('date', '>=', self.start_date),
-                  ('move_id.picking_type_id.code', '=', 'mrp_operation'),
+                  ('move_id.picking_type_id', 'in', mrp_picking_types.ids),
                   ('location_dest_id', 'in', production_locations.ids)]
 
         context = {'group_by': ['categ_id', 'product_id']}

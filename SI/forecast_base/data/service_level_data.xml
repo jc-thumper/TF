@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data noupdate="1">
+        <!--Service Level-->
+        <record model="service.level" id="service_level_level_a">
+            <field name="name">group_a</field>
+        </record>
+
+        <record model="service.level" id="service_level_level_b">
+            <field name="name">group_b</field>
+        </record>
+
+        <record model="service.level" id="service_level_level_c">
+            <field name="name">group_c</field>
+        </record>
+
+    </data>
+</odoo>

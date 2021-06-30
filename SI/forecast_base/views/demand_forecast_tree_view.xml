@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Tree view-->
+    <record model="ir.ui.view" id="view_demand_forecast_chart_list">
+        <field name="name">demand.forecast.table</field>
+        <field name="model">forecast.result.adjust.line</field>
+        <field name="arch" type="xml">
+            <tree default_order="start_date asc" create="false"
+                  edit="false" delete="false" import="false"
+                  decoration-muted="muted == True">
+                <field name="start_date" string="Periods" widget="date"/>
+                <field name="picks" string="Picks"/>
+                <field name="demand" string="Demand"/>
+                <field name="forecast_result" string="Forecast"/>
+                <field name="adjust_percentage" string="% Adjustment"/>
+                <field name="adjust_value" string="Forecast After Adjustment"/>
+                <field name="muted" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!--Action window-->
+    <record id="action_demand_forecast_chart_list" model="ir.actions.act_window">
+        <field name="name">Demand Forecast</field>
+        <field name="res_model">forecast.result.adjust.line</field>
+        <field name="view_mode">tree</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_id" ref="view_demand_forecast_chart_list"/>
+    </record>
+</odoo>

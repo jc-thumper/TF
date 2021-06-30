@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets_backend" name="si_core" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <script type="text/javascript" src="/si_core/static/lib/stickytableheaders/jquery.stickytableheaders.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/freeze_header_list_view.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/onchange_fake_btn.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/hide_search_bar.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/action_manager_report_dl.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/dialog.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/change_color.js"/>
+            <script type="text/javascript" src="/si_core/static/src/js/change_color_custom_list_renderer.js"/>
+
+        </xpath>
+
+        <xpath expr="//script[last()]" position="after">
+            <link rel="stylesheet" type="text/scss" href="/si_core/static/src/scss/onboarding.scss"/>
+            <link rel="stylesheet" type="text/scss" href="/si_core/static/src/scss/dialog.scss"/>
+        </xpath>
+    </template>
+</odoo>

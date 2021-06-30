@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data noupdate="1">
+        <record id="ir_cron_update_rrwf_report" model="ir.cron">
+            <field name="name">SI: Update Reordering Rules with Forecast Report</field>
+            <field name="model_id" ref="reordering_rules_with_forecast.model_reordering_rules_with_forecast"/>
+            <field name="state">code</field>
+            <field name="code">model.run_scheduler_update_rrwf()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="doall">0</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(hours=1)).strftime('%Y-%m-%d 07:00:00')" />
+        </record>
+
+        <record id="ir_cron_truncate_rrwf_report" model="ir.cron">
+            <field name="name">SI: Truncate Reordering Rules with Forecast Tracker</field>
+            <field name="model_id" ref="reordering_rules_with_forecast.model_reordering_rules_with_forecast_tracker"/>
+            <field name="state">code</field>
+            <field name="code">model.run_scheduler_truncate_rrwf_tracker()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="doall">0</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')" />
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Menu-->
+    <menuitem
+            id="menu_smart_inventory"
+            name="Smart Inventory"
+            parent="stock.menu_warehouse_report"
+            sequence="100"/>
+</odoo>

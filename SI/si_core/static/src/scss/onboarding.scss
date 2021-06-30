@@ -1,0 +1,404 @@
+$si-onboarding-dot-size: 20px;
+$si-onboarding-dot-timing: 0.5s;
+
+$si-onboarding-blue-bg-1: #60ABC3;
+$si-onboarding-blue-bg-2: #4187AE;
+$si-onboarding-blue-ui-1: #F39D9B;
+$si-onboarding-blue-ui-2: #FBEEC8;
+
+$si-onboarding-orange-bg-1: #DA9D77;
+$si-onboarding-orange-bg-2: #B9684F;
+$si-onboarding-orange-ui-1: #599FF1;
+$si-onboarding-orange-ui-2: #68B3C9;
+
+$si-onboarding-violet-bg-1: #6070C3;
+$si-onboarding-violet-bg-2: #475DA4;
+$si-onboarding-violet-ui-1: #F39D9B;
+$si-onboarding-violet-ui-2: #FBEEC8;
+
+$si-onboarding-transparent-bg-1: transparent;
+$si-onboarding-transparent-bg-2: transparent;
+$si-onboarding-transparent-ui-1: #F39D9B;
+$si-onboarding-transparent-ui-2: #FBEEC8;
+
+.o_onboarding_step_content {
+  color: white;
+  .o_onboarding_step_title {
+    color: white;
+  }
+}
+
+.si_onboarding {
+  position: relative;
+  overflow: hidden;
+  background: white center top;
+  background-size: cover;
+  border-bottom: 1px solid gray('300');
+
+  .si_onboarding_wrap {
+    padding: $o-horizontal-padding*2 $o-horizontal-padding;
+  }
+
+  .si_onboarding_btn_close {
+    @include o-position-absolute(auto, 0, 0);
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+
+  .si_onboarding_btn_close {
+    top: 0;
+    bottom: auto;
+  }
+  .si_onboarding_completed_message {
+    @include o-position-absolute(auto, 0,0,0);
+    //transform: translateY(115%);
+    //transition: transform $si-onboarding-dot-timing;
+    box-shadow: 0 2px 10px gray(600);
+    padding: $o-horizontal-padding;
+    background-color: white;
+    color: $o-main-text-color;
+    opacity: 0;
+    z-index: -1;
+    &.si_onboarding_steps_just_done {
+      animation: si_onb_fadeIn ($si-onboarding-dot-timing*3);
+    }
+    &.si_onboarding_steps_done {
+      opacity: 1;
+      z-index: auto;
+    }
+  }
+
+  .si_onboarding_steps, .si_onboarding_step {
+    display: flex;
+  }
+
+  .si_onboarding_steps {
+    flex-flow: row nowrap;
+    justify-content: initial;
+
+    @include media-breakpoint-down(sm) {
+      flex-flow: column nowrap;
+    }
+  }
+
+  .si_onboarding_step {
+    flex-flow: column nowrap;
+    flex: 1 1 auto;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    opacity: 0.6;
+
+    @include media-breakpoint-down(sm) {
+      text-align: left;
+      margin-bottom: 16px;
+      align-items: baseline;
+
+      .si_onboarding_step_content {
+        max-width: none;
+      }
+    }
+
+    &:first-of-type {
+      .si_onboarding_progress {
+        display: none !important;
+      }
+
+      .si_onboarding_dot {
+        transition-delay: 0s;
+      }
+    }
+
+    .si_onboarding_step_content {
+      @include media-breakpoint-up(lg) {
+        min-width: 230px;
+      }
+      max-width: 230px;
+      padding: 0 10px;
+
+      .si_onboarding_step_action {
+        border: 1px solid gray('200');
+        display: none;
+      }
+
+      p {
+        opacity: 0.8;
+      }
+    }
+
+    .si_onboarding_progress {
+      @include o-position-absolute($si-onboarding-dot-size*0.5 - 2px, calc(50% + 10px));
+      width: calc(100% - 20px);
+      height: 4px;
+      background-color: gray('200');
+
+      .progress-bar {
+        background-image: linear-gradient(90deg, $o-brand-primary, $o-brand-odoo);
+        transition: opacity $si-onboarding-dot-timing;
+      }
+    }
+
+    .si_onboarding_dot {
+      width: $si-onboarding-dot-size;
+      height: $si-onboarding-dot-size;
+      color: transparent;
+      padding-top: 5px;
+      font-size: 11px;
+      display: inline-block;
+      border-radius: 100%;
+      background-color: gray('200');
+      position: relative;
+      transition: background $si-onboarding-dot-timing ease $si-onboarding-dot-timing;
+    }
+
+    .si_onboarding_all_done {
+      display: none;
+    }
+
+    // Steps' Status
+    &.si_onboarding_current, &.si_onboarding_done {
+      opacity: 1;
+
+      .si_onboarding_progress .progress-bar {
+        width: 100%;
+        box-shadow: none;
+        transition: width $si-onboarding-dot-timing;
+      }
+    }
+
+    &.si_onboarding_current {
+      .si_onboarding_step_action, .si_onboarding_dot {
+        animation: bounceIn ($si-onboarding-dot-timing*2);
+      }
+
+      .si_onboarding_step_action {
+        display: inline-block;
+      }
+
+      .si_onboarding_dot {
+        background: $o-brand-odoo;
+      }
+    }
+
+    &.si_onboarding_done {
+      .si_onboarding_dot {
+        background: $o-brand-primary;
+        color: white;
+      }
+
+      .si_onboarding_all_done {
+        display: block;
+      }
+
+      + .si_onboarding_done {
+        .si_onboarding_dot {
+          transition-delay: 0s;
+        }
+
+        .si_onboarding_progress {
+          background: $o-brand-primary;
+        }
+
+        .progress-bar {
+          opacity: 0;
+        }
+      }
+    }
+
+    &.si_onboarding_just_done {
+
+      .si_onboarding_all_done {
+        animation: bounceIn ($si-onboarding-dot-timing*2);
+        display: block;
+      }
+      .si_onboarding_step_content_info {
+        animation: si_onb_fadeIn ($si-onboarding-dot-timing*3);
+      }
+    }
+
+  }
+
+  @keyframes si_onb_fadeIn {
+    0%  {opacity: 0}
+    33% {opacity: 0}
+    100% {opacity: 1}
+  }
+
+  // =========  Color Variations  =========
+  // ======================================
+
+  // =========  Variation Mixin  ==========
+  @mixin si-onboarding-variation($bg1, $bg2, $ui1, $ui2) {
+    &, .si_onboarding_step_title, .si_onboarding_step_action, a.si_onboarding_all_done, .si_onboarding_all_done > .fa, .si_onboarding_btn_close {
+      color: white !important;
+    }
+
+    .si_onboarding_wrap {
+      @include o-onboarding-vertical-gradient(fade-out($bg1, 0.9), $bg2);
+      box-shadow: inset 0 -7px 20px -5px fade-out(black, 0.9);
+    }
+
+    .si_onboarding_dot, .si_onboarding_progress {
+      background-color: fade-out(white, 0.9);
+    }
+
+    .si_onboarding_step_action {
+      border-color: fade-out(white, 0.9);
+    }
+
+    .progress-bar {
+      background-image: linear-gradient(90deg, $ui1, $ui2);
+    }
+
+    .si_onboarding_step {
+      &.si_onboarding_done, .si_onboarding_done + .si_onboarding_done {
+        .si_onboarding_dot, .si_onboarding_progress {
+          background: $ui1;
+        }
+      }
+
+      &.si_onboarding_current .si_onboarding_dot {
+        background: $ui2;
+      }
+    }
+  }
+
+  // =========  Variation Templates  ==========
+  &.si_onboarding_blue {
+    @include si-onboarding-variation($si-onboarding-blue-bg-1, $si-onboarding-blue-bg-2, $si-onboarding-blue-ui-1, $si-onboarding-blue-ui-2);
+  }
+
+  &.si_onboarding_orange {
+    @include si-onboarding-variation($si-onboarding-orange-bg-1, $si-onboarding-orange-bg-2, $si-onboarding-orange-ui-1, $si-onboarding-orange-ui-2);
+  }
+
+  &.si_onboarding_violet {
+    @include si-onboarding-variation($si-onboarding-violet-bg-1, $si-onboarding-violet-bg-2, $si-onboarding-violet-ui-1, $si-onboarding-violet-ui-2);
+  }
+
+  &.si_onboarding_transparent {
+    @include si-onboarding-variation($si-onboarding-transparent-bg-1, $si-onboarding-transparent-bg-2, $si-onboarding-transparent-ui-1, $si-onboarding-transparent-ui-2);
+  }
+
+  // =========  "Cannon Confetti" animation  ==========
+  .si_onboarding_confetti {
+    animation: cannon-explosion ($si-onboarding-dot-timing*3) ease-out 0s 1 normal both;
+    @include o-position-absolute(0, 50%, 30px);
+    transform-origin: 50% 100%;
+    display: none;
+    width: 1px;
+
+    @keyframes cannon-explosion {
+      0% {
+        transform: scale(0);
+      }
+      70% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    > div {
+      @include o-position-absolute(auto, 0, 5px,0);
+      transform-origin: 50% 100%;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: space-around;
+      align-content: center;
+      padding-bottom: 30%;
+
+      &:nth-child(1), &:nth-child(5) {
+        height: 90%;
+        transform: rotate(-20deg);
+      }
+      &:nth-child(2), &:nth-child(4) {
+        height: 95%;
+        transform: rotate(-10deg);
+      }
+      &:nth-child(3) {
+        height: 100%;
+      }
+      &:nth-child(4) {
+        transform: rotate(10deg);
+      }
+      &:nth-child(5) {
+        transform: rotate(20deg);
+      }
+
+      > div {
+        flex: 0 1 auto;
+        animation: confetti-rotate-l ($si-onboarding-dot-timing*3) ease-out 0s 1 normal both;
+
+        &:nth-child(odd) {
+          animation: confetti-rotate-r ($si-onboarding-dot-timing*3) ease-out 0s 1 normal both;
+        }
+
+        @keyframes confetti-rotate-l {
+          0% {
+            transform: rotate(0) scaleY(1);
+          }
+          50% {
+            transform: rotate(2turn) scaleY(1.5);
+            opacity: 1;
+          }
+          100% {
+            transform: rotate(2.05turn) scaleY(1);
+            opacity: 0;
+          }
+        }
+
+        @keyframes confetti-rotate-r {
+          0% {
+            transform: rotate(0) scaleY(1);
+          }
+          50% {
+            transform: rotate(-2turn) scaleY(1.5);
+            opacity: 1;
+          }
+          100% {
+            transform: rotate(-2.05turn) scaleY(1);
+            opacity: 0;
+          }
+        }
+
+        &.ribbon {
+          width: .3em;
+          height: .7em;
+          border-radius: .1em;
+        }
+
+        &.flake {
+          width: .3em;
+          height: .3em;
+          border-radius: 50%;
+        }
+
+        // Confetti Colors
+        &.color-1 {
+          background-color: #feb535;
+        }
+
+        &.color-2 {
+          background-color: #bea4ff;
+        }
+
+        &.color-3 {
+          background-color: #ff6e83;
+        }
+
+        &.color-4 {
+          background-color: #58cafe;
+        }
+      }
+    }
+  }
+
+  .si_onboarding_just_done {
+    // Activate confetti cannon when step is done
+    .si_onboarding_confetti {
+      display: block;
+    }
+  }
+}

@@ -7,7 +7,9 @@ _logger = logging.getLogger(__name__)
 class MrpProductionScheduleInherit(models.Model):
     _inherit = 'mrp.production.schedule'
 
-    forecast_ids = fields.One2many(domain=lambda self: [('date', '>', fields.Date.today())])
+    future_forecast_ids = fields.One2many('mrp.product.forecast', 'production_schedule_id',
+                                          'Forecasted quantity at date using to Export',
+                                          domain=lambda self: [('date', '>', fields.Date.today())])
 
     @api.model
     def open_table(self):

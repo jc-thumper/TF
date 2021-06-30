@@ -15,7 +15,7 @@
         'report/production_report_views.xml',
         'wizard/component_usage_wizard_views.xml',
         'wizard/production_report_wizard_views.xml',
-        
+
     ],
     'images': [],
     'demo': [],

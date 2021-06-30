@@ -1,6 +1,8 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
+from odoo.addons.mrp.models.mrp_production import MrpProduction
+
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -36,3 +38,5 @@ class MrpProductionInherit(models.Model):
             production.move_raw_ids._adjust_procure_method()
             (production.move_raw_ids | production.move_finished_ids)._action_confirm()
         return True
+
+    MrpProduction.action_confirm = action_confirm

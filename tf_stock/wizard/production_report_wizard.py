@@ -1,5 +1,3 @@
-from odoo.tools.profiler import profile
-
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
@@ -11,7 +9,6 @@ class ProductionWizard(models.TransientModel):
     start_date = fields.Datetime(string='Start Date')
     end_date = fields.Datetime(string='End Date')
 
-    @profile
     def get_report(self):
         self.ensure_one()
         if self.start_date > self.end_date:

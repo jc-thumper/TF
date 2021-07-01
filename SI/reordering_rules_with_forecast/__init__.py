@@ -13,5 +13,5 @@ def init_reordering_rules_with_forecast(cr, registry):
     """
     env = api.Environment(cr, SUPERUSER_ID, {})
     env['reordering.rules.with.forecast.tracker'].create_rrwf_tracker_indices()
-    env['reordering.rules.with.forecast'].init_data_reordering_rules_with_forecast()
     env['reordering.rules.with.forecast'].create_rrwf_indices()
+    env['reordering.rules.with.forecast'].init_data_reordering_rules_with_forecast()

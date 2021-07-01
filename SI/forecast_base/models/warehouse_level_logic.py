@@ -116,6 +116,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             """
             obj.env.cr.execute(sql_query)
             raw_data = obj.env.cr.dictfetchall()
+            # if raw_data:
             df = pd.DataFrame.from_records(raw_data)
 
             # filter records
@@ -678,7 +679,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         # sync data in table RRwF with FD table, which contain forecast data
         forecasts = obj.env['forecast.result.adjust'].sudo().search([])
-        forecasted_product_records = []
+        forecasted_product_dicts = {}
         for forecast in forecasts:
             if forecast.has_forecasted:
                 product_id = forecast.product_id.id
@@ -702,10 +703,11 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                         'location_id': location_id
                     }
                     count += 1
-                    forecasted_product_records.append(values)
+                    forecasted_product_dicts[(product_id, company_id, warehouse_id, location_id)] = values
 
+        forecasted_product_records = list(forecasted_product_dicts.values())
         # create multi records
-        _logger.info("Create multi record in RRwF for warehouse: %s", len(forecasted_product_records))
+        _logger.debug("Create multi record in RRwF for warehouse: %s", len(forecasted_product_records))
         RRwF_model.create(forecasted_product_records)
 
     def get_product_infos_for_rrwf(self, record, **kwargs):

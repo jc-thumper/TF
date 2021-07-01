@@ -139,7 +139,6 @@
     <record id="action_reordering_rules_with_forecast_list" model="ir.actions.act_window">
         <field name="name">Reordering Rules with Forecasts</field>
         <field name="res_model">reordering.rules.with.forecast</field>
-        <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_reordering_rules_with_forecast_filter"/>
         <field name="target">current</field>

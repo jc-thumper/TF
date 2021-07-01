@@ -65,6 +65,11 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
         compute='_compute_total_supply',
         help="", default=0, store=False)
 
+    safety_stock = fields.Float(
+        'Safety Stock', digits=dp.get_precision('Product Unit of Measure'),
+        readonly=True, related='orderpoint_id.safety_stock',
+        help='An additional quantity of an item held in the inventory to reduce the '
+             'risk that the item will be out of stock.', default=0)
     product_min_qty = fields.Float(
         'Minimum Quantity', digits=dp.get_precision('Product Unit of Measure'),
         readonly=True, related='orderpoint_id.product_min_qty',
@@ -146,33 +151,38 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
             # create new record if it doesn't exist and update the existing records with
             # the new min/max suggested quantity
             sql_query = """
-                insert into reordering_rules_with_forecast as monitor (
+                INSERT INTO reordering_rules_with_forecast AS monitor (
                     tracker_id, eoq, create_time, pub_time, 
-                    new_min_forecast, new_max_forecast, new_min_qty, new_max_qty,
+                    new_min_forecast, new_max_forecast, new_safety_stock_forecast, 
+                    new_min_qty, new_max_qty, new_safety_stock,
                     product_id, company_id, warehouse_id, location_id, master_product_id, lot_stock_id, 
                     create_uid, create_date, write_uid, write_date)
-                select id,
+                SELECT id,
                        eoq,
                        create_time,
                        pub_time,
                        new_min_forecast,
                        new_max_forecast,
+                       new_safety_stock_forecast,
                        new_min_qty,
                        new_max_qty,
+                       new_safety_stock,
                        product_id, company_id, warehouse_id, location_id, master_product_id,
                        lot_stock_id, create_uid, create_date, write_uid, write_date
-                from reordering_rules_with_forecast_tracker tracker
-                where tracker.create_date = %(create_date)s
-                on conflict (product_id, company_id, warehouse_id)
-                do update set
+                FROM reordering_rules_with_forecast_tracker tracker
+                WHERE tracker.create_date = %(create_date)s
+                ON CONFLICT (product_id, company_id, warehouse_id)
+                DO UPDATE SET
                     tracker_id = excluded.tracker_id,
                     eoq = excluded.eoq,
                     create_time = excluded.create_time,
                     pub_time = excluded.pub_time,
                     new_min_forecast = excluded.new_min_forecast,
                     new_max_forecast = excluded.new_max_forecast,
+                    new_safety_stock_forecast = excluded.new_safety_stock_forecast,
                     new_min_qty = excluded.new_min_qty,
                     new_max_qty = excluded.new_max_qty,
+                    new_safety_stock = excluded.new_safety_stock,
                     create_uid = excluded.create_uid,
                     create_date = excluded.create_date,
                     write_uid = excluded.write_uid,
@@ -335,7 +345,6 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
     ###############################
     # GENERAL FUNCTION
     ###############################
-    @api.multi
     def write(self, values):
         if values.get('new_min_qty', None) is not None and values.get('new_max_qty', None) is not None:
             if values.get('new_min_qty') > values.get('new_max_qty'):
@@ -354,15 +363,14 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
     ###############################
     # ACTION FUNCTIONS
     ###############################
-    @api.multi
     def reset_reordering_rule(self, records):
         for rule in records:
             rule.write({
                 'new_min_qty': rule.new_min_forecast,
-                'new_max_qty': rule.new_max_forecast
+                'new_max_qty': rule.new_max_forecast,
+                'new_safety_stock': rule.new_safety_stock
             })
 
-    @api.multi
     def apply_reordering_rules(self, records):
         view_id = self.env.ref('reordering_rules_with_forecast.view_forecasting_confirm_box_form').id
         return {
@@ -382,7 +390,6 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
     ###############################
     # HELP FUNCTIONS
     ###############################
-    @api.multi
     def generate_new_reordering_rules(self, auto_generate_new_rr=True, allow_max_is_zero=False):
         """
 
@@ -401,7 +408,8 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
                     if allow_max_is_zero or rule.new_max_qty != 0:
                         rule.orderpoint_id.write({
                             'product_max_qty': rule.new_max_qty,
-                            'product_min_qty': rule.new_min_qty
+                            'product_min_qty': rule.new_min_qty,
+                            'safety_stock': rule.new_safety_stock
                         })
                 else:
                     if auto_generate_new_rr or rule.company_id.auto_gen_rule:
@@ -416,7 +424,8 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
                             if reordering_rules:
                                 reordering_rules.write({
                                     'product_max_qty': rule.new_max_qty,
-                                    'product_min_qty': rule.new_min_qty
+                                    'product_min_qty': rule.new_min_qty,
+                                    'safety_stock': rule.new_safety_stock
                                 })
                                 rule.write({'orderpoint_id': reordering_rules.id})
                             else:
@@ -426,7 +435,8 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
                                     'warehouse_id': warehouse_id.id,
                                     'location_id': location_id.id,
                                     'product_max_qty': rule.new_max_qty,
-                                    'product_min_qty': rule.new_min_qty
+                                    'product_min_qty': rule.new_min_qty,
+                                    'safety_stock': rule.new_safety_stock
                                 }
                                 self.env['stock.warehouse.orderpoint'] \
                                     .with_context(not_create_rrwf=True, rrwf_id=rule.id).create(values)

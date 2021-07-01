@@ -124,6 +124,22 @@ class PeriodType:
         return label
 
 
+class ServiceLevel:
+    ###############################
+    # CONSTANTS
+    ###############################
+    CATEGORY_A = 'group_a'
+    CATEGORY_B = 'group_b'
+    CATEGORY_C = 'group_c'
+    CATEGORY_NONE = None
+
+    CLSF_NAME = [
+        ('group_a', 'Group A'),
+        ('group_b', 'Group B'),
+        ('group_c', 'Group C')
+    ]
+
+
 class ProductLeadTimeConfig:
     AVG_LEADTIME = 'avg'
     LOWEST_COST_LEADTIME = 'lowest_cost'

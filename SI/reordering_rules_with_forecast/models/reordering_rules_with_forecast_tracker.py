@@ -42,6 +42,11 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
     ###############################
     # MODEL FIELDS
     ###############################
+    new_safety_stock_forecast = fields.Float(
+        'Safety Stock with Forecast value', digits=dp.get_precision('Product Unit of Measure'),
+        store=True, readonly=True,
+        help="Store the result from server. It is used to reset new safety stock quantity to original value ",
+        default=0)
     new_min_forecast = fields.Float(
         'Minimum Quantity with Forecast value', digits=dp.get_precision('Product Unit of Measure'),
         store=True, readonly=True,
@@ -51,6 +56,10 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         store=True,
         help="Store the result from server. It is used to reset new min/max quantity to original value", default=10)
 
+    new_safety_stock = fields.Float(
+        'Recommended Safety Stock', store=True, digits=dp.get_precision('Product Unit of Measure'),
+        help="The value is copied from the field `new_safety_stock_forecast` and allow the user to update value in the UI",
+        default=0)
     new_min_qty = fields.Float(
         'Recommended Min Quantity', store=True, digits=dp.get_precision('Product Unit of Measure'),
         help="The value is copied from the field `new_min_forecast` and allow the user to update value in the UI",
@@ -95,6 +104,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         required_fields_of_models = [
             ('min_forecast', float, None),
             ('max_forecast', float, None),
+            ('safety_stock', float, None),
             ('eoq', float, None),
             ('create_time', str, ExtraFieldType.DATETIME_FIELD_TYPE),
             ('pub_time', str, ExtraFieldType.DATETIME_FIELD_TYPE)
@@ -106,7 +116,10 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
             datum = append_log_access_fields_to_data(self, datum)
             min_forecast = datum.pop('min_forecast')
             max_forecast = datum.pop('max_forecast')
+            safety_stock = datum.pop('safety_stock')
             datum.update({
+                'new_safety_stock_forecast': safety_stock,
+                'new_safety_stock': safety_stock,
                 'new_min_forecast': min_forecast,
                 'new_min_qty': min_forecast,
                 'new_max_forecast': max_forecast,
@@ -472,6 +485,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
             if is_valid_format:
                 required_fields_for_data += [('min_forecast', float, None),
                                              ('max_forecast', float, None),
+                                             ('safety_stock', float, None),
                                              ('create_time', str, ExtraFieldType.DATETIME_FIELD_TYPE),
                                              ('pub_time', str, ExtraFieldType.DATETIME_FIELD_TYPE)]
 
@@ -501,9 +515,12 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         transformed_data = copy.deepcopy(data)
         for datum in transformed_data:
             append_log_access_fields_to_data(self, datum, ['write_date', 'write_uid'])
+            safety_stock = datum.pop('safety_stock')
             min_forecast = datum.pop('min_forecast')
             max_forecast = datum.pop('max_forecast')
             datum.update({
+                'new_safety_stock_forecast': safety_stock,
+                'new_safety_stock': safety_stock,
                 'new_min_forecast': min_forecast,
                 'new_min_qty': min_forecast,
                 'new_max_forecast': max_forecast,

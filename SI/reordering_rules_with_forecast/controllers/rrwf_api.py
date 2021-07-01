@@ -9,6 +9,7 @@ from odoo.addons.si_core.utils.request_utils import check_format_data_array, che
     handle_push_data_request
 
 _logger = logging.getLogger(__name__)
+print('-----------------------------------------')
 
 
 class ReorderingRuleWithForecastAPI(http.Controller):
@@ -17,7 +18,7 @@ class ReorderingRuleWithForecastAPI(http.Controller):
     """
 
     @http.route('/api/update_rrwf_result', type='json', auth="none", methods=['POST'],
-                website=False, csrf=False)
+                csrf=False)
     def update_rrwf_result(self, **kwargs):
         """
         Update the table Reordering Rules with Forecast with the new result

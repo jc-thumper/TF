@@ -17,7 +17,7 @@ class ComponentUsageWizard(models.TransientModel):
         domain = [('date', '<=', self.end_date), ('date', '>=', self.start_date), ('reference', 'ilike', 'WH/MO')]
         production_location = self.env['stock.location'].search([('name', 'ilike', 'Production')])
         domain += [('location_dest_id', '=', production_location.id)]
-        context = {'group_by': ['categ_id', 'product_id']}
+        context = {'group_by': ['categ_id', 'product_id'], 'create': False, 'edit': False}
         action = {
             'type': 'ir.actions.act_window',
             'views': [(tree_view_id, 'tree')],

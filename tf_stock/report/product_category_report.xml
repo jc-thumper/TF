@@ -19,7 +19,7 @@
         <field name="view_mode">tree</field>
         <field name="view_id" ref="tf_product_category_report"/>
         <field name="domain">[('type', '=', 'product')]</field>
-        <field name="context">{'group_by': 'categ_id'}</field>
+        <field name="context">{'group_by': 'categ_id', 'create': False, 'edit': False}</field>
     </record>
 
     <menuitem id="menu_action_tf_product_category_report"

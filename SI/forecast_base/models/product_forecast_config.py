@@ -177,7 +177,7 @@ class ProductForecastConfig(models.Model):
     @api.onchange('frequency', 'period_type')
     def _onchange_frequency_and_period_type(self):
         self.ensure_one()
-        self._check_next_call_value()
+        # self._check_next_call_value()
 
     @api.onchange('next_call')
     def _onchange_next_call(self):
@@ -384,6 +384,7 @@ class ProductForecastConfig(models.Model):
                     period_type = config_id.forecast_group_id.period_type \
                         if config_id.auto_update \
                         else config_id.period_type_custom
+                    print(next_call, period_type, config_id.get_frequency(), execute_date)
                     config_id.write({
                         'next_call': datetime_utils.convert_from_datetime_to_str_date(next_call),
                         'forecast_adjust_id': fore_adjust.id,
@@ -400,7 +401,7 @@ class ProductForecastConfig(models.Model):
     @api.model
     def create(self, vals):
         self._check_frequency_value(vals)
-        self._check_next_call_value(vals)
+        # self._check_next_call_value(vals)
         product_clsf_info_id = vals.get('product_clsf_info_id')
         if product_clsf_info_id:
             prod_clsf_info = self.env['product.classification.info'] \
@@ -416,7 +417,7 @@ class ProductForecastConfig(models.Model):
 
     def write(self, vals):
         self._check_frequency_value(vals)
-        self._check_next_call_value(vals)
+        # self._check_next_call_value(vals)
         res = super(ProductForecastConfig, self).write(vals)
         return res
 
@@ -584,19 +585,19 @@ class ProductForecastConfig(models.Model):
     def _check_next_call_value(self, vals=None):
         """ Function check some constrains value of the next_call, if it exist in vals
 
-        :param vals: create/write data of product_forecast_config table
-        :type vals: dict
+        :param dict vals: create/write data of product_forecast_config table
         :return:
         """
         vals = vals or {}
         next_call = vals.get('next_call')
         if next_call:
             for config in self:
-                product_id = config.product_id
-                warehouse_id = config.warehouse_id
+                product = config.product_id
+                warehouse = config.warehouse_id
 
-                product_name = product_id.name_get()[0][1] if product_id else ''
-                warehouse_name = warehouse_id.name_get()[0][1] if warehouse_id else ''
+                product_name = product.name_get()[0][1] if product else ''
+                warehouse_name = warehouse.name_get()[0][1] if warehouse else ''
+
                 forecast_adjust_id = config.forecast_adjust_id
                 if forecast_adjust_id:
                     last_receive_result = forecast_adjust_id.last_receive_result
@@ -606,20 +607,22 @@ class ProductForecastConfig(models.Model):
                         period_size = PeriodType.PERIOD_SIZE.get(config.period_type, 7)
                         min_available_gap = 0.2 * period_size
                         max_available_gap = 2 * period_size
+                        print(min_available_gap, max_available_gap, gap_dates, next_call, last_receive_result)
                         if gap_dates < min_available_gap:
                             available_date = last_receive_result + timedelta(days=math.ceil(min_available_gap))
                             raise ValidationError(_('The Next Execution Date of product %s '
-                                                    'in warehouse %s current is next %s day(s), should be after %s.',
-                                                    (product_name,
-                                                     warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT),)
+                                                    'in warehouse "%s" current is next %s day(s), should be after %s.' %
+                                                    (product_name, warehouse_name, gap_dates,
+                                                     available_date.strftime(DEFAULT_DATE_FORMAT),)
                                                     ))
 
                         if gap_dates > max_available_gap:
                             available_date = last_receive_result + timedelta(days=math.ceil(max_available_gap))
                             raise ValidationError(_('The Next Execution Date of product %s '
-                                                    'in warehouse "%s" current is next %s day(s), it should be before %s.',
-                                                    (product_name,
-                                                     warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT), )
+                                                    'in warehouse "%s" current is next %s day(s), '
+                                                    'it should be before %s.' %
+                                                    (product_name, warehouse_name, gap_dates,
+                                                     available_date.strftime(DEFAULT_DATE_FORMAT), )
                                                     ))
 
     def _is_auto_update_config(self):

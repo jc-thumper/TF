@@ -54,6 +54,12 @@ class SummarizeRecResult(models.Model):
         return required_fields_from_forecast_level + required_fields_of_models
 
     def transform_json_data_request(self, list_data, **kwargs):
+        """
+
+        :param list_data:
+        :param kwargs:
+        :return:
+        """
         for datum in list_data:
             datum = append_log_access_fields_to_data(self, datum)
 
@@ -86,9 +92,9 @@ class SummarizeRecResult(models.Model):
 
             sql_params = [get_key_value_in_dict(item, inserted_fields) for item in vals]
             self.env.cr.executemany(sql_query, sql_params)
-            _logger.info("data received %s .", vals)
-            _logger.info("SQL %s.", self.env.cr.mogrify(sql_query, sql_params[0]).decode('utf-8'))
-            _logger.info("Insert/update %s rows into the model.", len(vals))
+            _logger.debug("data received %s...", vals[:2])
+            _logger.debug("SQL %s.", self.env.cr.mogrify(sql_query, sql_params[0]).decode('utf-8'))
+            _logger.debug("Insert/update %s rows into the model.", len(vals))
 
         except IntegrityError:
             logging.exception("Duplicate key in the table %s: %s", converted_table_name, vals, exc_info=True)
@@ -98,34 +104,41 @@ class SummarizeRecResult(models.Model):
             raise
 
     def trigger_next_actions(self, created_date, **kwargs):
-        forecast_level = kwargs.get('forecast_level')
-        self.update_summarize_values_in_summarize_data_line(created_date=created_date,
-                                                            **{'forecast_level': forecast_level})
+        """
 
-    def update_summarize_values_in_summarize_data_line(self, created_date, **kwargs):
-        forecast_level = kwargs.get('forecast_level')
-        summarize_data_line_obj = self.env['summarize.data.line'].sudo()
+        :param created_date:
+        :param kwargs:
+        :return:
+        """
+        company_id = kwargs.get('company_id')
+        self.update_summarize_values_in_summarize_data_line(created_date=created_date, company_id=company_id)
 
-        from odoo.tools import config
-        allow_trigger_queue_job = config.get('allow_trigger_queue_job',
-                                             ALLOW_TRIGGER_QUEUE_JOB)
+    def update_summarize_values_in_summarize_data_line(self, created_date, company_id):
+        """
 
-        if allow_trigger_queue_job:
-            summarize_data_line_obj.with_delay(max_retries=12)\
-                .update_summarize_data(
+        :param created_date:
+        :param int company_id:
+        :return:
+        """
+        try:
+            summarize_data_line_obj = self.env['summarize.data.line'].sudo()
+
+            from odoo.tools import config
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
+
+            if allow_trigger_queue_job:
+                summarize_data_line_obj.with_delay(max_retries=12) \
+                    .update_summarize_data(
                     created_date=created_date,
-                    **{
-                        'forecast_level': forecast_level
-                    }
-               )
-        else:
-            summarize_data_line_obj\
-                .update_summarize_data(
-                    created_date=created_date,
-                    **{
-                        'forecast_level': forecast_level
-                    }
+                    company_id=company_id
                 )
+            else:
+                summarize_data_line_obj \
+                    .update_summarize_data(created_date=created_date, company_id=company_id)
+        except Exception as e:
+            _logger.exception(e)
+            raise e
 
     ###############################
     # INITIAL FUNCTIONS

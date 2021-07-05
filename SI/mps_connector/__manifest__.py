@@ -8,11 +8,13 @@
     'website': 'https://novobi.com',
     'category': 'Smart Inventory',
     'depends': [
-        'mrp_mps', 'forecast_base'
+        'mrp_mps', 'forecast_base', 'sale'
     ],
 
     'data': [
-        # ============================== VIEWS ================================
+
+        # ============================== DATA ================================
+        'data/ir_cron_data.xml',
     ],
     'qweb': ['static/src/xml/*.xml'],
     'application': False,

@@ -286,9 +286,10 @@ class ForecastResultAdjustLine(models.Model):
     def create_mul_rows(self, vals_list, constrain_cols=None, conflict_work=None, **kwargs):
         """
 
-        :param conflict_work:
-        :param constrain_cols:
-        :param vals_list:
+        :param list[dict] vals_list: this list of the row data that we use to create/update to table
+        forecast_result_adjust_line
+        :param list[str] constrain_cols:
+        :param str conflict_work:
         :return:
         """
         _logger.info('Create forecast result adjust line')
@@ -901,7 +902,8 @@ class ForecastResultAdjustLine(models.Model):
 
     @api.model
     def _list_constrain_columns(self, cid):
-        """
+        """ Function return the list of unique constrain column of the table forecast_result_adjust_line.
+        This constrain depend on the forecast level of company cid
 
         :return:
         :rtype: list[str]

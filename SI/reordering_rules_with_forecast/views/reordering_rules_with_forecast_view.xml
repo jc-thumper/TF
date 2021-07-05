@@ -16,10 +16,13 @@
                 <field name="lead_days" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="total_demand" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="total_supply" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="safety_stock" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="product_min_qty" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="product_max_qty" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="new_safety_stock" readonly="0" groups="stock.group_stock_manager"/>
                 <field name="new_min_qty" readonly="0" groups="stock.group_stock_manager"/>
                 <field name="new_max_qty" readonly="0" groups="stock.group_stock_manager"/>
+                <field name="new_safety_stock_forecast" invisible="1"/>
                 <field name="new_min_forecast" invisible="1"/>
                 <field name="new_max_forecast" invisible="1"/>
                 <field name="demand_value" invisible="1"/>

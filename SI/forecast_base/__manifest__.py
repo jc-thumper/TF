@@ -29,6 +29,7 @@
         'data/forecast_result_data.xml',
         'data/summarize_rec_result_data.xml',
         'data/res_company_data.xml',
+        'data/ir_cron_data.xml',
 
         'views/inherit_res_config_settings_view.xml',
         'views/forecast_group_views.xml',

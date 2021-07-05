@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="warehouse_orderpoint_search">
+        <field name="name">stock.warehouse.orderpoint.search</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="arch" type="xml">
+            <search string="Reordering Rules Search">
+                <field name="name" string="Reordering Rules"/>
+                <field name="warehouse_id" groups="stock.group_stock_multi_warehouses"/>
+                <field name="location_id" groups="stock.group_stock_multi_locations"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="product_id"/>
+                <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Warehouse" name="warehouse" domain="[]"  context="{'group_by':'warehouse_id'}" groups="stock.group_stock_multi_warehouses"/>
+                    <filter string="Location" name="location" domain="[]" context="{'group_by':'location_id'}" groups="stock.group_stock_multi_locations"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_warehouse_orderpoint_search_inherit" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.search.inherit</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.warehouse_orderpoint_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search/filter[@name='inactive']" position="after">
+                <separator/>
+
+                <filter name="rr_trigger_this_month" string="Triggered This Month"
+                        domain="[('triggered_this_month', '=', True)]"/>
+                <filter name="rr_likely_to_trigger_this_month" string="Probably to Trigger This Month"
+                        domain="[('probably_trigger', '=', True)]"/>
+
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_warehouse_orderpoint_mail_inherit" model="ir.ui.view">
+        <field name="name">stock.warehouse.orderpoint.mail.inherit</field>
+        <field name="model">stock.warehouse.orderpoint</field>
+        <field name="inherit_id" ref="stock.view_warehouse_orderpoint_form"/>
+        <field name="arch" type="xml">
+            <label for="product_min_qty" position="before">
+                <label for="safety_stock"/>
+                <div class="o_row">
+                    <field name="safety_stock"/>
+                    <field name="product_uom_name"/>
+                </div>
+            </label>
+
+            <xpath expr="//form/sheet" position="after">
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

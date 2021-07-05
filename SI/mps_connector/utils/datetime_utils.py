@@ -8,8 +8,7 @@ from ...si_core.utils.string_utils import PeriodType
 def find_index_of_time_range(date_value, date_range):
     """
         Find the index of the date_value in date_range
-    :param date_value:
-    :type date_value: datetime
+    :param Union[datetime, date] date_value:
     :param date_range:
     :type date_range: list[(datetime, datetime)]
     :return:
@@ -57,10 +56,8 @@ def get_date_range_for_all_period_dict(num_of_cols, date_value=None):
 def get_date_range_by_num_of_cols(date_value, period_type, number_of_cols, value_in_string=None):
     """
         Return the list of start_date, end_date by period_type and num_of_cols
-    :param date_value:
-    :type date_value: datetime
-    :param period_type:
-    :type period_type: datetime
+    :param datetime date_value:
+    :param str period_type:
     :param number_of_cols:
     :type number_of_cols: int
     :param value_in_string:
@@ -71,7 +68,7 @@ def get_date_range_by_num_of_cols(date_value, period_type, number_of_cols, value
     date_range = []
 
     first_day, last_day = get_start_end_date_value(date_value, period_type)
-    for columns in range(number_of_cols):
+    for columns in range(abs(number_of_cols)):
         first_day_in_date = first_day.date()
         last_day_in_date = last_day.date()
         if value_in_string:
@@ -83,6 +80,9 @@ def get_date_range_by_num_of_cols(date_value, period_type, number_of_cols, value
             )
         else:
             date_range.append((first_day_in_date, last_day_in_date))
-        first_day, last_day = get_start_end_date_value(last_day + timedelta(days=1), period_type)
+        if number_of_cols >= 0:
+            first_day, last_day = get_start_end_date_value(last_day + timedelta(days=1), period_type)
+        else:
+            first_day, last_day = get_start_end_date_value(first_day - timedelta(days=1), period_type)
 
     return date_range

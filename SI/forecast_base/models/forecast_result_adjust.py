@@ -301,6 +301,11 @@ class ForecastResultAdjust(models.Model):
 
     def update_adjust_related_info(self, call_from_engine=False):
         """ Function update normal fields (to separate with standard fields pid, wid, cid,...)
+        - update adjust lines
+        - update chart
+        - update the last update
+
+        called from: when update the forecast result or via the cron refresh forecast result adjust line
 
         :param call_from_engine:
         :type call_from_engine: bool
@@ -357,6 +362,7 @@ class ForecastResultAdjust(models.Model):
     def _update_forecast_result(self, lines, update_time=False, call_from_engine=False):
         """ Function update table `forecast_result_adjust` base on `lines`,
         Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
+        called from: update_forecast_result_base_on_lines
 
         :param call_from_engine:
         :param lines:
@@ -415,6 +421,7 @@ class ForecastResultAdjust(models.Model):
         """ All the row in keys_tuple have same company
         Function create new rows, which have been not existed before, of
         table `forecast.result.adjust`
+        called from: _update_forecast_result
 
         :param keys_tuple: list of tuples of key, which are used to
         create new record have been not existed before, having structure is:
@@ -589,7 +596,7 @@ class ForecastResultAdjust(models.Model):
         Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
 
         :param list[int] line_ids:
-        :param bool update_time:
+        :param bool update_time: Update next time call
         :param bool call_from_engine:
         :return:
         """

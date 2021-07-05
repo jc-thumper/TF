@@ -878,7 +878,14 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             raise e
         return data_dict
 
-    def update_records_for_summarize_data_line(self, obj, model, created_date, **kwargs):
+    def update_records_for_summarize_data_line(self, obj, created_date, **kwargs):
+        """ Function update or create if it don't exist the summarize data line from the summarize record result
+
+        :param SummarizeDataLine obj:
+        :param created_date:
+        :param kwargs:
+        :return list[dict]:
+        """
         updated_ids = []
         try:
             if created_date:

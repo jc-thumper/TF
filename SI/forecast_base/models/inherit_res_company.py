@@ -429,8 +429,11 @@ class ResCompany(models.Model):
     def get_companies_sync_hour(self):
         """ Function return when the time to run sync data for each companies
 
-        :return:
-        :rtype: list(dict)
+        :return list[dict]:
+        Ex: {
+                'company_id': company.id,
+                'sync_hour': utc_sync_time
+            }
         """
         companies = self.search([]).sudo()
         companies_info = []

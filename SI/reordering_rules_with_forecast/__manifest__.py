@@ -24,6 +24,7 @@
 
         # ============================== VIEWS ================================
         'views/inherit_res_config_settings_view.xml',
+        'views/inherit_stock_warehouse_views.xml',
         'views/reordering_rules_with_forecast_view.xml',
 
         # ============================== WIZARD ================================

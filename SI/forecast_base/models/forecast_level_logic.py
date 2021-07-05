@@ -176,7 +176,7 @@ class ForecastLevelLogic(object):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def update_records_for_summarize_data_line(self, obj, model, list_data, **kwargs):
+    def update_records_for_summarize_data_line(self, obj, list_data, **kwargs):
         raise NotImplementedError
 
     ####################################

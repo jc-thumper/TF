@@ -62,18 +62,22 @@ class MrpProductionSchedule(models.Model):
                 }]
             }
 
-            # Generate the forecast result for concerning product
+            # 1. Generate the product forecast configuration for concerning product
+            self.generate_product_forecast_configuration(demand_fore_data_dict=demand_fore_data_dict)
+
+            # 2. Generate the forecast result for concerning product
             self.generate_forecast_result(demand_fore_data_dict=demand_fore_data_dict)
 
-            # Generate the product forecast configuration for concerning product
-            self.generate_product_forecast_configuration(demand_fore_data_dict=demand_fore_data_dict)
+            # 3. Summarize the historical data for concerning product
+            self.generate_summarized_historical_demand(demand_fore_data_dict=demand_fore_data_dict)
 
         return res
 
     ###############################
     # HELPER FUNCTION
     ###############################
-    def summarize_demand_fore_by_period(self, period_type, company_id, no_cols=None, demand_fore_data_dict=None):
+    def summarize_demand_fore_by_period(self, period_type, company_id, no_cols=None,
+                                        demand_fore_data_dict=None, product_ids=None):
         """
             Summarize the demand forecast base on the period type.
 
@@ -88,6 +92,7 @@ class MrpProductionSchedule(models.Model):
         :param int company_id:
         :param int no_cols:
         :param dict demand_fore_data_dict:
+        :param list[int] product_ids: If this value is set, summarize demand forecast for product in product_ids
         :return: {
             (product_id, company_id, warehouse_id): [
                 {
@@ -109,7 +114,12 @@ class MrpProductionSchedule(models.Model):
         # Calculate the demand forecast for the whole date_range_list
         product_demand_fore_dict = {}
         for key, value in demand_fore_data_dict.items():
-            _, in_dict_company_id, _ = key
+            in_dict_product_id, in_dict_company_id, _ = key
+
+            # If the product_ids value is set and the current product not in product_ids,
+            # do nothing
+            if (product_ids is not None) and (in_dict_product_id not in product_ids):
+                continue
 
             if in_dict_company_id == company_id:
                 product_demand_fore_item = product_demand_fore_dict.setdefault(
@@ -291,13 +301,27 @@ class MrpProductionSchedule(models.Model):
                                           data=fore_result_data,
                                           model=fore_result_env)
 
-    def generate_summarized_historical_demand(self):
+    def generate_summarized_historical_demand(self, demand_fore_data_dict=None):
         """
             Summarize the historical demand in the case that don't have the available summarised data
             when computing the Reordering points
+            Only compute for product in MPS
+        :param dict demand_fore_data_dict:
         :return:
         :rtype:
         """
+        # Get the demand forecast dict from MPS
+        demand_fore_data_dict = demand_fore_data_dict or self.get_demand_fore_data_dict()
+        product_ids_by_company = {}
+        for key, _ in demand_fore_data_dict.items():
+            product_id, company_id, _ = key
+
+            product_ids = product_ids_by_company.setdefault(company_id, [])
+            product_ids.append(product_id)
+
+        # Get the product forecast configuration
+        prod_fore_config = self._get_product_fore_config_dict(group_by_period=True)
+
         # Get the summarized historical data
         now = datetime.now()
         summarized_rec_result_env = self.env['summarize.rec.result']
@@ -316,48 +340,62 @@ class MrpProductionSchedule(models.Model):
             # Re-define the summarize_rec_result_data list for every company
             summarize_rec_result_data = []
 
+            # Get the product_ids for concerning company
+            product_ids = product_ids_by_company.get(company_id)
+
             # Get the historical data by company
-            historical_data_dict = self._get_historical_data(company, date_from)
+            historical_data_dict = self._get_historical_data(company=company,
+                                                             date_from=date_from,
+                                                             product_ids=product_ids)
 
-            for period_type, _ in PeriodType.LIST_PERIODS:
-                no_cols = self.NO_POINT_SUMMARIZED_DATA.get(period_type, 6)
+            if historical_data_dict:
+                for period_type, _ in PeriodType.LIST_PERIODS:
+                    no_cols = self.NO_POINT_SUMMARIZED_DATA.get(period_type, 6)
 
-                # Summarize historical data by period_type based on the historical_data_dict
-                summarized_data_dict = self._summarize_historical_data_by_period(
-                    company=company.sudo(),
-                    period_type=period_type,
-                    no_cols=no_cols,
-                    historical_data_dict=historical_data_dict
-                )
+                    # Get list of products have product_forecast_configuration' period_type
+                    # equal the current concerning period_type
+                    product_ids_by_period = [
+                        item.get('product_id')
+                        for item in prod_fore_config.get(period_type, [])
+                    ]
 
-                # Generate summarize_rec_result data from summarized_data_dict
-                for key, summarized_data in summarized_data_dict.items():
-                    product_id, warehouse_id = key
-                    for line in summarized_data:
-                        start_date = line.get('start_date')
-                        end_date = line.get('end_date')
-                        summarize_value = line.get('summarize_value', 0)
+                    # Summarize historical data by period_type based on the historical_data_dict
+                    summarized_data_dict = self._summarize_historical_data_by_period(
+                        company=company.sudo(),
+                        period_type=period_type,
+                        no_cols=no_cols,
+                        historical_data_dict=historical_data_dict,
+                        product_ids=product_ids_by_period
+                    )
 
-                        summarize_rec_result_data.append({
-                            'product_id': product_id,
-                            'company_id': company_id,
-                            'warehouse_id': warehouse_id,
-                            'period_type': period_type,
-                            'pub_time': now,
-                            'start_date': start_date,
-                            'end_date': end_date,
-                            'summarize_value': summarize_value,
-                            'no_picks': 0,
-                            'picks_with_discount': 0,
-                            'demand_with_discount': 0,
-                            'avg_discount_perc': 0
-                        })
+                    # Generate summarize_rec_result data from summarized_data_dict
+                    for key, summarized_data in summarized_data_dict.items():
+                        product_id, warehouse_id = key
+                        for line in summarized_data:
+                            start_date = line.get('start_date')
+                            end_date = line.get('end_date')
+                            summarize_value = line.get('summarize_value', 0)
 
-            # Create the summarize_rec_result records and trigger for the next action
-            if summarize_rec_result_data:
-                self._create_or_update_model_data(company=company,
-                                                  data=summarize_rec_result_data,
-                                                  model=summarized_rec_result_env)
+                            summarize_rec_result_data.append({
+                                'product_id': product_id,
+                                'company_id': company_id,
+                                'warehouse_id': warehouse_id,
+                                'period_type': period_type,
+                                'pub_time': now,
+                                'start_date': start_date,
+                                'end_date': end_date,
+                                'summarize_value': summarize_value,
+                                'no_picks': 0,
+                                'picks_with_discount': 0,
+                                'demand_with_discount': 0,
+                                'avg_discount_perc': 0
+                            })
+
+                # Create the summarize_rec_result records and trigger for the next action
+                if summarize_rec_result_data:
+                    self._create_or_update_model_data(company=company,
+                                                      data=summarize_rec_result_data,
+                                                      model=summarized_rec_result_env)
 
     def generate_product_forecast_configuration(self, demand_fore_data_dict=None):
         """
@@ -460,6 +498,9 @@ class MrpProductionSchedule(models.Model):
         # Get all the MPS demand forecast value
         demand_fore_data_dict = demand_fore_data_dict or self.get_demand_fore_data_dict()
 
+        # Get the product forecast configuration
+        prod_fore_config = self._get_product_fore_config_dict(group_by_period=True)
+
         # Init the MPS demand forecast data for all companies
         if demand_fore_data_dict:
             fore_result_env = self.env['forecast.result']
@@ -476,12 +517,19 @@ class MrpProductionSchedule(models.Model):
                     no_cols = max(company_no_cols,
                                   self.NO_POINT_FORECAST_RESULT_DATA.get(period_type, company_no_cols))
 
+                    # Get the products have period type equal to the concerning period type
+                    product_ids_by_period = [
+                        item.get('product_id')
+                        for item in prod_fore_config.get(period_type, [])
+                    ]
+
                     # Summarize the demand forecast data by period_type
                     product_demand_fore_dict = self.summarize_demand_fore_by_period(
                         period_type=period_type,
                         company_id=company_id,
                         no_cols=no_cols,
-                        demand_fore_data_dict=demand_fore_data_dict
+                        demand_fore_data_dict=demand_fore_data_dict,
+                        product_ids=product_ids_by_period
                     )
 
                     # Generate the forecast_result data from the summarized demand forecast values
@@ -515,74 +563,126 @@ class MrpProductionSchedule(models.Model):
     ###############################
     # PRIVATE FUNCTION
     ###############################
-    def _get_product_fore_config_dict(self):
+    def _get_product_fore_config_dict(self, group_by_period=None):
         """
             Get all the products' forecast configuration included id and period_type
-        :return: {
-            (product_id, company_id, warehouse_id): {
-                'id': product_fore_config.id
-                'period_type': product_fore_config.period_type
+        :return:
+            {
+                (product_id, company_id, warehouse_id): {
+                    'id': product_fore_config.id
+                    'period_type': product_fore_config.period_type
+                }
+            } if group_by_period is not set
+        or
+            {
+                period_type: [
+                    {
+                        'product_id': product_id,
+                        'company_id': company_id,
+                        'warehouse_id': warehouse_id,
+                        'product_fore_config_id': product_fore_config.id
+                    }
+                ]
             }
-        }
         :rtype: dict
         """
         product_config_dict = {}
 
-        product_configs = self.env['product.forecast.config'].sudo().search([])
-        for config in product_configs:
-            # Get the data from product forecast configuration
-            config_id = config.id
-            product_id = config.product_id.id
-            company_id = config.company_id.id
-            warehouse_id = config.warehouse_id.id
+        sql_query = """
+            SELECT config.id,
+                   config.product_id,
+                   config.warehouse_id,
+                   config.company_id,
+                   (CASE WHEN config.auto_update THEN g.period_type ELSE config.period_type_custom END) period_type
+            FROM product_forecast_config config
+            LEFT JOIN product_classification_info info
+                ON config.product_clsf_info_id = info.id
+            LEFT JOIN forecast_group g
+                ON info.forecast_group_id = g.id
+        """
+        self._cr.execute(sql_query)
 
-            if config.auto_update and config.forecast_group_id:
-                period_type = config.forecast_group_id.period_type
+        for line in self._cr.dictfetchall():
+            config_id = line.get('id')
+            product_id = line.get('product_id')
+            company_id = line.get('company_id')
+            warehouse_id = line.get('warehouse_id')
+            period_type = line.get('period_type')
+
+            if group_by_period:
+                product_list = product_config_dict.setdefault(period_type, [])
+                product_list.append({
+                    'product_id': product_id,
+                    'company_id': company_id,
+                    'warehouse_id': warehouse_id,
+                    'product_fore_config_id': config_id
+                })
             else:
-                period_type = config.period_type_custom
-
-            # Add the data to product_config_dict
-            product_config_dict.setdefault(
-                (product_id, company_id, warehouse_id),
-                {
-                    'id': config_id,
-                    'period_type': period_type
-                }
-            )
+                product_config_dict.setdefault(
+                    (product_id, company_id, warehouse_id),
+                    {
+                        'id': config_id,
+                        'period_type': period_type
+                    }
+                )
 
         return product_config_dict
 
-    def _get_list_products_have_sold(self, company_id, timezone, date_from):
+    def _get_list_products_have_sold(self, company_id, timezone, date_from, product_ids=None):
         """
             Get list of product have been sold from date_from to current date
         :param int company_id:
         :param str timezone:
         :param datetime timezone:
+        :param list[int] product_ids:
         :return:
         Ex: {
-            product_id: number of orders
+            (product_id, warehouse_id): number of orders
         }
         :rtype: dict
         """
         start_date = str(date_from)
-        query = """
+        sql_params = {}
+        sql_query = """
                 SELECT product_id, warehouse_id, COUNT(*) num_of_orders
                 FROM sale_order_line
                        JOIN sale_order
                          ON sale_order_line.order_id = sale_order.id
+        """
+
+        if product_ids:
+            sql_query += """
+                            AND product_id IN %(product_ids)s
+            """
+            sql_params.update({
+                'product_ids': tuple(product_ids)
+            })
+
+        sql_query += """
                 WHERE date_order :: TIMESTAMPTZ AT TIME ZONE %(timezone)s >= %(start_date)s
                     AND product_id IS NOT NULL
                     AND sale_order.company_id = %(company_id)s 
                 GROUP BY product_id, warehouse_id
         """
-        self.env.cr.execute(query, {'start_date': start_date, 'company_id': company_id, 'timezone': timezone})
-        return dict([((i['product_id'], i['warehouse_id']), i['num_of_orders']) for i in self.env.cr.dictfetchall()])
+        sql_params.update({
+            'start_date': start_date,
+            'company_id': company_id,
+            'timezone': timezone
+        })
+        self.env.cr.execute(sql_query, sql_params)
 
-    def _get_historical_data(self, company, date_from):
+        return dict([
+            ((i['product_id'], i['warehouse_id']), i['num_of_orders'])
+            for i in self.env.cr.dictfetchall()
+        ])
+
+    def _get_historical_data(self, company, date_from, product_ids=None):
         """
             Get product daily demand from date_from to current date. (by company)
+            If the product_ids parameter is set, get historical data for only those products
         :param ResCompany company:
         :param datetime date_from:
+        :param list[int] product_ids:
         :return: {
             (product_id, warehouse_id): [
                 {
@@ -606,6 +706,7 @@ class MrpProductionSchedule(models.Model):
             so_state_affect_percentage_dict = company.get_so_state_affect_percentage_dict(company)
 
             # Get records from client db
+            sql_params = {}
             sql_query = """
                 SELECT product_uom_qty / uu.factor AS units,
                     o.warehouse_id,
@@ -614,25 +715,39 @@ class MrpProductionSchedule(models.Model):
                     product_id
                 FROM sale_order o
                     JOIN sale_order_line sol ON o.id = sol.order_id
+            """
+
+            if product_ids:
+                sql_query += """
+                        AND sol.product_id IN %(product_ids)s
+                """
+                sql_params.update({
+                    'product_ids': tuple(product_ids)
+                })
+
+            sql_query += """
                         AND o.company_id = %(company_id)s
                         AND o.date_order :: TIMESTAMPTZ AT TIME ZONE %(timezone)s >= %(start_date_range)s
                         AND o.date_order :: TIMESTAMPTZ AT TIME ZONE %(timezone)s <= %(end_date_range)s
                 JOIN product_product ON product_product.id = sol.product_id
                 JOIN uom_uom uu ON uu.id = sol.product_uom;
             """
-            sql_params = {
+            sql_params.update({
                 'company_id': company_id,
                 'timezone': timezone,
                 'start_date_range': start_date_range,
                 'end_date_range': end_date_range
-            }
+            })
             self.env.cr.execute(sql_query, sql_params)
 
             # Fetch the result
             product_daily_demand = self.env.cr.dictfetchall()
             _logger.info("Read %d rows from sales data to summarize" % (len(product_daily_demand),))
 
-            unique_product_ids = list(self._get_list_products_have_sold(company_id, timezone, date_from).keys())
+            unique_product_ids = list(self._get_list_products_have_sold(company_id=company_id,
+                                                                        timezone=timezone,
+                                                                        date_from=date_from,
+                                                                        product_ids=product_ids).keys())
 
             if len(product_daily_demand) > 0:
                 # Convert to DataFrame
@@ -675,7 +790,8 @@ class MrpProductionSchedule(models.Model):
 
         return product_daily_demand_dict
 
-    def _summarize_historical_data_by_period(self, company, period_type, no_cols, historical_data_dict):
+    def _summarize_historical_data_by_period(self, company, period_type, no_cols,
+                                             historical_data_dict=None, product_ids=None):
         """
             Summarize the historical data from _get_summarize_historical_data by period type
         :param ResCompany company:
@@ -689,6 +805,7 @@ class MrpProductionSchedule(models.Model):
                     'summarize_result': product demand of the sale orders in the date_order date
                 }
             ]
+        :param list[int] product_ids: If this value is set, only summarize for product in product_ids
         :return: {
             product_id: {
                 warehouse_id: [
@@ -714,6 +831,12 @@ class MrpProductionSchedule(models.Model):
         summarized_data_dict = {}
         for key, historical_data in historical_data_dict.items():
             product_id, warehouse_id = key
+
+            # If the product_id not in product_ids, do nothing
+            if (product_ids is not None) and (product_id not in product_ids):
+                continue
+
+            # Initialize the summarized data for each (product, warehouse) by date range from period
             summarized_data_item = summarized_data_dict.setdefault((product_id, warehouse_id), [
                 {
                     'start_date': date_range[0],
@@ -723,6 +846,7 @@ class MrpProductionSchedule(models.Model):
                 for date_range in date_range_list
             ])
 
+            # Summarize the historical data to the dict
             for line in historical_data:
                 index = find_index_of_time_range(line.get('date_order').date(), date_range_list)
                 if index >= 0:
@@ -802,14 +926,14 @@ class MrpProductionSchedule(models.Model):
         """
         self.generate_product_forecast_configuration(demand_fore_data_dict)
 
-    def init_summarized_historical_data(self):
+    def init_summarized_historical_data(self, demand_fore_data_dict=None):
         """
             Summarize the historical demand in the case that don't have the available summarised data
             when computing the Reordering points
         :return:
         :rtype:
         """
-        self.generate_summarized_historical_demand()
+        self.generate_summarized_historical_demand(demand_fore_data_dict)
 
 
 class MrpProductForecast(models.Model):

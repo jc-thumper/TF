@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . import inherit_forecast_result_adjust_line
+# from . import inherit_forecast_result_adjust_line
 from . import inherit_forecast_result_adjust
 from . import inherit_forecast_result_daily
 from . import inherit_forecast_item

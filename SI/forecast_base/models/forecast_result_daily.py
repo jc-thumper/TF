@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import psycopg2
 import logging
+
 from datetime import datetime
 
 import numpy as np
@@ -39,7 +41,10 @@ class ForecastResultDaily(models.Model):
                                               help='The sale demand on this date')
     active = fields.Boolean(default=False, readonly=True)
     _sql_constraints = [
-        ('forecast_adjust_line_date_unique_key', 'unique (forecast_adjust_line_id, date)', 'Key must be unique.')
+        ('forecast_adjust_line_date_unique_key', 'unique (forecast_adjust_line_id, date)',
+         'Forecast Adjust Line id and Date must be unique.'),
+        ('unique_pwc_date_forecast_result_daily_idx', 'unique (product_id, warehouse_id, company_id, date)',
+         'the set of company, warehouse, and product info combine with Date must be unique.'),
     ]
 
     ###################################
@@ -170,20 +175,20 @@ class ForecastResultDaily(models.Model):
     def convert_forecast_result_to_daily_value(self, fral_ids):
         """
         Convert forecast value from the table Forecast Result Adjust Line to daily value
-        base on each period type
+        base on each period type and store to the table forecast result daily
         :param list[int] fral_ids: list of record id in the table Forecast Result Adjust Line
-        :return: None
+        :return None:
         """
         unique_fral_ids = np.unique(fral_ids).tolist()
 
         # get company_id from ids of Forecast Result Adjust Line
-        fral_ids = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
-                                                                       ['id', 'company_id'])
+        frals = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
+                                                                    ['id', 'company_id'])
 
         fral_records = [{
             'id': record.get('id'),
             'company_id': record.get('company_id')[0]
-        } for record in fral_ids]
+        } for record in frals]
 
         company_ids = list(set([item.get('company_id') for item in fral_records]))
 
@@ -249,8 +254,8 @@ class ForecastResultDaily(models.Model):
             number_of_record = len(line_ids)
 
             from odoo.tools import config
-            threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            threshold_trigger_queue_job = int(config.get('threshold_to_trigger_queue_job',
+                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
             allow_trigger_queue_job = config.get('allow_trigger_queue_job',
                                                  ALLOW_TRIGGER_QUEUE_JOB)
 

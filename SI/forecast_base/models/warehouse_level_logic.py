@@ -352,7 +352,16 @@ class WarehouseLevelLogic(ForecastLevelLogic):
         return result
 
     def create_or_update_records_in_forecast_result_daily(self, obj, model_name, line_ids, **kwargs):
-        # some helper functions
+        """ Function create or update the data for table forecast result daily;
+        just compute the daily demand if that product have the product forecasting configuration
+
+        :param obj:
+        :param str model_name:
+        :param line_ids:
+        :param kwargs:
+        :return:
+        """
+
         def __compute_mean_forecast_values(series, period_type):
             factors = {
                 'weekly': 7,
@@ -383,18 +392,31 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             return new_df
 
         def __get_product_forecast_config_data(obj):
+            """ The function get the period type from product forecast config
+
+            :param obj:
+            :return DataFrame:
+            column: product_id, warehouse_id, company_id, period_type
+            """
             sql_query = """
-                SELECT config.product_id, config.warehouse_id, config.company_id, g.period_type
+                SELECT config.product_id, config.warehouse_id, config.company_id, 
+                (CASE WHEN config.auto_update THEN g.period_type ELSE config.period_type_custom END) period_type
                 FROM product_forecast_config config
-                JOIN product_classification_info info ON config.product_clsf_info_id = info.id
-                JOIN forecast_group g ON info.forecast_group_id = g.id;
+                LEFT JOIN product_classification_info info ON config.product_clsf_info_id = info.id
+                LEFT JOIN forecast_group g ON info.forecast_group_id = g.id;
             """
 
             obj.env.cr.execute(sql_query)
             records = obj.env.cr.dictfetchall()
             return pd.DataFrame.from_records(records)
 
-        def __get_forecast_result_data(obj, line_ids):
+        def __get_forecast_result_adjust_line_data(obj, line_ids):
+            """
+
+            :param obj:
+            :param line_ids:
+            :return DataFrame: id, product_id, warehouse_id, company_id, period_type, start_date, adjust_value
+            """
             sql_query = """
                 SELECT 
                     fral.id, fral.product_id, fral.warehouse_id, fral.company_id, fral.period_type,
@@ -407,6 +429,11 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             return pd.DataFrame.from_records(records)
 
         def __get_records_in_forecast_result_daily(obj):
+            """
+            Get the data of all current records on the forecast result daily
+            :param obj:
+            :return DataFrame:
+            """
             sql_query = """
                 SELECT forecast_adjust_line_id, date
                 FROM forecast_result_daily;
@@ -440,11 +467,11 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         try:
             # get product forecast config data
-            product_config_df = __get_product_forecast_config_data(obj=obj)
+            product_forecast_config_df = __get_product_forecast_config_data(obj=obj)
 
             # get forecast result data
-            forecast_result_df = __get_forecast_result_data(obj=obj, line_ids=line_ids)
-            forecast_result_df['start_date'] = pd.to_datetime(forecast_result_df['start_date'])
+            fral_df = __get_forecast_result_adjust_line_data(obj=obj, line_ids=line_ids)
+            fral_df['start_date'] = pd.to_datetime(fral_df['start_date'])
 
             # get existing records in forecast result daily
             forecast_result_daily_df = __get_records_in_forecast_result_daily(obj=obj)
@@ -452,17 +479,21 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 forecast_result_daily_df['date'] = pd.to_datetime(forecast_result_daily_df['date'])
                 forecast_result_daily_df['is_existing'] = True
 
+            lines_have_config_df = pd.merge(fral_df, product_forecast_config_df, how='inner',
+                                            left_on=['company_id', 'period_type', 'product_id', 'warehouse_id'],
+                                            right_on=['company_id', 'period_type', 'product_id', 'warehouse_id'])
+
             # convert to daily forecast value
-            daily_forecast_df = forecast_result_df.groupby(
+            new_daily_forecast_df = lines_have_config_df.groupby(
                 ['period_type', 'product_id', 'warehouse_id', 'company_id'],
                 as_index=False).apply(
                 lambda splitted_df: __convert_to_daily_forecast_values(splitted_df))
 
             # add some columns
-            daily_forecast_df['active'] = True
+            new_daily_forecast_df['active'] = True
 
             # rename some columns
-            daily_forecast_df = daily_forecast_df.rename(columns={
+            new_daily_forecast_df = new_daily_forecast_df.rename(columns={
                 'id': 'forecast_adjust_line_id',
                 'adjust_value': 'daily_forecast_result'
             })
@@ -471,15 +502,15 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 'forecast_adjust_line_id', 'product_id', 'warehouse_id', 'company_id', 'active',
                 'date', 'daily_forecast_result', 'period_type'
             ]
-            daily_forecast_df = daily_forecast_df[selected_cols]
+            new_daily_forecast_df = new_daily_forecast_df[selected_cols]
 
             if forecast_result_daily_df.empty is False:
-                result = daily_forecast_df.merge(forecast_result_daily_df, how='left',
-                                                 left_on=['forecast_adjust_line_id', 'date'],
-                                                 right_on=['forecast_adjust_line_id', 'date'])
+                result = new_daily_forecast_df.merge(forecast_result_daily_df, how='left',
+                                                     left_on=['forecast_adjust_line_id', 'date'],
+                                                     right_on=['forecast_adjust_line_id', 'date'])
                 result['is_existing'] = result['is_existing'].fillna(False)
             else:
-                result = daily_forecast_df.copy()
+                result = new_daily_forecast_df.copy()
                 result['is_existing'] = False
 
             # cast type of ID columns to integer

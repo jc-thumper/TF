@@ -364,12 +364,10 @@ class ForecastResultAdjust(models.Model):
         Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
         called from: update_forecast_result_base_on_lines
 
-        :param call_from_engine:
-        :param lines:
-        :type lines: list(forecast.result.adjust.line)
+        :param bool call_from_engine:
+        :param ForecastResultAdjustLine lines:
         :param update_time:
-        :return:
-        :rtype: recordset
+        :return ForecastResultAdjust:
         """
         fra_obj = None
         if lines:
@@ -419,7 +417,7 @@ class ForecastResultAdjust(models.Model):
 
     def _create_new_fore_res_adjust(self, keys_tuple):
         """ All the row in keys_tuple have same company
-        Function create new rows, which have been not existed before, of
+        Function create some new rows, which have been not existed before, of
         table `forecast.result.adjust`
         called from: _update_forecast_result
 
@@ -517,46 +515,49 @@ class ForecastResultAdjust(models.Model):
     def _gen_dict_adjust_line(self, frals):
         """
 
-        :param frals:
-        :return: tuple(dict(period_type:, {
+        :param ForecastResultAdjustLine frals:
+        :return tuple[dict, dict]:
+        Ex: {
+                period_type: {
                     'cur_first_date': cur_first_date,
                     'start_first_date': start_first_date,
                     'end_first_date': end_first_date,
-                }), dict(key_tuple, frals))
-        :rtype: tuple(dict(dict()), dict(recordset))
+                }
+            },
+            {
+                key_tuple: frals
+            }
         """
-        cur_info_dict = {}
+        period_info_dict = {}
         fral_list_dict = {}
         res_config_setting_env = self.env['res.config.settings']
+        current = datetime.now()
+        past_period = res_config_setting_env.get_past_periods()
+        future_periods = res_config_setting_env.get_future_periods()
+
         for fral in frals:
             period_type = fral.period_type
-            cur_period_info = cur_info_dict.get(period_type)
+            cur_period_info = period_info_dict.get(period_type)
 
             # init period information
             if not cur_period_info:
-                cur_first_date = datetime_utils.get_start_end_date_value(datetime.now(), period_type)[0]
-                past_period = res_config_setting_env.get_past_periods()
-                future_periods = res_config_setting_env.get_future_periods()
+                cur_first_date = datetime_utils.get_start_end_date_value(current, period_type)[0]
 
-                start_first_date = cur_first_date - datetime_utils.get_delta_time(
-                    period_type,
-                    past_period)
-                end_first_date = cur_first_date + datetime_utils.get_delta_time(
-                    period_type,
-                    future_periods - 1)
+                start_first_date = cur_first_date - datetime_utils.get_delta_time(period_type, past_period)
+                end_first_date = cur_first_date + datetime_utils.get_delta_time(period_type, future_periods - 1)
 
                 cur_period_info = {
                     'cur_first_date': cur_first_date,
                     'start_first_date': start_first_date,
                     'end_first_date': end_first_date,
                 }
-                cur_info_dict[period_type] = cur_period_info
+                period_info_dict[period_type] = cur_period_info
 
-            keys_tuple = fral._get_tuple_key() + (period_type, )
+            keys_tuple = fral.get_tuple_key() + (period_type, )
             fral_list = fral_list_dict.get(keys_tuple, self.env['forecast.result.adjust.line'])
             fral_list += fral
             fral_list_dict[keys_tuple] = fral_list
-        return cur_info_dict, fral_list_dict
+        return period_info_dict, fral_list_dict
 
     ###############################
     # CRON FUNCTIONS

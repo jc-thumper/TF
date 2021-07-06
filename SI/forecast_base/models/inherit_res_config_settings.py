@@ -107,11 +107,19 @@ class ResConfigSettings(models.TransientModel):
     # HELPER FUNCTIONS
     #################################
     def get_future_periods(self):
+        """ Return the number of period we will show on the chart and table in the future
+
+        :return int:
+        """
         return int(self.env['ir.config_parameter']
                    .sudo()
                    .get_param('forecasting.future_periods', NO_FUTURE_PERIOD))
 
     def get_past_periods(self):
+        """ Return the number of period we will show on the chart and table in the past
+
+        :return int:
+        """
         return int(self.env['ir.config_parameter']
                    .sudo()
                    .get_param('forecasting.past_periods', NO_PAST_PERIOD))

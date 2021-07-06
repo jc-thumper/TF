@@ -292,109 +292,6 @@ class ProductForecastConfig(models.Model):
         operator = 'in' if (operator == '=' and value) or (operator == '!=' and not value) else 'not in'
         return [('id', operator, configs_have_forecasted.ids)]
 
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_comp_config_data(self, products_info, update_active=False):
-        """
-
-        :param products_info:
-        :type products_info: list[dict]
-        :param update_active:
-        :return:
-        """
-        try:
-            _logger.info("Update product forecast config with data: %s", products_info)
-            updated_conf_ids = []
-            company_effected = []
-
-            conf_obj = self
-            prod_clsf_env = self.env['product.classification.info']
-
-            # Step 1: active config of all product in ``products_info``
-            for prod_info in products_info:
-                company_id = prod_info.get('company_id')
-                if company_id and company_id not in company_effected:
-                    company_effected.append(company_id)
-
-                product_domain = self._get_domain_product_forecast_config(prod_info)
-                config_info = self.get_product_forecast_config(product_domain)
-
-                product_clsf_info_id = prod_clsf_env.get_product_clsf_info(product_domain)
-                if config_info:
-                    # Step 1.1: update config have been existed
-                    updated_conf_ids.append(config_info.id)
-                    self._set_auto_update_config(False)
-
-                    # Just write when have a update
-                    write_content = {}
-                    if config_info.product_clsf_info_id.id != product_clsf_info_id.id:
-                        write_content.update({
-                            'product_clsf_info_id': product_clsf_info_id.id,
-                        })
-                    if not config_info.active:
-                        write_content.update({'active': True})
-
-                    if write_content:
-                        config_info.sudo().with_context(auto_update_config=False).write(write_content)
-                        config_info._inverse_forecast_configuration()
-                        conf_obj += config_info
-                elif product_clsf_info_id and product_clsf_info_id.forecast_group_id:
-                    # Step 1.2: create new config
-                    self._set_auto_update_config(False)
-                    fore_group = product_clsf_info_id.forecast_group_id
-
-                    config_data = self._gen_product_forecast_config_data(prod_info, fore_group, product_clsf_info_id)
-                    new_config = self.sudo().with_context(auto_update_config=False).create(config_data)
-                    self.env.cr.commit()
-                    updated_conf_ids.append(new_config.id)
-                    new_config._inverse_forecast_configuration()
-                    conf_obj += new_config
-
-        except Exception as e:
-            _logger.exception("Function update_comp_config_data have some exception: %s" % e)
-            raise RetryableJobError('Must be retried later')
-
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_execute_date(self, fore_result_adjust_ids,
-                            execute_date=datetime.now()):
-        """
-
-        :param fore_result_adjust_ids:
-        :param execute_date:
-        :return:
-        """
-        try:
-            fore_adjust_ids = self.env['forecast.result.adjust'] \
-                .search([('id', 'in', fore_result_adjust_ids)])
-
-            for fore_adjust in fore_adjust_ids:
-                # get the frequency to compute Next Execution Date
-                config_id = self.search([('product_id', '=', fore_adjust.product_id.id),
-                                         ('company_id', '=', fore_adjust.company_id.id),
-                                         ('warehouse_id', '=', fore_adjust.warehouse_id.id)], limit=1)
-                if config_id:
-                    next_call = execute_date + datetime_utils.get_delta_time(config_id.get_frequency(), no_periods=1)
-                    period_type = config_id.forecast_group_id.period_type \
-                        if config_id.auto_update \
-                        else config_id.period_type_custom
-                    print(next_call, period_type, config_id.get_frequency(), execute_date)
-                    config_id.write({
-                        'next_call': datetime_utils.convert_from_datetime_to_str_date(next_call),
-                        'forecast_adjust_id': fore_adjust.id,
-                        'period_type': period_type
-                    })
-
-        except Exception as e:
-            _logger.exception("Function update_execute_date have some exception: %s" % e)
-            raise RetryableJobError('Must be retried later')
-
     ###############################
     # GENERAL FUNCTIONS
     ###############################
@@ -678,3 +575,109 @@ class ProductForecastConfig(models.Model):
         }
         return requests.post(direct_order_url, data=json.dumps(post_body, cls=DateTimeEncoder),
                              headers=headers, timeout=60)
+
+    ###############################
+    # JOB FUNCTIONS
+    ###############################
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_comp_config_data(self, products_info, update_active=False):
+        """
+
+        :param products_info:
+        :type products_info: list[dict]
+        :param update_active:
+        :return:
+        """
+        try:
+            _logger.info("Update product forecast config with data: %s", products_info)
+            updated_conf_ids = []
+            company_effected = []
+
+            conf_obj = self
+            prod_clsf_env = self.env['product.classification.info']
+
+            # Step 1: active config of all product in ``products_info``
+            for prod_info in products_info:
+                company_id = prod_info.get('company_id')
+                if company_id and company_id not in company_effected:
+                    company_effected.append(company_id)
+
+                product_domain = self._get_domain_product_forecast_config(prod_info)
+                config_info = self.get_product_forecast_config(product_domain)
+
+                product_clsf_info_id = prod_clsf_env.get_product_clsf_info(product_domain)
+                if config_info:
+                    # Step 1.1: update config have been existed
+                    updated_conf_ids.append(config_info.id)
+                    self._set_auto_update_config(False)
+
+                    # Just write when have a update
+                    write_content = {}
+                    if config_info.product_clsf_info_id.id != product_clsf_info_id.id:
+                        write_content.update({
+                            'product_clsf_info_id': product_clsf_info_id.id,
+                        })
+                    if not config_info.active:
+                        write_content.update({'active': True})
+
+                    if write_content:
+                        config_info.sudo().with_context(auto_update_config=False).write(write_content)
+                        config_info._inverse_forecast_configuration()
+                        conf_obj += config_info
+                elif product_clsf_info_id and product_clsf_info_id.forecast_group_id:
+                    # Step 1.2: create new config
+                    self._set_auto_update_config(False)
+                    fore_group = product_clsf_info_id.forecast_group_id
+
+                    config_data = self._gen_product_forecast_config_data(prod_info, fore_group, product_clsf_info_id)
+                    new_config = self.sudo().with_context(auto_update_config=False).create(config_data)
+                    self.env.cr.commit()
+                    updated_conf_ids.append(new_config.id)
+                    new_config._inverse_forecast_configuration()
+                    conf_obj += new_config
+
+        except Exception as e:
+            _logger.exception("Function update_comp_config_data have some exception: %s" % e)
+            raise RetryableJobError('Must be retried later')
+
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_execute_date(self, fore_result_adjust_ids,
+                            execute_date=datetime.now()):
+        """
+
+        :param fore_result_adjust_ids:
+        :param execute_date:
+        :return:
+        """
+        try:
+            fore_adjusts = self.env['forecast.result.adjust'] \
+                .search([('id', 'in', fore_result_adjust_ids)])
+
+            for fore_adjust in fore_adjusts:
+                # get the frequency to compute Next Execution Date
+                config_id = self.search([('product_id', '=', fore_adjust.product_id.id),
+                                         ('company_id', '=', fore_adjust.company_id.id),
+                                         ('warehouse_id', '=', fore_adjust.warehouse_id.id)], limit=1)
+                if config_id:
+                    next_call = execute_date + datetime_utils.get_delta_time(config_id.get_frequency(), no_periods=1)
+                    period_type = config_id.forecast_group_id.period_type \
+                        if config_id.auto_update \
+                        else config_id.period_type_custom
+                    print(next_call, period_type, config_id.get_frequency(), execute_date)
+                    config_id.write({
+                        'next_call': datetime_utils.convert_from_datetime_to_str_date(next_call),
+                        'forecast_adjust_id': fore_adjust.id,
+                        'period_type': period_type
+                    })
+
+        except Exception as e:
+            _logger.exception("Function update_execute_date have some exception: %s" % e)
+            raise RetryableJobError('Must be retried later')

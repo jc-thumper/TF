@@ -863,6 +863,16 @@ class ForecastResultAdjustLine(models.Model):
                     WHERE line.id IN %s AND prod.id = line.product_id;""", (tuple(line_ids), ))
             self._cr.commit()
 
+    @api.model
+    def get_tuple_key(self):
+        """
+
+        :return:
+        :rtype: tuple
+        """
+        return (self.product_id.id or None, self.company_id.id or None,
+                self.warehouse_id.id or None)
+
     @staticmethod
     def _format_fral(vals_list):
         """
@@ -889,16 +899,6 @@ class ForecastResultAdjustLine(models.Model):
             vals['forecast_result'] = 0
         if vals.get('adjust_value', 0) < 0:
             vals['adjust_value'] = 0
-
-    @api.model
-    def _get_tuple_key(self):
-        """
-
-        :return:
-        :rtype: tuple
-        """
-        return (self.product_id.id or None, self.company_id.id or None,
-                self.warehouse_id.id or None)
 
     @api.model
     def _list_constrain_columns(self, cid):

@@ -7,9 +7,12 @@ _logger = logging.getLogger(__name__)
 class MrpProductionScheduleInherit(models.Model):
     _inherit = 'mrp.production.schedule'
 
-    future_forecast_ids = fields.One2many('mrp.product.forecast', 'production_schedule_id',
-                                          'Forecasted quantity at date using to Export',
-                                          domain=lambda self: [('date', '>', fields.Date.today())])
+    future_forecast_ids = fields.One2many(
+        'mrp.product.forecast',
+        'production_schedule_id',
+        string='Forecasted quantity at date using to Export',
+        domain=lambda self: [('date', '>', fields.Date.today())]
+    )
 
     @api.model
     def open_table(self):
@@ -25,8 +28,10 @@ class MrpProductionScheduleInherit(models.Model):
 
     def get_production_schedule_view_state(self):
         res = super(MrpProductionScheduleInherit, self).get_production_schedule_view_state()
-        ProductForecast  = self.env['mrp.product.forecast']
-        today = fields.Date.today()
+        ProductForecast = self.env['mrp.product.forecast']
+        today = fields.Date.context_today(self)
+        # TODO: to check if we can browse all the record for `mrp.production.schedule`
+        # and filter for `forecase_ids` in the values list
         for production_schedule in res:
             schedule = self.env['mrp.production.schedule'].browse(production_schedule['id'])
             future_forecasts = schedule.forecast_ids.filtered(lambda f: f.date > today)
@@ -34,7 +39,7 @@ class MrpProductionScheduleInherit(models.Model):
             forecast_values_list = production_schedule['forecast_ids']
             for forecast_vals in forecast_values_list:
                 if forecast_vals['date_stop'] not in dates:
-                    ProductForecast .create({
+                    ProductForecast.create({
                         'forecast_qty': 0,
                         'date': forecast_vals['date_stop'],
                         'production_schedule_id': schedule.id,

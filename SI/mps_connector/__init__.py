@@ -21,5 +21,5 @@ def setup_mps_connector(cr, registry):
 
     # 3. Summarize the historical demand in the case that don't have the available summarised data
     # when computing the Reordering points
-    mps_env.init_summarized_historical_data()
+    mps_env.init_summarized_historical_data(demand_fore_data_dict=demand_fore_data_dict)
 

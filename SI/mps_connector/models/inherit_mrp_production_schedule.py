@@ -309,9 +309,8 @@ class MrpProductionSchedule(models.Model):
         for key, _ in demand_fore_data_dict.items():
             product_id, company_id, _ = key
 
-            product_ids = product_ids_by_company.get(company_id, [])
+            product_ids = product_ids_by_company.setdefault(company_id, [])
             product_ids.append(product_id)
-            product_ids_by_company[company_id] = product_ids
 
         # Get the summarized historical data
         now = datetime.now()

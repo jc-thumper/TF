@@ -511,17 +511,18 @@ class InheritForecastResultAdjustLine(models.Model):
                         6: 10 * 60,
                         9: 30 * 60},
          default_channel='root.forecasting')
-    def update_forecast_adjust_line_table(self, created_date, **kwargs):
+    def update_forecast_adjust_line_table(self, created_date, pub_time, **kwargs):
         """ Inherit the original function and trigger the action update the indirect demand for the materials
         after we update their finish goods demand.
 
         :param created_date:
+        :param pub_time:
         :param kwargs:
         :return:
         """
         try:
             update_at = super(InheritForecastResultAdjustLine, self) \
-                .update_forecast_adjust_line_table(created_date, **kwargs)
+                .update_forecast_adjust_line_table(created_date, pub_time, **kwargs)
 
             from odoo.tools import config
             allow_trigger_queue_job = config.get('allow_trigger_queue_job',

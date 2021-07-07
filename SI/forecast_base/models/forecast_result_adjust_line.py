@@ -278,7 +278,7 @@ class ForecastResultAdjustLine(models.Model):
                 self.env['forecast.result.adjust'].sudo().with_delay(max_retries=12) \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
             else:
-                self.env['forecast.result.adjust'].sudo()\
+                self.env['forecast.result.adjust'].sudo() \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
 
         return lines
@@ -311,7 +311,7 @@ class ForecastResultAdjustLine(models.Model):
                 forecast_result_adjust_env.sudo().with_delay(max_retries=12) \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
             else:
-                forecast_result_adjust_env.sudo()\
+                forecast_result_adjust_env.sudo() \
                     .update_forecast_result_base_on_lines(line_ids, update_time=True)
 
         return lines
@@ -651,7 +651,7 @@ class ForecastResultAdjustLine(models.Model):
                         6: 10 * 60,
                         9: 30 * 60},
          default_channel='root.forecasting')
-    def update_forecast_adjust_line_table(self, created_date, **kwargs):
+    def update_forecast_adjust_line_table(self, created_date, pub_time, **kwargs):
         """ Create/Update forecast_result_adjust_line from data in forecast result table.
         All the new records will have a same create_date and write_date.
         Then, the forecast result daily will be updated
@@ -668,16 +668,16 @@ class ForecastResultAdjustLine(models.Model):
 
             updated_ids = forecast_level_obj \
                 .update_records_for_forecast_result_adjust_line(
-                    obj=self, model=self.env['forecast.result.adjust.line'],
-                    created_date=created_date,
-                    **{
-                        'current_time': cur_time,
-                        'create_uid': self.env.ref('base.partner_root').id,
-                        'create_date': cur_time,
-                        'write_uid': self.env.ref('base.partner_root').id,
-                        'write_date': cur_time
-                    }
-                )
+                obj=self, model=self.env['forecast.result.adjust.line'],
+                created_date=created_date, pub_time=pub_time,
+                **{
+                    'current_time': cur_time,
+                    'create_uid': self.env.ref('base.partner_root').id,
+                    'create_date': cur_time,
+                    'write_uid': self.env.ref('base.partner_root').id,
+                    'write_date': cur_time
+                }
+            )
 
             _logger.info("%s records have been updated in Forecast Result Adjust Line table: %s",
                          len(updated_ids), updated_ids)
@@ -689,7 +689,7 @@ class ForecastResultAdjustLine(models.Model):
 
                 from odoo.tools import config
                 threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
                 allow_trigger_queue_job = config.get('allow_trigger_queue_job',
                                                      ALLOW_TRIGGER_QUEUE_JOB)
 

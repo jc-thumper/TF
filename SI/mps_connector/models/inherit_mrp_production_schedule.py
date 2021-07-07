@@ -884,6 +884,7 @@ class MrpProductionSchedule(models.Model):
         if transformed_data:
             # 2. Get time when records are created in the database
             created_date = transformed_data[0].get('create_date')
+            pub_time = transformed_data[0].get('pub_time')
 
             # 3. Update data to the table
             forecast_level = company.forecast_level_id.name
@@ -895,6 +896,7 @@ class MrpProductionSchedule(models.Model):
             # 4. Push next actions into queue jobs if it is existing
             model.trigger_next_actions(**{
                 'created_date': created_date,
+                'pub_time': pub_time,
                 'company_id': company.id,
                 'forecast_level': forecast_level
             })

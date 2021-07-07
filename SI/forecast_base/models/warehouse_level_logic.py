@@ -951,12 +951,13 @@ class WarehouseLevelLogic(ForecastLevelLogic):
     def get_conflict_fields_for_forecast_result(self, **kwargs):
         return ['product_id', 'company_id', 'warehouse_id', 'pub_time', 'start_date', 'period_type']
 
-    def update_records_for_forecast_result_adjust_line(self, obj, model, created_date, **kwargs):
+    def update_records_for_forecast_result_adjust_line(self, obj, model, created_date, pub_time, **kwargs):
         """ Function create/update table forecast_result_adjust_line from table forecast_result data which are
         created at ``create_date``. This logic apply for warehouse level
         :param obj:
         :param model:
         :param created_date:
+        :param pub_time:
         :param kwargs:
         :return:
         :rtype: list[int]
@@ -965,39 +966,6 @@ class WarehouseLevelLogic(ForecastLevelLogic):
         try:
             _now = kwargs.get('current_time', database_utils.get_db_cur_time(obj.env.cr))
             if created_date:
-                sql_query = """
-                                SELECT fr.product_id,
-                                       fr.company_id,
-                                       fr.warehouse_id,
-                                       fr.start_date,
-                                       fr.end_date,
-                                       fr.period_type,
-                                       (CASE WHEN fr.forecast_result < 0 THEN 0 ELSE fr.forecast_result END),
-                                       (CASE WHEN fr.forecast_result < 0 THEN 0 ELSE fr.forecast_result END),
-                                       fr.id as forecast_line_id,
-                                       fr.pub_time as fore_pub_time,
-                                       fr.create_uid as create_uid,
-                                       %(now)s as create_date,
-                                       fr.write_uid as write_uid,
-                                       %(now)s as write_date
-                                FROM (SELECT * FROM forecast_result WHERE create_date = %(created_date)s) AS fr
-                                  LEFT OUTER JOIN (
-                                      SELECT *
-                                      FROM forecast_result_adjust_line
-                                      WHERE start_date >= %(now)s
-                                         OR (end_date >= %(now)s AND start_date <= %(now)s)) AS fral
-                                    ON 
-                                      fr.product_id IS NOT DISTINCT FROM fral.product_id AND
-                                      fr.warehouse_id IS NOT DISTINCT FROM fral.warehouse_id AND
-                                      fr.company_id IS NOT DISTINCT FROM fral.company_id AND
-                                      fr.start_date = fral.start_date AND
-                                      fr.period_type = fral.period_type
-                                WHERE fr.id IS NOT NULL;
-                            """
-                sql_param = {'created_date': created_date, 'now': _now}
-                obj.env.cr.execute(sql_query, sql_param)
-                _logger.info(obj.env.cr.dictfetchall())
-
                 sql_query = """
                     INSERT INTO forecast_result_adjust_line
                     (product_id, company_id, warehouse_id, start_date, end_date, period_type, forecast_result, 
@@ -1016,7 +984,9 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                            %(now)s as create_date,
                            fr.write_uid as write_uid,
                            %(now)s as write_date
-                    FROM (SELECT * FROM forecast_result WHERE create_date = %(created_date)s) AS fr
+                    FROM (SELECT * FROM forecast_result 
+                            WHERE create_date = %(created_date)s 
+                                AND pub_time = %(pub_time)s) AS fr
                       LEFT OUTER JOIN (
                           SELECT *
                           FROM forecast_result_adjust_line
@@ -1039,7 +1009,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                         forecast_line_id = EXCLUDED.forecast_line_id,
                         fore_pub_time    = EXCLUDED.fore_pub_time;
                 """
-                sql_param = {'created_date': created_date, 'now': _now}
+                sql_param = {'created_date': created_date, 'now': _now, 'pub_time': pub_time}
                 obj.env.cr.execute(sql_query, sql_param)
                 obj.env.cr.commit()
 

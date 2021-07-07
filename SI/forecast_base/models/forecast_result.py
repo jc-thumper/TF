@@ -118,16 +118,17 @@ class ForecastResult(models.Model):
         :rtype: None
         """
         forecast_level = kwargs.get('forecast_level')
-        self.update_forecast_result_in_forecast_result_adjust_line(created_date=created_date,
+        pub_time = kwargs.get('pub_time')
+        self.update_forecast_result_in_forecast_result_adjust_line(created_date=created_date, pub_time=pub_time,
                                                                    **{'forecast_level': forecast_level})
 
-    def update_forecast_result_in_forecast_result_adjust_line(self, created_date, **kwargs):
+    def update_forecast_result_in_forecast_result_adjust_line(self, created_date, pub_time, **kwargs):
         """ Function update the forecast result that have the created date is ``create_date``
         to the forecast_result_adjust_line table. we will push this task to queue job to do this
         automatically
 
-        :param created_date:
-        :type created_date: str
+        :param str created_date:
+        :param str pub_time:
         :param kwargs:
         :return:
         """
@@ -136,7 +137,7 @@ class ForecastResult(models.Model):
             forecast_result_adjust_line_obj = self.env['forecast.result.adjust.line'].sudo()
             forecast_result_adjust_line_obj \
                 .update_forecast_adjust_line_table(
-                created_date,
+                created_date, pub_time,
                 **{
                     'forecast_level': forecast_level
                 }

@@ -58,7 +58,8 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
 
     new_safety_stock = fields.Float(
         'Recommended Safety Stock', store=True, digits=dp.get_precision('Product Unit of Measure'),
-        help="The value is copied from the field `new_safety_stock_forecast` and allow the user to update value in the UI",
+        help="The value is copied from the field `new_safety_stock_forecast` and allow "
+             "the user to update value in the UI",
         default=0)
     new_min_qty = fields.Float(
         'Recommended Min Quantity', store=True, digits=dp.get_precision('Product Unit of Measure'),
@@ -167,18 +168,18 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         """
         demand_data = []
         # number of points to return
-        rounded_lead_days = math.ceil(lead_days)
-        if rounded_lead_days:
-            domain = [('date', '>=', datetime.now())]
+        rounded_lead_days = max(math.ceil(lead_days) * 1.5, 30)
 
-            domain += [(key, '=', val) for key, val in zip(product_keys,
-                                                           get_key_value_in_dict(product_values,
-                                                                                 product_keys))]
-            forecasts = self.env['forecast.result.daily'].sudo().search_read(
-                domain, ['daily_forecast_result'],
-                order='date', limit=rounded_lead_days)
-            if forecasts:
-                demand_data = [item.get('daily_forecast_result') for item in forecasts]
+        domain = [('date', '>=', datetime.now().date())]
+
+        domain += [(key, '=', val) for key, val in zip(product_keys,
+                                                       get_key_value_in_dict(product_values,
+                                                                             product_keys))]
+        forecasts = self.env['forecast.result.daily'].sudo().search_read(
+            domain, ['daily_forecast_result'],
+            order='date', limit=rounded_lead_days)
+        if forecasts:
+            demand_data = [item.get('daily_forecast_result') for item in forecasts]
 
         return demand_data
 
@@ -430,8 +431,6 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
                     # append keys into the data
                     rule_data.update(product_info)
                     data.append(rule_data)
-        _logger.info('item_values: %s', item_values)
-        _logger.info(data)
         return data
 
     def _create_new_records(self, new_records):

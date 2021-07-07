@@ -31,10 +31,10 @@ class MrpProductionScheduleInherit(models.Model):
         ProductForecast = self.env['mrp.product.forecast']
         today = fields.Date.context_today(self)
         # TODO: to check if we can browse all the record for `mrp.production.schedule`
-        # and filter for `forecase_ids` in the values list
+        # and filter for `forecast_ids` in the values list
         for production_schedule in res:
             schedule = self.env['mrp.production.schedule'].browse(production_schedule['id'])
-            future_forecasts = schedule.forecast_ids.filtered(lambda f: f.date > today)
+            future_forecasts = schedule.forecast_ids.filtered(lambda f: f.date >= today)
             dates = [f.date for f in future_forecasts]
             forecast_values_list = production_schedule['forecast_ids']
             for forecast_vals in forecast_values_list:

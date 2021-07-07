@@ -268,9 +268,17 @@ class MrpProductionSchedule(models.Model):
         warehouse_id = mps.warehouse_id.id
         forecast_datetime = datetime.combine(product_forecast_obj.date, datetime.min.time())
 
-        # Generate an empty forecast result for all period type
+        self._get_product_fore_config_dict(group_by_period=True)
+        product_forecast_config = self.env['product.forecast.config'] \
+            .search([('product_id', '=', product_id),
+                     ('company_id', '=', company_id),
+                     ('warehouse_id', '=', warehouse_id)])
+
         fore_result_data = []
-        for period_type, _ in PeriodType.LIST_PERIODS:
+        # Generate an empty forecast result for all period type
+        if product_forecast_config:
+            period_type = product_forecast_config.period_type
+
             start_date, end_date = get_start_end_date_value(forecast_datetime, period_type)
             fore_result_data.append({
                 'product_id': product_id,

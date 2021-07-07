@@ -374,6 +374,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         def __compute_mean_forecast_values(series, period_type):
             factors = {
+                'daily': 1,
                 'weekly': 7,
                 'monthly': 30,
                 'quarterly': 120
@@ -384,6 +385,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             splitted_df = origin_df.copy()
             period_type = splitted_df.pop('period_type').unique()[0]
             date_diff = {
+                'daily': {'days': 1},
                 'weekly': {'weeks': 1},
                 'monthly': {'months': 1},
                 'quarterly': {'months': 3}

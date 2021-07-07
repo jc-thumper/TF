@@ -229,6 +229,9 @@ class ForecastResultDaily(models.Model):
                              (tuple(line_ids), ))
             self._cr.commit()
 
+    ###################################
+    # JOB FUNCTIONS
+    ###################################
     @job(retry_pattern={1: 1 * 60,
                         3: 5 * 60,
                         6: 10 * 60,

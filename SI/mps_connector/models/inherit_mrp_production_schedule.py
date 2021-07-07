@@ -416,6 +416,8 @@ class MrpProductionSchedule(models.Model):
         # Get all the MPS demand forecast value
         demand_fore_data_dict = demand_fore_data_dict or self.get_demand_fore_data_dict()
 
+        has_data = False
+
         # Create the product forecast configuration for all products in MPS
         if demand_fore_data_dict:
             prod_fore_config_env = self.env['product.forecast.config'].sudo()
@@ -441,6 +443,7 @@ class MrpProductionSchedule(models.Model):
 
             # Update the period type for all existing product forecast configuration
             if existing_demand_fore_ids:
+                has_data = True
                 fore_configs = prod_fore_config_env.search([('id', 'in', existing_demand_fore_ids)])
                 fore_configs.mapped('company_id')
                 for config in fore_configs:
@@ -478,7 +481,11 @@ class MrpProductionSchedule(models.Model):
 
             # Create the Product Forecast Configuration
             if new_prod_fore_config:
+                has_data = True
                 prod_fore_config_env.create(new_prod_fore_config)
+
+        if has_data:
+            self.flush()
 
     def generate_forecast_result(self, demand_fore_data_dict):
         """

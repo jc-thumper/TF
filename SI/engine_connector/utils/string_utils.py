@@ -4,7 +4,6 @@
 # CONSTANT VARIABLES
 ########################################################
 
-
 class ExpirationState:
     """
         un_registered -> (registered but) not_licensed -> licensed -> no_safety_expired -> will_be_expired_today -> expired

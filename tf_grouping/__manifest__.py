@@ -1,16 +1,16 @@
 {
-    'name': 'TF Master Production Scheduler',
+    'name': 'TF Grouping',
     'version': '1.0',
     'website': 'https://www.novobi.com',
     'category': '',
     'author': 'Novobi LLC',
     'depends': [
-        'mrp_mps',
+        'purchase',
+        'mrp'
     ],
     'description': '',
     'data': [
-        'views/assets.xml',
-        'views/import_mps_views.xml',
+        'views/res_config_setting_views.xml',
     ],
     'images': [],
     'demo': [],

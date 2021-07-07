@@ -12,7 +12,7 @@ class ProductionWizard(models.TransientModel):
     def get_report(self):
         self.ensure_one()
         if self.start_date > self.end_date:
-            raise UserError(_('End date must be gather than Start Date.'))
+            raise UserError(_('End date must be greater than Start Date.'))
 
         tree_view_id = self.env.ref('tf_stock.mrp_production_report').id
         production_locations = self.env['stock.location'].search([('usage', '=', 'production')])

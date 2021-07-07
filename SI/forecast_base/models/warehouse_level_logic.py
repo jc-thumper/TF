@@ -966,6 +966,39 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             _now = kwargs.get('current_time', database_utils.get_db_cur_time(obj.env.cr))
             if created_date:
                 sql_query = """
+                                SELECT fr.product_id,
+                                       fr.company_id,
+                                       fr.warehouse_id,
+                                       fr.start_date,
+                                       fr.end_date,
+                                       fr.period_type,
+                                       (CASE WHEN fr.forecast_result < 0 THEN 0 ELSE fr.forecast_result END),
+                                       (CASE WHEN fr.forecast_result < 0 THEN 0 ELSE fr.forecast_result END),
+                                       fr.id as forecast_line_id,
+                                       fr.pub_time as fore_pub_time,
+                                       fr.create_uid as create_uid,
+                                       %(now)s as create_date,
+                                       fr.write_uid as write_uid,
+                                       %(now)s as write_date
+                                FROM (SELECT * FROM forecast_result WHERE create_date = %(created_date)s) AS fr
+                                  LEFT OUTER JOIN (
+                                      SELECT *
+                                      FROM forecast_result_adjust_line
+                                      WHERE start_date >= %(now)s
+                                         OR (end_date >= %(now)s AND start_date <= %(now)s)) AS fral
+                                    ON 
+                                      fr.product_id IS NOT DISTINCT FROM fral.product_id AND
+                                      fr.warehouse_id IS NOT DISTINCT FROM fral.warehouse_id AND
+                                      fr.company_id IS NOT DISTINCT FROM fral.company_id AND
+                                      fr.start_date = fral.start_date AND
+                                      fr.period_type = fral.period_type
+                                WHERE fr.id IS NOT NULL;
+                            """
+                sql_param = {'created_date': created_date, 'now': _now}
+                obj.env.cr.execute(sql_query, sql_param)
+                _logger.info(obj.env.cr.dictfetchall())
+
+                sql_query = """
                     INSERT INTO forecast_result_adjust_line
                     (product_id, company_id, warehouse_id, start_date, end_date, period_type, forecast_result, 
                     adjust_value, forecast_line_id, fore_pub_time, create_uid, create_date, write_uid, write_date)

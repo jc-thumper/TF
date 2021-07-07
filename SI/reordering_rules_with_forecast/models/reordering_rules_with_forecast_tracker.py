@@ -430,7 +430,8 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
                     # append keys into the data
                     rule_data.update(product_info)
                     data.append(rule_data)
-
+        _logger.info('item_values: %s', item_values)
+        _logger.info(data)
         return data
 
     def _create_new_records(self, new_records):

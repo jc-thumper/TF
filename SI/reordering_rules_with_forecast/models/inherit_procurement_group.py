@@ -15,15 +15,15 @@ class ProcurementGroup(models.Model):
     ###############################
     # PUBLIC FUNCTIONS
     ###############################
-    @api.model
-    def run(self, product_id, product_qty, product_uom, location_id, name, origin, values):
+    def run(self, procurements):
         """"""
-        res = super(ProcurementGroup, self).run(product_id, product_qty, product_uom, location_id, name, origin, values)
-        orderpoint_id = values.get('orderpoint_id')
-        if orderpoint_id:
-            rule = self._get_rule(product_id, location_id, values)
-            self.env['procurement.history'].create({
-                'orderpoint_id': orderpoint_id.id,
-                'rule_id': rule.id
-            })
+        res = super(ProcurementGroup, self).run(procurements)
+        for procurement in procurements:
+            orderpoint_id = procurement.values.get('orderpoint_id')
+            if orderpoint_id:
+                rule = self._get_rule(procurement.product_id, procurement.location_id, procurement.values)
+                self.env['procurement.history'].create({
+                    'orderpoint_id': orderpoint_id.id,
+                    'rule_id': rule.id
+                })
         return res

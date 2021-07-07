@@ -108,8 +108,9 @@ class ServiceLevelResult(models.Model):
     def transform_json_data_request(self, list_data, **kwargs):
         service_level_ids = self.env['service.level'].sudo().get_service_levels_ids()
         instantly_update = self.env['forecasting.config.settings'].sudo().check_instantly_update()
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
             service_level = datum.pop("service_level", None)
             datum.update({
                 'service_level_id': service_level_ids.get(service_level),

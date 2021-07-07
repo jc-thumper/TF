@@ -112,8 +112,9 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         return required_fields_from_forecast_level + required_fields_of_models
 
     def transform_json_data_request(self, list_data, **kwargs):
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
             min_forecast = datum.pop('min_forecast')
             max_forecast = datum.pop('max_forecast')
             safety_stock = datum.pop('safety_stock')

@@ -116,8 +116,9 @@ class DemandClassificationResult(models.Model):
     def transform_json_data_request(self, list_data, **kwargs):
         demand_clsf_ids = self.env['demand.classification'].sudo().get_clsf_ids()
         instantly_update = self.env['forecasting.config.settings'].sudo().check_instantly_update()
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
             demand_type = datum.pop("demand_type", None)
             datum.update({
                 'demand_clsf_id': demand_clsf_ids.get(demand_type),

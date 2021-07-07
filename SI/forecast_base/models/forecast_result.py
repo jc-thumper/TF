@@ -63,8 +63,9 @@ class ForecastResult(models.Model):
         :return:
         :rtype: list[dict]
         """
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
             datum.update({
                 'algo': datum.pop('algorithm')
             })
@@ -97,6 +98,7 @@ class ForecastResult(models.Model):
 
             sql_params = [get_key_value_in_dict(item, inserted_fields) for item in vals]
             self.env.cr.executemany(sql_query, sql_params)
+            self.env.cr.commit()
             _logger.info("Insert/update %s rows into the model.", len(vals))
 
         except IntegrityError:

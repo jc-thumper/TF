@@ -60,8 +60,9 @@ class SummarizeRecResult(models.Model):
         :param kwargs:
         :return:
         """
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
 
         return list_data
 

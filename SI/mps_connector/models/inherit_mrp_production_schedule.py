@@ -861,8 +861,7 @@ class MrpProductionSchedule(models.Model):
             from the MPS Connector to target model, works the same way as handle_push_data_request
             on forecast_connector
         :param ResCompany company:
-        :param data:
-        :type data:
+        :param list[dict] data:
         :param model:
         :type model:
         :return:

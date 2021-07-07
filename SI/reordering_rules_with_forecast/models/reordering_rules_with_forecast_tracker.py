@@ -243,32 +243,33 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
     def _get_product_supplier_infos_by_keys(self, product_ids):
         """
         Function get delay time of all vendors of each product in each company and warehouse.
-        :param list[int]product_ids: a list of values corresponding with the key to get the data
+        :param list[int] product_ids: a list of values corresponding with the key to get the data
         :return dict: a dictionary with the format:
         - The key is ``tuple_keys``. Ex: <product_id>
         - The value is the service level of this corresponding key
         """
         result = {}
         try:
-            sql_query = """
-                SELECT
-                    pp.id AS product_id,
-                    pt.id AS product_tmpl_id,
-                    ps.id AS product_supplier_id,
-                    ps.delay
-                FROM product_product pp
-                LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
-                LEFT JOIN product_supplierinfo ps ON pt.id = ps.product_tmpl_id
-                WHERE pp.id IN %s;
-            """
-            sql_params = (tuple(product_ids),)
-            self.env.cr.execute(sql_query, sql_params)
+            if product_ids:
+                sql_query = """
+                    SELECT
+                        pp.id AS product_id,
+                        pt.id AS product_tmpl_id,
+                        ps.id AS product_supplier_id,
+                        ps.delay
+                    FROM product_product pp
+                    LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+                    LEFT JOIN product_supplierinfo ps ON pt.id = ps.product_tmpl_id
+                    WHERE pp.id IN %s;
+                """
+                sql_params = (tuple(product_ids),)
+                self.env.cr.execute(sql_query, sql_params)
 
-            records = self.env.cr.dictfetchall()
-            for record in records:
-                delay = record.get('delay')
-                if delay is not None:
-                    result.setdefault(record.get('product_id'), []).append(delay)
+                records = self.env.cr.dictfetchall()
+                for record in records:
+                    delay = record.get('delay')
+                    if delay is not None:
+                        result.setdefault(record.get('product_id'), []).append(delay)
 
             return result
         except Exception as e:

@@ -157,7 +157,14 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         return route_code
 
     @api.model
-    def get_demand_data(self, product_keys, product_values, lead_days):
+    def get_future_demand_data(self, product_keys, product_values, lead_days):
+        """ get the daily forecast data in range is the lead time of product
+
+        :param list[str] product_keys: ['product_id', 'company_id', 'warehouse_id']
+        :param product_values:
+        :param lead_days:
+        :return:
+        """
         demand_data = []
         # number of points to return
         rounded_lead_days = math.ceil(lead_days)
@@ -276,12 +283,15 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
             _logger.exception("An exception occur in _get_product_supplier_infos_by_keys", exc_info=True)
             raise e
 
-    def get_products_to_update_rrwf(self, period_type, company_id, warehouse_id):
+    def get_items_to_update_rrwf(self, company_id, warehouse_id):
         """
-        Get new products to add in RRwF
+        Get the list of products to add in RRwF
         - Existing products in RRwF
         - New products in Forecast Result Daily
-        :return: a list of dictionary
+
+        :param int company_id:
+        :param int warehouse_id:
+        :return list[dict]: a list of dictionary
         [
             {
                 'product_id': <int>,
@@ -291,23 +301,20 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
             ...
         ]
         """
-        result = []
         try:
             sql_query = """
-                select
-                    distinct frd.product_id, frd.warehouse_id, frd.company_id
-                from reordering_rules_with_forecast rrwf
-                full join forecast_result_daily frd on
-                    rrwf.product_id = frd.product_id and
-                    rrwf.warehouse_id = frd.warehouse_id and
+                SELECT
+                    DISTINCT frd.product_id, frd.warehouse_id, frd.company_id
+                FROM reordering_rules_with_forecast rrwf
+                FULL JOIN forecast_result_daily frd ON
+                    rrwf.product_id = frd.product_id AND
+                    rrwf.warehouse_id = frd.warehouse_id AND
                     rrwf.company_id = frd.company_id
-                where 
-                    frd.period_type = %(period_type)s and
-                    frd.company_id = %(company_id)s and
+                WHERE 
+                    frd.company_id = %(company_id)s AND
                     frd.warehouse_id = %(warehouse_id)s;
             """
             sql_param = {
-                'period_type': period_type,
                 'company_id': company_id,
                 'warehouse_id': warehouse_id
             }
@@ -367,60 +374,62 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         service_level_dict = self._get_service_level_dict(company_config=config_params)
 
         # get unique keys for each product base on the forecast level
+        # Ex: ['product_id', 'company_id', 'warehouse_id']
         product_keys = forecast_level_obj.get_product_keys()
 
-        product_values = self.get_products_to_update_rrwf(period_type=period_type,
-                                                          company_id=current_company.id,
-                                                          warehouse_id=current_company.default_warehouse.id)
+        item_values = self.get_items_to_update_rrwf(company_id=current_company.id,
+                                                    warehouse_id=current_company.default_warehouse.id)
         product_info_dict = {
-            item.get('product_id'): item for item in product_values
+            item.get('product_id'): item for item in item_values
         }
 
         product_service_level_infos_dict = forecast_level_obj.get_product_service_level_infos_by_keys(
-            obj=self, model_name=self._name, tuple_keys=product_keys, tuple_values=product_values)
+            obj=self, model_name=self._name, tuple_keys=product_keys, tuple_values=item_values)
 
         # get product supplier infos
-        product_ids = [item.get('product_id') for item in product_values]
+        product_ids = [item.get('product_id') for item in item_values]
         product_supplier_infos_dict = self._get_product_supplier_infos_by_keys(product_ids=product_ids)
+        products = Product.search([('id', 'in', product_ids)])
 
         # get standard price
-        cost_of_products = {item.get('id'): item.get('standard_price')
-                            for item in Product.search_read([('id', 'in', product_ids)], ['id', 'standard_price'])}
+        products_dict = {product.id: product for product in products}
 
         data = []
-        for product in Product.search([('id', 'in', product_ids)]):
-            product_id = product.id
-            product_info = product_info_dict.get(product_id, {})
-            service_level_name = product_service_level_infos_dict.get(itemgetter(*product_keys)(product_info),
-                                                                      ServiceLevel.CATEGORY_A)
-            service_level_default = service_level_dict[ServiceLevel.CATEGORY_A]
-            # convert the service level to percentage
-            service_level = service_level_dict.get(service_level_name, service_level_default) / 100.0
+        for item in item_values:
+            product_id = item['product_id']
+            product = products_dict.get(product_id)
+            if product:
+                product_info = product_info_dict.get(product_id, {})
+                service_level_name = product_service_level_infos_dict.get(itemgetter(*product_keys)(product_info),
+                                                                          ServiceLevel.CATEGORY_A)
+                service_level_default = service_level_dict[ServiceLevel.CATEGORY_A]
+                # convert the service level to percentage
+                service_level = service_level_dict.get(service_level_name, service_level_default) / 100.0
 
-            list_lead_times = product_supplier_infos_dict.get(product_id, [])
-            max_lead_date = max(list_lead_times) if list_lead_times else 0
-            demand_data = self.get_demand_data(product_keys, product_info, max_lead_date)
+                list_lead_times = product_supplier_infos_dict.get(product_id, [])
+                max_lead_date = max(list_lead_times) if list_lead_times else 0
+                demand_data = self.get_future_demand_data(product_keys, product_info, max_lead_date)
 
-            if demand_data:
-                route_code = self.get_product_route_code(product, allow_manufacture)
-                summarize_data = self.get_summarize_data(product_keys, product_info, from_date, period_type)
-                rule_data = {
-                    'service_level_name': service_level_name,
-                    'service_level': service_level,
-                    'lead_times': list_lead_times,
-                    'summarize_data': summarize_data,
-                    'demand_data': demand_data,
-                    'create_time': created_time,
-                    'min_max_frequency': config_params.get('min_max_update_frequency'),
-                    'holding_cost': config_params.get('holding_cost_per_inventory_value'),
-                    'po_flat_cost': config_params.get('flat_cost_per_po'),
-                    'mo_flat_cost': config_params.get('flat_cost_per_mo'),
-                    'route_code': route_code,
-                    'standard_price': cost_of_products.get(product_id, 0)
-                }
-                # append keys into the data
-                rule_data.update(product_info)
-                data.append(rule_data)
+                if demand_data:
+                    route_code = self.get_product_route_code(product, allow_manufacture)
+                    summarize_data = self.get_summarize_data(product_keys, product_info, from_date, period_type)
+                    rule_data = {
+                        'service_level_name': service_level_name,
+                        'service_level': service_level,
+                        'lead_times': list_lead_times,
+                        'summarize_data': summarize_data,
+                        'demand_data': demand_data,
+                        'create_time': created_time,
+                        'min_max_frequency': config_params.get('min_max_update_frequency'),
+                        'holding_cost': config_params.get('holding_cost_per_inventory_value'),
+                        'po_flat_cost': config_params.get('flat_cost_per_po'),
+                        'mo_flat_cost': config_params.get('flat_cost_per_mo'),
+                        'route_code': route_code,
+                        'standard_price': product.standard_price
+                    }
+                    # append keys into the data
+                    rule_data.update(product_info)
+                    data.append(rule_data)
 
         return data
 

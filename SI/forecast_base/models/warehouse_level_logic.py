@@ -106,6 +106,16 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             record.qty_available = record.product_id.qty_available
 
     def get_product_service_level_infos_by_keys(self, obj, model_name, tuple_keys, tuple_values, **kwargs):
+        """ The function get the dictionary of service level of items
+
+        :param obj:
+        :param model_name:
+        :param tuple_keys:
+        :param tuple_values:
+        :param kwargs:
+        :return dict:
+        """
+        result = {}
         try:
             sql_query = """
                 SELECT
@@ -118,16 +128,16 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             raw_data = obj.env.cr.dictfetchall()
             # if raw_data:
             df = pd.DataFrame.from_records(raw_data)
+            if df.empty is False:
+                # filter records
+                df['is_selected'] = filter_rows_by_tuple(df, list_of_keys=tuple_keys, list_of_values=tuple_values)
 
-            # filter records
-            df['is_selected'] = filter_rows_by_tuple(df, list_of_keys=tuple_keys, list_of_values=tuple_values)
-
-            records = df[df['is_selected'] == True].to_dict(orient='records')
-            result = {
-                (item.get('product_id'),
-                 item.get('company_id'),
-                 item.get('warehouse_id')): item.get('name') for item in records
-            }
+                records = df[df['is_selected'] is True].to_dict(orient='records')
+                result = {
+                    (item.get('product_id'),
+                     item.get('company_id'),
+                     item.get('warehouse_id')): item.get('name') for item in records
+                }
 
             return result
         except Exception as e:

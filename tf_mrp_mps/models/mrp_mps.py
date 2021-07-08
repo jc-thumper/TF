@@ -1,7 +1,5 @@
 from odoo import api, fields, models, _
 
-from odoo.tools.profiler import profile
-
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -28,7 +26,6 @@ class MrpProductionScheduleInherit(models.Model):
         }
         return action
 
-    @profile
     def get_production_schedule_view_state(self):
         res = super().get_production_schedule_view_state()
         ProductForecast = self.env['mrp.product.forecast']

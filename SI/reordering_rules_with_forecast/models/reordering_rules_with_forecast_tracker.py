@@ -357,6 +357,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         Product = self.env['product.product']
         IrConfig = self.env['ir.config_parameter'].sudo()
         current_company = self.env.user.company_id
+        company_id = current_company.id
         curr_forecast_level = current_company.forecast_level
         user_timezone = self.env.user.company_id.partner_id.tz or datetime_utils.DEFAULT_TIMEZONE
         forecast_level_strategy_obj = self.env['forecast.level.strategy'].search([('name', '=', curr_forecast_level)],
@@ -366,7 +367,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
 
         # Step 1: get param from the current company
         created_time = datetime_utils.convert_from_datetime_to_str_datetime(current_time)
-        config_params = current_company.get_company_configuration_for_rrwf(company_id=current_company.id)
+        config_params = current_company.get_company_configuration_for_rrwf(company_id=company_id)
         allow_manufacture = IrConfig.get_param('reordering_rules_with_forecast.module_forecast_preparation_with_mrp',
                                                False) == '1'
 
@@ -378,7 +379,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         # Ex: ['product_id', 'company_id', 'warehouse_id']
         product_keys = forecast_level_obj.get_product_keys()
 
-        item_values = self.get_items_to_update_rrwf(company_id=current_company.id,
+        item_values = self.get_items_to_update_rrwf(company_id=company_id,
                                                     warehouse_id=current_company.default_warehouse.id)
         product_info_dict = {
             item.get('product_id'): item for item in item_values
@@ -394,43 +395,48 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
 
         # get standard price
         products_dict = {product.id: product for product in products}
+        product_forecast_config_dict = self.env['product.forecast.config'].get_product_forecast_config_dict(company_id)
 
         data = []
         for item in item_values:
             product_id = item['product_id']
+            warehouse_id = item['warehouse_id']
             product = products_dict.get(product_id)
             if product:
-                product_info = product_info_dict.get(product_id, {})
-                service_level_name = product_service_level_infos_dict.get(itemgetter(*product_keys)(product_info),
-                                                                          ServiceLevel.CATEGORY_A)
-                service_level_default = service_level_dict[ServiceLevel.CATEGORY_A]
-                # convert the service level to percentage
-                service_level = service_level_dict.get(service_level_name, service_level_default) / 100.0
+                product_forecast_config = product_forecast_config_dict.get((product_id, company_id, warehouse_id))
+                if product_forecast_config:
+                    forecast_type = product_forecast_config.period_type
+                    product_info = product_info_dict.get(product_id, {})
+                    service_level_name = product_service_level_infos_dict.get(itemgetter(*product_keys)(product_info),
+                                                                              ServiceLevel.CATEGORY_A)
+                    service_level_default = service_level_dict[ServiceLevel.CATEGORY_A]
+                    # convert the service level to percentage
+                    service_level = service_level_dict.get(service_level_name, service_level_default) / 100.0
 
-                list_lead_times = product_supplier_infos_dict.get(product_id, [])
-                max_lead_date = max(list_lead_times) if list_lead_times else 0
-                demand_data = self.get_future_demand_data(product_keys, product_info, max_lead_date)
+                    list_lead_times = product_supplier_infos_dict.get(product_id, [])
+                    max_lead_date = max(list_lead_times) if list_lead_times else 0
+                    demand_data = self.get_future_demand_data(product_keys, product_info, max_lead_date)
 
-                if demand_data:
-                    route_code = self.get_product_route_code(product, allow_manufacture)
-                    summarize_data = self.get_summarize_data(product_keys, product_info, from_date, period_type)
-                    rule_data = {
-                        'service_level_name': service_level_name,
-                        'service_level': service_level,
-                        'lead_times': list_lead_times,
-                        'summarize_data': summarize_data,
-                        'demand_data': demand_data,
-                        'create_time': created_time,
-                        'min_max_frequency': config_params.get('min_max_update_frequency'),
-                        'holding_cost': config_params.get('holding_cost_per_inventory_value'),
-                        'po_flat_cost': config_params.get('flat_cost_per_po'),
-                        'mo_flat_cost': config_params.get('flat_cost_per_mo'),
-                        'route_code': route_code,
-                        'standard_price': product.standard_price
-                    }
-                    # append keys into the data
-                    rule_data.update(product_info)
-                    data.append(rule_data)
+                    if demand_data:
+                        route_code = self.get_product_route_code(product, allow_manufacture)
+                        summarize_data = self.get_summarize_data(product_keys, product_info, from_date, forecast_type)
+                        rule_data = {
+                            'service_level_name': service_level_name,
+                            'service_level': service_level,
+                            'lead_times': list_lead_times,
+                            'summarize_data': summarize_data,
+                            'demand_data': demand_data,
+                            'create_time': created_time,
+                            'min_max_frequency': forecast_type,
+                            'holding_cost': config_params.get('holding_cost_per_inventory_value'),
+                            'po_flat_cost': config_params.get('flat_cost_per_po'),
+                            'mo_flat_cost': config_params.get('flat_cost_per_mo'),
+                            'route_code': route_code,
+                            'standard_price': product.standard_price
+                        }
+                        # append keys into the data
+                        rule_data.update(product_info)
+                        data.append(rule_data)
         return data
 
     def _create_new_records(self, new_records):

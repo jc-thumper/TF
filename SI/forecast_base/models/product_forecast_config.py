@@ -386,12 +386,36 @@ class ProductForecastConfig(models.Model):
         return result, is_continue
 
     def get_product_forecast_config(self, product_domain):
-        config_info = None
+        """
+
+        :param list[tuple] product_domain:
+        :return ProductForecastConfig:
+        """
+        config_info = self.env['product.forecast.config']
         try:
             config_info = self.with_context(active_test=False).sudo().search(product_domain, limit=1)
         except (Exception, ):
             _logger.warning('Having some errors when get product forecast configuration', exc_info=True)
         return config_info
+
+    def get_product_forecast_config_dict(self, company_id):
+        """
+
+        :param company_id:
+        :return dict:
+        Ex: {
+                (product_id, company_id, warehouse_id): config
+            }
+        """
+        product_forecast_config_dict = {}
+        company = self.env['res.company'].search([('id', '=', company_id)])
+        if company:
+            product_forecast_configs = self.search([('company_id', '=', company_id)])
+            for config in product_forecast_configs:
+                config_key = (config.product_id.id, config.company_id.id, config.warehouse_id.id)
+                product_forecast_config_dict[config_key] = config
+
+        return product_forecast_config_dict
 
     ###############################
     # PRIVATE FUNCTIONS
@@ -399,7 +423,12 @@ class ProductForecastConfig(models.Model):
     def _get_domain_product_forecast_config(self, prod_info):
         """
 
-        :param prod_info:
+        :param dict prod_info:
+        Ex: {
+                'product_id': 1,
+                'company_id': 1,
+                'warehouse_id': 1,
+            }
         :return:
         """
         domain = []
@@ -408,6 +437,8 @@ class ProductForecastConfig(models.Model):
             company_id = self.env['res.company'].search([('id', '=', cid)])
             if company_id:
                 forecast_level_id = company_id.forecast_level_id
+
+                # keys will be ['product_id', 'company_id', 'warehouse_id'] in the warehouse level
                 keys = forecast_level_id.get_list_of_extend_keys()
                 for key in keys:
                     domain.append((key, '=', prod_info.get(key)))

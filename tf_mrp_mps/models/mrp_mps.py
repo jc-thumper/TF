@@ -27,21 +27,26 @@ class MrpProductionScheduleInherit(models.Model):
         return action
 
     def get_production_schedule_view_state(self):
-        res = super(MrpProductionScheduleInherit, self).get_production_schedule_view_state()
+        res = super().get_production_schedule_view_state()
         ProductForecast = self.env['mrp.product.forecast']
         today = fields.Date.context_today(self)
         # TODO: to check if we can browse all the record for `mrp.production.schedule`
         # and filter for `forecast_ids` in the values list
-        for production_schedule in res:
-            schedule = self.env['mrp.production.schedule'].browse(production_schedule['id'])
-            future_forecasts = schedule.forecast_ids.filtered(lambda f: f.date >= today)
-            dates = [f.date for f in future_forecasts]
-            forecast_values_list = production_schedule['forecast_ids']
-            for forecast_vals in forecast_values_list:
-                if forecast_vals['date_stop'] not in dates:
-                    ProductForecast.create({
-                        'forecast_qty': 0,
-                        'date': forecast_vals['date_stop'],
-                        'production_schedule_id': schedule.id,
-                    })
+        mrp_production_schedule_ids = [mps['id'] for mps in res]
+        production_schedules = self.browse(mrp_production_schedule_ids)
+        production_schedules.mapped('forecast_ids')
+        production_schedule_vals = {e['id']: e['forecast_ids'] for e in res}
+
+        vals_list = []
+        for schedule in production_schedules:
+            dates = schedule.forecast_ids.filtered(lambda x: x.date >= today).mapped('date')
+            schedule_vals = list(filter(lambda p: p['date_stop'] not in dates, production_schedule_vals[schedule.id]))
+            for forecast_vals in schedule_vals:
+                vals_list.append({
+                    'forecast_qty': 0,
+                    'date': forecast_vals['date_stop'],
+                    'production_schedule_id': schedule.id,
+                })
+
+        ProductForecast.create(vals_list)
         return res

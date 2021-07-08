@@ -10,6 +10,8 @@ from odoo.addons.si_core.utils.string_utils import get_table_name
 from odoo.addons.si_core.utils.database_utils import get_db_cur_time, append_log_access_fields_to_data
 from odoo.exceptions import UserError
 
+from ..utils.config_utils import ALLOW_TRIGGER_QUEUE_JOB
+
 from time import time
 from psycopg2.extensions import AsIs
 from psycopg2 import IntegrityError
@@ -98,6 +100,7 @@ class ForecastResult(models.Model):
 
             sql_params = [get_key_value_in_dict(item, inserted_fields) for item in vals]
             self.env.cr.executemany(sql_query, sql_params)
+            self.flush()
             self.env.cr.commit()
             _logger.info("Insert/update %s rows into the model.", len(vals))
 
@@ -135,13 +138,29 @@ class ForecastResult(models.Model):
         forecast_level = kwargs.get('forecast_level')
         if forecast_level:
             forecast_result_adjust_line_obj = self.env['forecast.result.adjust.line'].sudo()
-            forecast_result_adjust_line_obj \
-                .update_forecast_adjust_line_table(
-                created_date, pub_time,
-                **{
-                    'forecast_level': forecast_level
-                }
-            )
+
+            from odoo.tools import config
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
+
+            if allow_trigger_queue_job:
+                forecast_result_adjust_line_obj \
+                    .with_delay(max_retries=12, eta=10) \
+                    .update_forecast_adjust_line_table(
+                    created_date, pub_time,
+                    **{
+                        'forecast_level': forecast_level
+                    }
+                )
+            else:
+                forecast_result_adjust_line_obj \
+                    .update_forecast_adjust_line_table(
+                    created_date, pub_time,
+                    **{
+                        'forecast_level': forecast_level
+                    }
+                )
+
         else:
             UserError('Miss the forecast_level for current company')
 

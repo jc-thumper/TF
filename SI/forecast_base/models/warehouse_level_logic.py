@@ -461,7 +461,13 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 date, daily_forecast_result)
                 VALUES (
                     %(forecast_adjust_line_id)s, %(product_id)s, %(warehouse_id)s, 
-                    %(company_id)s, %(period_type)s, %(active)s, %(date)s, %(daily_forecast_result)s);
+                    %(company_id)s, %(period_type)s, %(active)s, %(date)s, %(daily_forecast_result)s)
+                ON CONFLICT (product_id, warehouse_id, company_id, date)
+                DO UPDATE SET
+                    forecast_adjust_line_id = EXCLUDED.forecast_adjust_line_id,
+                    period_type             = EXCLUDED.period_type,
+                    active                  = EXCLUDED.active,
+                    daily_forecast_result   = EXCLUDED.daily_forecast_result;
             """
             obj.env.cr.executemany(sql_query, inserted_records)
             obj.env.cr.commit()

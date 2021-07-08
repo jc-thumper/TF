@@ -17,6 +17,23 @@ class PeriodSettings(models.TransientModel):
                                    selection=[('day', 'day'), ('week', 'week'), ('month', 'month')],
                                    default='month', required=True)
     cash_type = fields.Selection(string='Cash Type', selection=[('cash_in', 'Cash In'), ('cash_out', 'Cash Out')])
+    company_id = fields.Many2one('res.company', string='Company')
+
+    @api.onchange('company_id')
+    def _onchange_company_id(self):
+        """
+        When changing company field on recurring cash popup, update the value of amount field according to company
+        """
+        cash_type = self.env.context.get('cash_type')
+        code = cash_type == 'cash_in' and 'cash_in_other' or 'cash_out_other'
+        transaction_type = self.env['cash.flow.transaction.type'].sudo().search([('code', '=', code)])
+        if not transaction_type:
+            return
+        record = self.env['cash.flow.user.configuration'].sudo().search(
+            [('cash_type', '=', cash_type), ('period_type', '=', self.period_type),
+             ('transaction_type', '=', transaction_type.id),
+             ('period', '=', self.period_type), ('company_id', '=', self.company_id.id)])
+        self.amount = record and record.value or 0.0
     
     def set_recurring_cash_in(self):
         self.ensure_one()
@@ -31,7 +48,7 @@ class PeriodSettings(models.TransientModel):
         record = self.env['cash.flow.user.configuration'].sudo().search(
             [('cash_type', '=', self.cash_type), ('period_type', '=', self.period_type),
              ('transaction_type', '=', transaction_type.id),
-             ('period', '=', self.period_type), ('company_id', '=', self.env.user.company_id.id)])
+             ('period', '=', self.period_type), ('company_id', '=', self.company_id.id)])
         if not record:
             vals = {
                 'period': self.period_type,
@@ -39,7 +56,7 @@ class PeriodSettings(models.TransientModel):
                 'cash_type': self.cash_type,
                 'transaction_type': transaction_type.id,
                 'value': self.amount,
-                'company_id': self.env.user.company_id.id,
+                'company_id': self.company_id.id,
             }
             record = self.env['cash.flow.user.configuration'].sudo().create(vals)
         else:
@@ -48,7 +65,7 @@ class PeriodSettings(models.TransientModel):
         existing_records = self.env['cash.flow.user.configuration'].sudo().search(
             [('cash_type', '=', self.cash_type), ('period_type', '=', self.period_type),
              ('transaction_type', '=', transaction_type.id), ('id', '!=', record.id),
-             ('company_id', '=', self.env.user.company_id.id)])
+             ('company_id', '=', self.company_id.id)])
         for exsiting_record in existing_records:
             exsiting_record.unlink()
         # Reload page

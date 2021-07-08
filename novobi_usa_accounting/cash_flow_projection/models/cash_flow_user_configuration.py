@@ -20,11 +20,14 @@ class CashFlowUserConfiguration(models.Model):
                                  required=True)
     transaction_type = fields.Many2one('cash.flow.transaction.type', string='Transaction Type', required=True)
     value = fields.Float(string='Value', required=True)
-    company_id = fields.Many2one('res.company', 'Company', default=lambda self: self.env.user.company_id)
+    company_id = fields.Many2one('res.company', 'Company', default=lambda self: self.env.company.id)
     
     @api.model
     def get_recurring_value(self, period_type, cash_type):
         record = self.env['cash.flow.user.configuration'].sudo().search(
             [('cash_type', '=', cash_type), ('period_type', '=', period_type),
-             ('period', '=', period_type), ('company_id', '=', self.env.user.company_id.id)])
-        return record and record.value or 0.0
+             ('period', '=', period_type), ('company_id', '=', self.env.company.id)])
+        return {
+            'amount': record and record.value or 0.0,
+            'company_id': self.env.company.id
+        }

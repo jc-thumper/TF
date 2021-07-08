@@ -371,6 +371,27 @@ class AccountPaymentUSA(models.Model):
 
         super(AccountPaymentUSA, self - payment_receipts)._compute_destination_account_id()
 
+    # Used to print payment receipt PDF
+    def _get_invoice_balance_due_and_credit_amount(self, inv):
+        """
+        Compute balance due and credit of invoice/bill
+        :param inv: an invoice object
+        :returns: array contain balance due and credit amount
+        """
+        self.ensure_one()
+        other_payment_amount = 0
+        credit = 0
+        reconciled_info = inv._get_reconciled_info_JSON_values()
+        for info in reconciled_info:
+            # Deposit reconciled info: move type is entry and there is no link to deposit payment
+            if info['account_payment_id'] != self.id and \
+                    (info['account_payment_id'] or (info['move_type'] == 'entry' and not info['account_payment_id'])):
+                other_payment_amount += info['amount']
+            elif info['move_type'] in ['out_refund', 'in_refund']:
+                credit += info['amount']
+
+        return [inv.amount_total - other_payment_amount, credit]
+
     ####################################################
     # CRUD methods
     ####################################################

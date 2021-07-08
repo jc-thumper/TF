@@ -271,8 +271,8 @@ class AdvancedCashFlowReport(models.AbstractModel):
 
             # closing_ending_gap = end_amt - begin_amt
             computed_gap = ar_amt + ap_amt + other_amt
-            for line_id in main_lines:
-                _, amount = _get_amount_from_id(line_id, period)
+            for line in main_lines:
+                _, amount = _get_amount_from_id(line, period)
                 computed_gap += amount
             net_line['columns'][period]['name'] = computed_gap
 

@@ -24,6 +24,7 @@
                         type="object"
                         help="Odoo will create a reversed journal entry if you void this check. Are you sure you want to proceed?"
                         confirm="Odoo will create a reversed journal entry if you void this check. Are you sure you want to proceed?"/>
+                <button name="%(account.action_report_payment_receipt)d" string="Print Payment Receipt" type="action"/>
             </button>
 
             <field name="communication" position="after">

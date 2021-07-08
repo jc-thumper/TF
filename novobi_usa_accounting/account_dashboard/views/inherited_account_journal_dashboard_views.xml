@@ -9,6 +9,7 @@
             <xpath expr="//field[@name='kanban_dashboard_graph']" position="attributes">
                 <attribute name="widget">journal_data</attribute>
             </xpath>
+
             <xpath expr="//kanban/templates" position="before">
                 <field name="kanban_right_info_graph" />
             </xpath>

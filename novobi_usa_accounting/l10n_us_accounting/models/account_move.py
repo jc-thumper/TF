@@ -432,6 +432,7 @@ class AccountMoveUSA(models.Model):
                 'account_payment_id': counterpart_line.payment_id.id,
                 'payment_method_name': counterpart_line.payment_id.payment_method_id.name if counterpart_line.journal_id.type == 'bank' else None,
                 'move_id': counterpart_line.move_id.id,
+                'move_type': counterpart_line.move_id.type,
                 'ref': ref,
             })
         return reconciled_vals

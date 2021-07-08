@@ -17,8 +17,8 @@ class CashFlowProjection(models.TransientModel):
     @api.model
     def get_cash_flow_period_number(self):
         return {
-            'period_number': self.env.user.company_id.cash_flow_period_number,
-            'period_type': self.env.user.company_id.cash_flow_last_period_type,
+            'period_number': self.env.company.cash_flow_period_number,
+            'period_type': self.env.company.cash_flow_last_period_type,
         }
     
     @api.model
@@ -38,10 +38,10 @@ class CashFlowProjection(models.TransientModel):
         @return: a dictionary contains info for rendering cash flow projection table
         """
         periods = []
-        num_period = options.get('num_period') or self.env.user.company_id.cash_flow_period_number or 6
+        num_period = options.get('num_period') or self.env.company.cash_flow_period_number or 6
         period_unit = options and options.get('period')
         if not options:
-            period_unit = self.env.user.company_id.cash_flow_last_period_type
+            period_unit = self.env.company.cash_flow_last_period_type
         date_spacing = week_spacing = month_spacing = 0
         if period_unit == 'day':
             date_spacing = 1
@@ -151,10 +151,22 @@ class CashFlowProjection(models.TransientModel):
         rcontext = {
             'num_period': num_period,
             'periods': periods,
-            'currency': self.env.user.company_id.currency_id,
+            'currency': self.env.company.currency_id,
             'period_type': period_unit,
         }
         return rcontext, num_period, period_unit
+
+    def _get_companies(self):
+        """
+        Get selecting companies in string format '(1,2,3)'
+        """
+        companies = self.env.companies.ids
+        companies_str = '{}'.format(tuple(companies))
+        if len(companies) == 1:
+            # If there is only one company selected, need to get rid of "," from the string "(1,)"
+            companies_str = companies_str.replace(',', '')
+
+        return companies_str
     
     def _get_period_name(self, start_date, end_date, period_type, is_due_period):
         """
@@ -206,21 +218,17 @@ class CashFlowProjection(models.TransientModel):
         transaction_type = self.env['cash.flow.transaction.type'].sudo().search([('code', '=', transaction_code)])
         if not transaction_type:
             return 0.0
-        record = self.env['cash.flow.user.configuration'].sudo().search(
+        custom_configuration = self.env['cash.flow.user.configuration'].sudo().search(
             [('cash_type', '=', cash_type), ('period_type', '=', period_type),
              ('transaction_type', '=', transaction_type.id),
-             ('period', '=', period), ('company_id', '=', self.env.user.company_id.id)]) or \
-                 self.env['cash.flow.user.configuration'].sudo().search(
+             ('period', '=', period), ('company_id', 'in', self.env.companies.ids)])
+        remaining_company_ids = (self.env.companies - custom_configuration.mapped('company_id'))
+        default_configuration = self.env['cash.flow.user.configuration'].sudo().search(
                      [('cash_type', '=', cash_type), ('period_type', '=', period_type),
                       ('transaction_type', '=', transaction_type.id),
-                      ('period', '=', period_type), ('company_id', '=', self.env.user.company_id.id)])
-        if len(record) > 1:
-            value = record[0].value
-            # Unlink redundant records
-            for item in record[1:]:
-                item.unlink()
-            return value
-        return record and record.value or 0.0
+                      ('period', '=', period_type), ('company_id', 'in', remaining_company_ids.ids)])
+
+        return sum((custom_configuration + default_configuration).mapped('value'))
     
     @api.model
     def save_user_value(self, options):
@@ -236,7 +244,7 @@ class CashFlowProjection(models.TransientModel):
         record = self.env['cash.flow.user.configuration'].sudo().search(
             [('cash_type', '=', options['cash_type']), ('period_type', '=', options['period_type']),
              ('transaction_type', '=', transaction_type.id),
-             ('period', '=', options['period']), ('company_id', '=', self.env.user.company_id.id)])
+             ('period', '=', options['period']), ('company_id', '=', self.env.company.id)])
         if not record:
             vals = {
                 'period': options['period'],
@@ -244,7 +252,7 @@ class CashFlowProjection(models.TransientModel):
                 'cash_type': options['cash_type'],
                 'transaction_type': transaction_type.id,
                 'value': options['value'],
-                'company_id': self.env.user.company_id.id,
+                'company_id': self.env.company.id,
             }
             self.env['cash.flow.user.configuration'].sudo().create(vals)
             return
@@ -253,7 +261,7 @@ class CashFlowProjection(models.TransientModel):
     @api.model
     def save_last_period_option(self, period_type):
         if period_type in ['day', 'week', 'month']:
-            self.env.user.company_id.cash_flow_last_period_type = period_type
+            self.env.company.cash_flow_last_period_type = period_type
         return
     
     @api.model
@@ -264,23 +272,16 @@ class CashFlowProjection(models.TransientModel):
         :param options: The report options.
         :return: The query representing the currency table.
         """
-        user_company = self.env.user.company_id
-        user_currency = user_company.currency_id
-        if options.get('multi_company'):
-            company_ids = list(set([c['id'] for c in self._get_options_companies(options)] + [user_company.id]))
-            companies = self.env['res.company'].browse(company_ids)
-            conversion_date = options['currency_date']
-            currency_rates = companies.mapped('currency_id')._get_rates(user_company, conversion_date)
-        else:
-            companies = user_company
-            currency_rates = {user_currency.id: 1.0}
+        main_company = self.env.company
+        companies = self.env.companies
+        currency_rates = companies.mapped('currency_id')._get_rates(main_company, fields.Date.today())
         
         conversion_rates = []
         for company in companies:
             conversion_rates.append((
                 company.id,
-                currency_rates[user_company.currency_id.id] / currency_rates[company.currency_id.id],
-                user_currency.decimal_places,
+                currency_rates[main_company.currency_id.id] / currency_rates[company.currency_id.id],
+                main_company.currency_id.decimal_places,
             ))
         
         currency_table = ','.join('{}'.format(args) for args in conversion_rates)
@@ -423,6 +424,7 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
+        companies = self._get_companies()
         # The first period
         today = datetime.datetime.today().date()
         if from_date <= today <= to_date:
@@ -442,8 +444,8 @@ class CashFlowProjection(models.TransientModel):
                      AND (aml.date + aa.payment_lead_time) >= '{}'
                      AND (aml.date + aa.payment_lead_time) <= '{}'
                      AND aat.type = 'liquidity'
-                     AND aml.company_id = {}
-        """.format(from_date, to_date, self.env.user.company_id.id)
+                     AND aml.company_id IN {}
+        """.format(from_date, to_date, companies)
         return query_incoming_payment_lines
     
     def _query_so_lines(self, from_date, to_date):
@@ -453,7 +455,8 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
-        so_lead_time = self.env.user.company_id.customer_payment_lead_time
+        companies = self._get_companies()
+        so_lead_time = self.env.company.customer_payment_lead_time
         query_so_lines = """
              SELECT cast('sale_order' as text) as id, cast('Sales' as text) as name, so.amount_so_remaining as amount, so.name as account_name, TO_CHAR(so.date_order + interval '{}' day, 'mm/dd/yyyy') as date, so.id as line_id, so.id as account_id, rp.name as partner_name
              FROM sale_order so LEFT JOIN res_partner rp ON so.partner_id = rp.id
@@ -461,8 +464,8 @@ class CashFlowProjection(models.TransientModel):
                             AND amount_so_remaining > 0
                             AND cast((date_order + interval '{}' day) as date) >= '{}'
                             AND cast((date_order + interval '{}' day) as date) <= '{}'
-                            AND so.company_id = {}
-        """.format(so_lead_time, so_lead_time, from_date, so_lead_time, to_date, self.env.user.company_id.id)
+                            AND so.company_id IN {}
+        """.format(so_lead_time, so_lead_time, from_date, so_lead_time, to_date, companies)
         return query_so_lines
     
     def _query_ar_invoice_lines(self, from_date, to_date):
@@ -472,6 +475,7 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
+        companies = self._get_companies()
         query_ar_invoice_lines = """
             SELECT cast('ar_invoice' as text) as id, cast('Receivable' as text) as name, aml1.amount_residual as amount, am.name as account_name, TO_CHAR(aml1.date_maturity, 'mm/dd/yyyy') as date, aml1.id as line_id, aml1.account_id, aml1.partner_name
             FROM
@@ -482,10 +486,10 @@ class CashFlowProjection(models.TransientModel):
                            AND aml.date_maturity >= '{}'
                            AND aml.date_maturity <= '{}'
                            AND aml.amount_residual > 0
-                           AND aml.company_id = {}) aml1
+                           AND aml.company_id IN {}) aml1
                JOIN account_move am ON aml1.move_id = am.id
             WHERE am.state = 'posted'
-        """.format(from_date, to_date, self.env.user.company_id.id)
+        """.format(from_date, to_date, companies)
         return query_ar_invoice_lines
     
     def _query_ar_credit_note_lines(self, from_date, to_date):
@@ -495,6 +499,7 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
+        companies = self._get_companies()
         query_ar_credit_note_lines = """
             SELECT cast('ar_credit_note' as text) as id, cast('Customer Credit Notes' as text) as name, aml1.amount_residual as amount, am.name as account_name, TO_CHAR(aml1.date_maturity, 'mm/dd/yyyy') as date, aml1.id as line_id, aml1.account_id, aml1.partner_name
             FROM
@@ -505,7 +510,7 @@ class CashFlowProjection(models.TransientModel):
                         AND aml.date_maturity >= '{}'
                         AND aml.date_maturity <= '{}'
                         AND aml.amount_residual < 0
-                        AND aml.company_id = {}) aml1
+                        AND aml.company_id IN {}) aml1
               JOIN account_move am ON aml1.move_id = am.id
             WHERE am.state = 'posted'
                 AND am.id NOT IN (
@@ -518,7 +523,7 @@ class CashFlowProjection(models.TransientModel):
                          AND aml.debit > 0
                          AND aat.type = 'liquidity'
                 )
-        """.format(from_date, to_date, self.env.user.company_id.id)
+        """.format(from_date, to_date, companies)
         return query_ar_credit_note_lines
     
     def _query_other_cash_in_lines(self, from_date, to_date):
@@ -598,6 +603,7 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
+        companies = self._get_companies()
         # The first period
         today = datetime.datetime.today().date()
         if from_date <= today <= to_date:
@@ -617,8 +623,8 @@ class CashFlowProjection(models.TransientModel):
                       AND (aml.date + aa.payment_lead_time) >= '{}'
                       AND (aml.date + aa.payment_lead_time) <= '{}'
                       AND aat.type = 'liquidity'
-                      AND aml.company_id = {}
-        """.format(from_date, to_date, self.env.user.company_id.id)
+                      AND aml.company_id IN {}
+        """.format(from_date, to_date, companies)
         return query_outgoing_payment_lines
     
     def _query_po_lines(self, from_date, to_date):
@@ -628,7 +634,8 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
-        po_lead_time = self.env.user.company_id.vendor_payment_lead_time
+        companies = self._get_companies()
+        po_lead_time = self.env.company.vendor_payment_lead_time
         query_po_lines = """
             SELECT cast('purchase_order' as text) as id, cast('Purchases' as text) as name, po.amount_so_remaining as amount, po.name as account_name, TO_CHAR(po.date_approve + interval '{}' day, 'mm/dd/yyyy') as date, po.id as line_id, po.id as account_id, rp.name as partner_name
             FROM purchase_order po LEFT JOIN res_partner rp ON po.partner_id = rp.id
@@ -636,8 +643,8 @@ class CashFlowProjection(models.TransientModel):
                        AND amount_so_remaining > 0
                        AND cast((date_approve + interval '{}' day) as date) >= '{}'
                        AND cast((date_approve + interval '{}' day) as date) <= '{}'
-                       AND po.company_id = {}
-        """.format(po_lead_time, po_lead_time, from_date, po_lead_time, to_date, self.env.user.company_id.id)
+                       AND po.company_id IN {}
+        """.format(po_lead_time, po_lead_time, from_date, po_lead_time, to_date, companies)
         return query_po_lines
     
     def _query_ap_invoice_lines(self, from_date, to_date):
@@ -647,6 +654,7 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
+        companies = self._get_companies()
         query_ap_invoice_lines = """
             SELECT cast('ap_invoice' as text) as id, cast('Payable' as text) as name, -aml1.amount_residual as amount, am.name as account_name, TO_CHAR(aml1.date_maturity, 'mm/dd/yyyy') as date, aml1.id as line_id, aml1.account_id, aml1.partner_name
             FROM
@@ -657,10 +665,10 @@ class CashFlowProjection(models.TransientModel):
                           AND aml.date_maturity >= '{}'
                           AND aml.date_maturity <= '{}'
                           AND aml.amount_residual < 0
-                          AND aml.company_id = {}) aml1
+                          AND aml.company_id IN {}) aml1
                JOIN account_move am ON aml1.move_id = am.id
             WHERE am.state = 'posted'
-        """.format(from_date, to_date, self.env.user.company_id.id)
+        """.format(from_date, to_date, companies)
         return query_ap_invoice_lines
     
     def _query_ap_credit_note_lines(self, from_date, to_date):
@@ -670,6 +678,7 @@ class CashFlowProjection(models.TransientModel):
         :param to_date: the ending date of the period
         :return: string the selection statement
         """
+        companies = self._get_companies()
         query_ap_credit_note_lines = """
            SELECT cast('ap_credit_note' as text) as id, cast('Vendor Credit Notes' as text) as name, -aml1.amount_residual as amount, am.name as account_name, TO_CHAR(aml1.date_maturity, 'mm/dd/yyyy') as date, aml1.id as line_id, aml1.account_id, aml1.partner_name
            FROM
@@ -680,7 +689,7 @@ class CashFlowProjection(models.TransientModel):
                         AND aml.date_maturity >= '{}'
                         AND aml.date_maturity <= '{}'
                         AND aml.amount_residual > 0
-                        AND aml.company_id = {}) aml1
+                        AND aml.company_id IN {}) aml1
               JOIN account_move am ON aml1.move_id = am.id
            WHERE am.state = 'posted'
                 AND am.id NOT IN (
@@ -693,7 +702,7 @@ class CashFlowProjection(models.TransientModel):
                          AND aml.credit > 0
                          AND aat.type = 'liquidity'
                 )
-        """.format(from_date, to_date, self.env.user.company_id.id)
+        """.format(from_date, to_date, companies)
         return query_ap_credit_note_lines
     
     def _query_other_cash_out_lines(self, from_date, to_date):

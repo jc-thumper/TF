@@ -13,6 +13,7 @@ class BankReconciliationData(models.Model):
     _name = 'account.bank.reconciliation.data'
     _description = 'Bank Reconciliation Data'
     _rec_name = 'statement_ending_date'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     journal_id = fields.Many2one('account.journal', 'Account')
     currency_id = fields.Many2one('res.currency', readonly=True, default=lambda self: self.env.company.currency_id)
@@ -92,6 +93,9 @@ class BankReconciliationData(models.Model):
     ############################
     #  MAIN FUNCTIONS
     ############################
+
+    def action_print_report(self):
+        return self.env.ref('l10n_us_accounting.account_bank_reconciliation_data_report').report_action(self)
 
     def check_difference_amount(self, aml_ids, difference, cleared_payments, cleared_deposits):
         self.ensure_one()

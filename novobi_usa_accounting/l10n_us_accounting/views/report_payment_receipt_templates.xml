@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="report_payment_receipt_document_inherit_us_accounting" inherit_id="account.report_payment_receipt_document">
+        <xpath expr="//div[hasclass('page')]//table/thead/tr/th[4]" position="after">
+            <th class="text-right"><span>Balance Due</span></th>
+            <th class="text-right"><span>Credit</span></th>
+        </xpath>
+        <xpath expr="//div[hasclass('page')]//table/tbody/tr/td[4]" position="after">
+            <t t-set="values" t-value="o._get_invoice_balance_due_and_credit_amount(inv)"/>
+            <td class="text-right"><span t-esc="values[0]" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/></td>
+            <td class="text-right"><span t-esc="values[1]" t-options="{'widget': 'monetary', 'display_currency': inv.currency_id}"/></td>
+        </xpath>
+    </template>
+</odoo>

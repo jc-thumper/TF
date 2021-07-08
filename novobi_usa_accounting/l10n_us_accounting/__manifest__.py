@@ -55,12 +55,14 @@
         'views/account_account_views.xml',
         'views/usa_1099_report.xml',
         'views/account_move_line_views.xml',
+        'views/report_payment_receipt_templates.xml',
 
         'report/list_invoices_templates.xml',
         'report/account_followup_report_templates.xml',
         'report/print_check.xml',
         'report/account_batch_deposit_report_templates.xml',
         'report/vendor_1099_report_template.xml',
+        'report/account_bank_reconciliation_data_report.xml',
 
         'security/ir.model.access.csv',
     ],

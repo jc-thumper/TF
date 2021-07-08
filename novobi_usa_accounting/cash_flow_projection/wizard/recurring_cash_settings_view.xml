@@ -11,6 +11,10 @@
                         <field name="amount" class="text-center oe_inline"/>
                         per <field name="period_type" class="text-left oe_inline" readonly="1"/>
                     </div>
+                    <div>
+                        <label for="company_id" string="Company:" class="oe_inline"/>
+                        <field name="company_id" class="oe_inline" options="{'no_create': True}" required="1"/>
+                    </div>
                 </group>
                 <footer>
                     <button name="set_recurring_cash_in" type="object" string="Save" class="btn-primary"/>

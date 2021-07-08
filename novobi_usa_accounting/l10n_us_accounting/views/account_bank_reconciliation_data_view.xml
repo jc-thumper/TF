@@ -6,17 +6,23 @@
         <field name='model'>account.bank.reconciliation.data</field>
         <field name="arch" type="xml">
             <form create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_print_report" string="PRINT PDF"
+                            type="object" class="oe_highlight"/>
+                </header>
                 <sheet>
                     <field name="currency_id" invisible="1"/>
 
-                    <h1><field name="journal_id" readonly="1"/></h1>
+                    <h1>
+                        <field name="journal_id" readonly="1"/>
+                    </h1>
 
-                    <label for="statement_ending_date" />
-                    <field name="statement_ending_date" />
+                    <label for="statement_ending_date"/>
+                    <field name="statement_ending_date"/>
 
                     <div name="change_report" attrs="{'invisible': [('change_transaction_ids', '=', [])]}">
                         <h2>Reconciliation Change Report</h2>
-                        Since this reconciliation on <field name="reconcile_on"/>, changes were made to
+                        Since this reconciliation on<field name="reconcile_on"/>, changes were made to
                         the reconciled transactions in this report
                         <field name="change_transaction_ids">
                             <tree>
@@ -33,7 +39,8 @@
                     </div>
 
                     <h2>Reconciliation Report</h2>
-                    Reconciled on: <field name="reconcile_on"/>
+                    Reconciled on:
+                    <field name="reconcile_on"/>
 
                     <div name="summary" class="mt16 mb32">
                         <strong>Summary</strong>
@@ -47,7 +54,8 @@
                         </div>
                         <div class="row">
                             <div class="col-8 offset-1">
-                                <span>Payments Cleared </span><field name="payment_count"/>
+                                <span>Payments Cleared</span>
+                                <field name="payment_count"/>
                             </div>
                             <div class="col-2 text-right">
                                 <field name="payments_cleared"/>
@@ -55,7 +63,8 @@
                         </div>
                         <div class="row">
                             <div class="col-8 offset-1">
-                                <span>Deposits Cleared </span><field name="deposit_count"/>
+                                <span>Deposits Cleared</span>
+                                <field name="deposit_count"/>
                             </div>
                             <div class="col-2 text-right">
                                 <field name="deposits_cleared"/>
@@ -79,7 +88,8 @@
                         </div>
                         <div class="row">
                             <div class="col-8 offset-1">
-                                <span>Uncleared Payments as at </span><field name="statement_ending_date"/>
+                                <span>Uncleared Payments as at</span>
+                                <field name="statement_ending_date"/>
                             </div>
                             <div class="col-2 text-right">
                                 <field name="payments_uncleared"/>
@@ -87,7 +97,8 @@
                         </div>
                         <div class="row">
                             <div class="col-8 offset-1">
-                                <span>Uncleared Deposits as at </span><field name="statement_ending_date"/>
+                                <span>Uncleared Deposits as at</span>
+                                <field name="statement_ending_date"/>
                             </div>
                             <div class="col-2 text-right">
                                 <field name="deposits_uncleared"/>
@@ -95,7 +106,8 @@
                         </div>
                         <div class="row">
                             <div class="col-8 offset-1">
-                                <span>Register Balance as of </span><field name="statement_ending_date"/>
+                                <span>Register Balance as of</span>
+                                <field name="statement_ending_date"/>
                             </div>
                             <div class="col-2 text-right">
                                 <field name="register_balance"/>
@@ -104,11 +116,15 @@
                     </div>
 
                     <strong>Details</strong>
-                    <br />
-                    <div class="reconciliation_header">Payments Cleared <field name="payment_count"/></div>
+                    <br/>
+                    <div class="reconciliation_header">Payments Cleared
+                        <field name="payment_count"/>
+                    </div>
                     <field name="payments_cleared_ids"/>
 
-                    <div class="reconciliation_header">Deposits Cleared <field name="deposit_count"/></div>
+                    <div class="reconciliation_header">Deposits Cleared
+                        <field name="deposit_count"/>
+                    </div>
                     <field name="deposits_cleared_ids">
                         <tree>
                             <field name="currency_id" invisible="1"/>
@@ -120,10 +136,14 @@
                         </tree>
                     </field>
 
-                    <div class="reconciliation_header">Uncleared payments as of <field name="statement_ending_date"/></div>
+                    <div class="reconciliation_header">Uncleared payments as of
+                        <field name="statement_ending_date"/>
+                    </div>
                     <field name="payments_uncleared_ids"/>
 
-                    <div class="reconciliation_header">Uncleared deposits as of <field name="statement_ending_date"/></div>
+                    <div class="reconciliation_header">Uncleared deposits as of
+                        <field name="statement_ending_date"/>
+                    </div>
                     <field name="deposits_uncleared_ids">
                         <tree>
                             <field name="currency_id" invisible="1"/>
@@ -135,6 +155,11 @@
                         </tree>
                     </field>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>
@@ -181,7 +206,9 @@
                                attrs="{'readonly': [('previous_reconciliation_id', '!=', False)]}"/>
                         <field name="ending_balance" required="1"/>
                         <div colspan="2">
-                            <p class="text-muted">Notes: Input a negative ending balance if there is a statement balance that you have to pay for.</p>
+                            <p class="text-muted">Notes: Input a negative ending balance if there is a statement balance
+                                that you have to pay for.
+                            </p>
                         </div>
                     </group>
                     <group>
@@ -191,16 +218,18 @@
                         <field name="statement_ending_date" required="1"/>
                         <field name="start_date" string="Show transactions from"/>
                         <div colspan="2">
-                            <p class="text-muted font-weight-bold">Notes: Uncleared transactions before this date are still listed in reconciliation report.</p>
+                            <p class="text-muted font-weight-bold">Notes: Uncleared transactions before this date are
+                                still listed in reconciliation report.
+                            </p>
                         </div>
                     </group>
                 </group>
 
                 <footer>
                     <button string='Reconcile' name="open_reconcile_screen" type="object" class="btn-primary"
-                    context="{'start_reconciliation': True}"/>
+                            context="{'start_reconciliation': True}"/>
                     <button string='Undo last reconciliation' name="undo_last_reconciliation" type="object"
-                        confirm="Are you sure you want to undo previous reconciliation?"
+                            confirm="Are you sure you want to undo previous reconciliation?"
                             invisible="context.get('edit_info', False)"
                             attrs="{'invisible': [('previous_reconciliation_id', '=', False)]}"/>
                     <button string="Cancel" special="cancel"/>

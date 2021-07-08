@@ -201,7 +201,7 @@ class AccountMoveLineDeposit(models.Model):
                     rec_move_ids += aml.matched_debit_ids + aml.matched_credit_ids
                 rec_move_ids.unlink()
 
-                record.move_id.button_cancel()
+                record.move_id.write({'state': 'cancel'})
                 record.move_id.with_context(force_delete=True).unlink()
             else:
                 # Call super for other transactions

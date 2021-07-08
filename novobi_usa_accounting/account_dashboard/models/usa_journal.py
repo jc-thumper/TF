@@ -592,7 +592,7 @@ class USAJournal(models.Model):
             ORDER BY year, period;
         """.format(transferred_currency_table=transferred_currency)
 
-        company_ids = get_list_companies_child(self.env.company)
+        company_ids = self.env.companies.ids
         name = fields.Date.today()
         self.env.cr.execute(query, (period_type, name, tuple(company_ids), date_from, date_to, tuple(company_ids),))
         data_fetch = self.env.cr.dictfetchall()
@@ -676,7 +676,7 @@ class USAJournal(models.Model):
             ORDER BY year, period;
         """
 
-        company_ids = get_list_companies_child(self.env.company)
+        company_ids = self.env.companies.ids
         self.env.cr.execute(query, (period_type, date_from, date_to, type_account_id, tuple(company_ids),))
         data_fetch = self.env.cr.dictfetchall()
 

@@ -136,13 +136,12 @@ class AccountJournalUSA(models.Model):
             sequence_obj.prefix = sequence_obj.prefix.replace(old_pattern, new_pattern)
 
     @api.model
-    def create_write_off_sequences(self, account_journal_name, account_journal_code, write_off_sequence_number_next,
-                                   code):
+    def create_write_off_sequences(self, account_journal_name, account_journal_code, write_off_sequence_number_next, code):
         # only create this config at the first time when install or upgrade module
         account_journal = self.env[ACCOUNT_JOURNAL].search([('name', '=', account_journal_name),
                                                             ('code', '=', account_journal_code)])
         if not account_journal:
-            raise UserError('Please config account journal of % ' % account_journal_name)
+            raise UserError('Please config account journal of {} '.format(account_journal_name))
 
         for journal in account_journal:
             journal_vals = {

@@ -466,7 +466,8 @@ odoo.define('cash_flow_projection.cash_flow_projection_report', function (requir
                                     'period_type': self.period,
                                     'cash_type': cash_type,
                                     'default_period_type': self.period,
-                                    'default_amount': result,
+                                    'default_amount': result.amount,
+                                    'default_company_id': result.company_id
                                 },
                             });
                         });

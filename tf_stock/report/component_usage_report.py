@@ -29,11 +29,16 @@ class ComponentUsageReport(models.Model):
     work_center_id = fields.Many2one('mrp.workcenter', 'Work Center', related='workorder_id.workcenter_id')
 
     def _search_vendor(self, operator, value):
-        sml_ids = []
-        if operator == 'ilike':
-            vendors = self.env['res.partner'].search([('name', 'ilike', value)])
-            products = self.env['product.product'].search([('vendor_id', 'in', vendors.ids)])
-            sml = self.env['stock.move.line'].search([('product_id', 'in', products.ids)])
-            sml_ids = sml.ids
+        vendors = self.env["res.partner"].browse()
+        if operator == "=" and isinstance(value, int):
+            vendors = self.env['res.partner'].search([('id', operator, value)], limit=1)
+        else:
+            vendors = self.env['res.partner'].search([('name', operator, value)])
 
-        return [('id', 'in', sml_ids)]
+        if not vendors:
+            return []
+
+        products = self.env['product.product'].search([('vendor_id', 'in', vendors.ids)])
+        sml = self.env['stock.move.line'].search([('product_id', 'in', products.ids)])
+
+        return [('id', 'in', sml.ids)]

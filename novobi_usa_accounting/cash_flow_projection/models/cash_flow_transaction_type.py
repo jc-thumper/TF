@@ -84,4 +84,4 @@ class CashFlowTransactionType(models.Model):
         if not transaction_code:
             return False
         record = self.env['cash.flow.transaction.type'].sudo().search([('code', '=', transaction_code)])
-        return record.editable
+        return record.editable and len(self.env.companies) < 2

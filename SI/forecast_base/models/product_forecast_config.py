@@ -420,7 +420,7 @@ class ProductForecastConfig(models.Model):
     ###############################
     # PRIVATE FUNCTIONS
     ###############################
-    def _get_domain_product_forecast_config(self, prod_info):
+    def _gen_domain_product_forecast_config(self, prod_info):
         """
 
         :param dict prod_info:
@@ -429,7 +429,8 @@ class ProductForecastConfig(models.Model):
                 'company_id': 1,
                 'warehouse_id': 1,
             }
-        :return:
+        :return list[tuple]:
+        Ex: [('product_id', '=', 1), ('company_id', '=', 1), ('warehouse_id', '=', 1)]
         """
         domain = []
         try:
@@ -463,7 +464,7 @@ class ProductForecastConfig(models.Model):
         config_data = {}
         try:
             cid = prod_info['company_id']
-            company_id = self.env['res.company'].search([('id', '=', cid)])
+            company_id = self.env['res.company'].browse(cid)
             if company_id:
                 # initial product forecast config data
                 default_forecasting_type = self.env['forecast.item'].get_forecasting_type(prod_info)
@@ -618,8 +619,14 @@ class ProductForecastConfig(models.Model):
     def update_comp_config_data(self, products_info, update_active=False):
         """
 
-        :param products_info:
-        :type products_info: list[dict]
+        :param list[dict] products_info:
+        Ex: [
+                {
+                    'product_id': 1,
+                    'company_id': 1,
+                    'warehouse_id': 1,
+                }
+            ]
         :param update_active:
         :return:
         """
@@ -637,7 +644,7 @@ class ProductForecastConfig(models.Model):
                 if company_id and company_id not in company_effected:
                     company_effected.append(company_id)
 
-                product_domain = self._get_domain_product_forecast_config(prod_info)
+                product_domain = self._gen_domain_product_forecast_config(prod_info)
                 config_info = self.get_product_forecast_config(product_domain)
 
                 product_clsf_info_id = prod_clsf_env.get_product_clsf_info(product_domain)
@@ -648,10 +655,11 @@ class ProductForecastConfig(models.Model):
 
                     # Just write when have a update
                     write_content = {}
-                    if config_info.product_clsf_info_id.id != product_clsf_info_id.id:
-                        write_content.update({
-                            'product_clsf_info_id': product_clsf_info_id.id,
-                        })
+                    if product_clsf_info_id:
+                        if config_info.product_clsf_info_id.id != product_clsf_info_id.id:
+                            write_content.update({
+                                'product_clsf_info_id': product_clsf_info_id.id,
+                            })
                     if not config_info.active:
                         write_content.update({'active': True})
 
@@ -682,7 +690,7 @@ class ProductForecastConfig(models.Model):
          default_channel='root.forecasting')
     def update_execute_date(self, fore_result_adjust_ids,
                             execute_date=datetime.now()):
-        """
+        """ Job support update the forecast next execution time
 
         :param fore_result_adjust_ids:
         :param execute_date:

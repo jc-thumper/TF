@@ -28,7 +28,7 @@ class ForecastResultDaily(models.Model):
     ###################################
     # FIELDS
     ###################################
-    forecast_adjust_line_id = fields.Many2one('forecast.result.adjust.line', required=True, ondelete='cascade',
+    forecast_adjust_line_id = fields.Many2one('forecast.result.adjust.line', required=False, ondelete='cascade',
                                               readonly=True)
     product_id = fields.Many2one(related='forecast_adjust_line_id.product_id', readonly=True, store=True)
     warehouse_id = fields.Many2one(related='forecast_adjust_line_id.warehouse_id', readonly=True, store=True)
@@ -172,17 +172,22 @@ class ForecastResultDaily(models.Model):
         self.env.cr.execute(sql_query, sql_params)
         self.env.cr.commit()
 
-    def convert_forecast_result_to_daily_value(self, fral_ids):
+    def convert_forecast_result_to_daily_value(self, fral_ids, company_id=None):
         """
         Convert forecast value from the table Forecast Result Adjust Line to daily value
         base on each period type and store to the table forecast result daily
         :param list[int] fral_ids: list of record id in the table Forecast Result Adjust Line
+        :param int company_id:
         :return None:
         """
         unique_fral_ids = np.unique(fral_ids).tolist()
 
+        domain = [('id', 'in', unique_fral_ids)]
+        if company_id:
+            domain += [('company_id', '=', company_id)]
+
         # get company_id from ids of Forecast Result Adjust Line
-        frals = self.env['forecast.result.adjust.line'].search_read([('id', 'in', unique_fral_ids)],
+        frals = self.env['forecast.result.adjust.line'].search_read(domain,
                                                                     ['id', 'company_id'])
 
         fral_records = [{
@@ -237,19 +242,20 @@ class ForecastResultDaily(models.Model):
                         6: 10 * 60,
                         9: 30 * 60},
          default_channel='root.forecasting')
-    def update_forecast_result_daily(self, line_ids, call_from_engine=False):
+    def update_forecast_result_daily(self, line_ids, company_id, call_from_engine=False):
         """ The function update the forecast result daily for products have just updated
         the forecast result (in the table forecast_result_adjust_line)
 
         :param list[int] line_ids: forecast result adjust lines id
         :param bool call_from_engine:
+        :param int company_id:
         :return:
         """
         _logger.info("Update forecast result daily with line ids: %s", line_ids)
         try:
             # mark rows are processing
             self.update_status_of_records(line_ids, is_active=False)
-            self.convert_forecast_result_to_daily_value(fral_ids=line_ids)
+            self.convert_forecast_result_to_daily_value(fral_ids=line_ids, company_id=company_id)
             # mark rows are done
             self.update_status_of_records(line_ids, is_active=True)
 

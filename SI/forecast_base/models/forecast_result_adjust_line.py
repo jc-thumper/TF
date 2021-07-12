@@ -324,6 +324,7 @@ class ForecastResultAdjustLine(models.Model):
             res = super(ForecastResultAdjustLine, self).write(values)
             if self.check_condition_to_update_forecast_result_adjust(values=values):
                 line_ids = self.ids
+                company_id = self.company_id.id
                 self.rounding_forecast_value(line_ids)
 
                 number_of_record = len(line_ids)
@@ -337,10 +338,10 @@ class ForecastResultAdjustLine(models.Model):
                 if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
-                        .update_forecast_result_daily(line_ids, call_from_engine=True)
+                        .update_forecast_result_daily(line_ids, company_id, call_from_engine=True)
                 else:
                     self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(line_ids, call_from_engine=True)
+                        .update_forecast_result_daily(line_ids, company_id, call_from_engine=True)
 
             return res
         else:
@@ -592,7 +593,7 @@ class ForecastResultAdjustLine(models.Model):
     def update_validation_adjust_line(self, query_param):
         """
         Update old forecast result adjust lines with new validation results
-        :param query_param: params for update query
+        :param dict query_param: params for update query
         :return: None
         """
         # Step 1: find the record that the user has changed the forecast value before
@@ -658,6 +659,7 @@ class ForecastResultAdjustLine(models.Model):
 
         :param str created_date: the created date of the rows in forecast_result table
         that we use to update update to the forecast_result_adjust_line table
+        :param str pub_time:
         :param kwargs:
         :return datetime: the create_date/write_date of the created/updated records
         """
@@ -668,7 +670,8 @@ class ForecastResultAdjustLine(models.Model):
 
             updated_ids = forecast_level_obj \
                 .update_records_for_forecast_result_adjust_line(
-                obj=self, model=self.env['forecast.result.adjust.line'],
+                obj=self,
+                model=self.env['forecast.result.adjust.line'],
                 created_date=created_date, pub_time=pub_time,
                 **{
                     'current_time': cur_time,
@@ -676,13 +679,13 @@ class ForecastResultAdjustLine(models.Model):
                     'create_date': cur_time,
                     'write_uid': self.env.ref('base.partner_root').id,
                     'write_date': cur_time
-                }
-            )
+                })
 
             _logger.info("%s records have been updated in Forecast Result Adjust Line table: %s",
                          len(updated_ids), updated_ids)
             if updated_ids:
                 self.rounding_forecast_value(updated_ids)
+                company_id = self.browse(updated_ids[0]).company_id.id
                 # Step 3 update the daily forecasting result
 
                 number_of_record = len(updated_ids)
@@ -696,10 +699,10 @@ class ForecastResultAdjustLine(models.Model):
                 if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
-                        .update_forecast_result_daily(updated_ids, call_from_engine=True)
+                        .update_forecast_result_daily(updated_ids, company_id, call_from_engine=True)
                 else:
                     self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(updated_ids, call_from_engine=True)
+                        .update_forecast_result_daily(updated_ids, company_id, call_from_engine=True)
 
             # commit new change to the database
             self.env.cr.commit()
@@ -719,6 +722,8 @@ class ForecastResultAdjustLine(models.Model):
         """
         Function update forecast result adjust line table from
         new forecast result received from Forecast Engine
+        :param str val_res_create_date:
+        :param int company_id:
         :return:
         """
         try:
@@ -760,10 +765,10 @@ class ForecastResultAdjustLine(models.Model):
                 if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                     self.env['forecast.result.daily'].sudo() \
                         .with_delay(max_retries=12, eta=10) \
-                        .update_forecast_result_daily(lines.ids, call_from_engine=True)
+                        .update_forecast_result_daily(lines.ids, company_id, call_from_engine=True)
                 else:
                     self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(lines.ids, call_from_engine=True)
+                        .update_forecast_result_daily(lines.ids, company_id, call_from_engine=True)
 
         except Exception:
             _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)

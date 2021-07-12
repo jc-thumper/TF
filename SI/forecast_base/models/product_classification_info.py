@@ -266,6 +266,14 @@ class ProductClassificationInfo(models.Model):
                         9: 30 * 60},
          default_channel='root.forecasting')
     def update_product_classification_infos(self, json_data=None, recomputed_fields=None, source_table=None, **kwargs):
+        """
+
+        :param list[dict] json_data:
+        :param recomputed_fields:
+        :param source_table:
+        :param kwargs:
+        :return:
+        """
         try:
             forecast_level = kwargs.get('forecast_level')
             created_date = kwargs.get('created_date')

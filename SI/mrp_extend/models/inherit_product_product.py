@@ -3,6 +3,7 @@
 import logging
 
 from odoo import api, fields, models, _
+from odoo.addons import decimal_precision as dp
 from odoo.tools.float_utils import float_compare, float_round
 
 _logger = logging.getLogger(__name__)
@@ -10,6 +11,80 @@ _logger = logging.getLogger(__name__)
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
+
+    ###############################
+    # FIELDS
+    ###############################
+    used_in_bom_ids = fields.One2many('product.bom.info', 'product_id', string=_('Used in BoMs'))
+    used_in_product_ids = fields.Many2many('product.product', compute='_compute_used_in_product_ids')
+
+    manufacturing = fields.Boolean('Manufacturing', compute='_compute_manufacturing', search='_search_manufacturing',
+                                   help='True: This product have at least one BOM and can be manufactured by it\n'
+                                        'False: This product cannot be manufacturable.')
+
+    actual_po_perc = fields.Float(
+        _('Ordered Quantity from PO (%)'),
+        digits=dp.get_precision('Adjust Percentage'), required=True,
+        default=lambda self: self.env.company.po_perc)
+
+    po_perc = fields.Float(
+        _('Ordered Quantity from PO (%)'),
+        digits=dp.get_precision('Adjust Percentage'), compute='_compute_po_perc', inverse='_inverse_po_perc')
+
+    ###############################
+    # COMPUTE FUNCTIONS
+    ###############################
+    def _compute_used_in_product_ids(self):
+        for product in self:
+            product_target_ids = product.used_in_bom_ids.mapped('target_product_id').ids
+            product.update({'used_in_product_ids': product_target_ids})
+
+    def _compute_manufacturing(self):
+        for product in self:
+            product.manufacturing = product.get_BOM() and True or False
+
+    @api.depends('actual_po_perc', 'manufacturing', 'purchase_ok')
+    def _compute_po_perc(self):
+        """
+        Set default value for percentage we will order when a product is out-of-stock.
+        For example, the product is:
+        - Can be purchased: percentage for Purchase Order is 100%
+        - Can be manufactured: percentage for Manufacturing Order is 100%.
+        So percentage for Purchase Order is 0%
+        - Both: 80% for MO and 20% PO
+        """
+        po_perc_dict = self.get_po_perc_dict()
+        for product in self:
+            product_id = product.id
+            product.po_perc = po_perc_dict.get(product_id, 0)
+
+    ###############################
+    # SEARCH FUNCTIONS
+    ###############################
+    def _search_manufacturing(self, operator, value):
+        if operator not in ('=', '!='):
+            raise ValueError('Invalid operator: %s' % (operator,))
+        if not isinstance(value, bool):
+            raise ValueError('Invalid value type: %s' % (value,))
+
+        new_operator = 'in' if (operator == '=' and value) or (
+                operator == '!=' and not value) else 'not in'
+        query = """
+                    SELECT product_tmpl_id
+                    FROM product_template
+                    JOIN mrp_bom ON product_template.id = mrp_bom.product_tmpl_id
+                    GROUP BY product_tmpl_id
+                """
+        self.env.cr.execute(query)
+        product_tmpl_ids = [product_tmpl_id for product_tmpl_id in self.env.cr.fetchall()]
+        return [('product_tmpl_id', new_operator, product_tmpl_ids)]
+
+    ###############################
+    # INVERT FUNCTIONS
+    ###############################
+    def _inverse_po_perc(self):
+        for product in self:
+            product.actual_po_perc = product.po_perc
 
     ###############################
     # GENERAL FUNCTIONS
@@ -75,6 +150,30 @@ class ProductProduct(models.Model):
                 })
         return open_mo_info_dict
 
+    def get_po_perc_dict(self):
+        """
+        Set default value for percentage we will order when a product is out-of-stock.
+        For example, the product is:
+        - Can be purchased: percentage for Purchase Order is 100%
+        - Can be manufactured: percentage for Manufacturing Order is 100%.
+        So percentage for Purchase Order is 0%
+        - Both: 80% for MO and 20% PO (as default)
+        :rtype: dict
+        """
+        po_perc_dict = {}
+        for product in self:
+            if product.manufacturing and product.purchase_ok:
+                po_perc = product.actual_po_perc
+            elif product.manufacturing:
+                po_perc = 0
+            else:
+                po_perc = 100
+            po_perc_dict[product.id] = po_perc
+        return po_perc_dict
+
+    ###############################
+    # PRIVATE FUNCTIONS
+    ###############################
     def _compute_MO_will_receive_dict(self, owner_id=None, warehouse_id=None):
         """
 
@@ -257,8 +356,10 @@ class ProductProduct(models.Model):
                         else:
                             rounding = 1.0
                             cur_schedule_date = fg_item['schedule_date']
-                            fg_item['be_reserved_qty'] = float_round(fg_item['be_reserved_qty'] + product_qty, precision_rounding=rounding)
-                            fg_item['will_receive_qty'] = float_round(fg_item['will_receive_qty'] + product_qty, precision_rounding=rounding)
+                            fg_item['be_reserved_qty'] = float_round(fg_item['be_reserved_qty'] + product_qty,
+                                                                     precision_rounding=rounding)
+                            fg_item['will_receive_qty'] = float_round(fg_item['will_receive_qty'] + product_qty,
+                                                                      precision_rounding=rounding)
                             fg_item['schedule_date'] = reserved_fg_date \
                                 if cur_schedule_date is None \
                                 else min(cur_schedule_date, reserved_fg_date)

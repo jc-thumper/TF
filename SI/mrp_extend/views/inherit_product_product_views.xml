@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--Form View-->
+    <record id="product_product_view_form_product_inherit_used_in" model="ir.ui.view">
+        <field name="name">product.product.view.form.product.inherit.used.in</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <group name="inventory" position="after">
+                <group string="Used in Bill of Materials" name="used_in_bom">
+                    <field name="used_in_bom_ids" readonly="1" nolabel="1">
+                        <tree>
+                            <field name="bom_code"/>
+                            <field name="target_product_id"/>
+                            <field name="intermediate_product_id"/>
+                            <field name="mo_level"/>
+                        </tree>
+                    </field>
+                </group>
+
+                <group string="Used in Products" name="used_in_product">
+                    <field name="used_in_product_ids" widget="many2many_tags" readonly="1"/>
+                </group>
+            </group>
+        </field>
+    </record>
+</odoo>

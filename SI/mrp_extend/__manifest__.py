@@ -17,6 +17,9 @@
 
         # ============================== DATA ================================
         'data/ir_cron_data.xml',
+
+        # ============================== DATA ================================
+        'views/inherit_product_product_views.xml',
     ],
     'qweb': ['static/src/xml/*.xml'],
     'application': False,

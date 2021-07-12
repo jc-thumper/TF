@@ -974,11 +974,10 @@ class WarehouseLevelLogic(ForecastLevelLogic):
         created at ``create_date``. This logic apply for warehouse level
         :param obj:
         :param model:
-        :param created_date:
-        :param pub_time:
+        :param str created_date:
+        :param str pub_time:
         :param kwargs:
-        :return:
-        :rtype: list[int]
+        :return list[int]:
         """
         updated_ids = []
         try:

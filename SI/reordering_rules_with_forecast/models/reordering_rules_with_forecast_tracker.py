@@ -152,7 +152,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         route_code = 0
         if product.purchase_ok:
             route_code |= 1
-        if allow_manufacture and product.manufacturing:
+        if allow_manufacture and product.bom_ids != False:
             route_code |= 2
 
         return route_code
@@ -278,6 +278,28 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
                     delay = record.get('delay')
                     if delay is not None:
                         result.setdefault(record.get('product_id'), []).append(delay)
+
+                IrConfig = self.env['ir.config_parameter'].sudo()
+                allow_manufacture = IrConfig.get_param(
+                    'reordering_rules_with_forecast.module_forecast_preparation_with_mrp', '0') == '1'
+
+                if allow_manufacture:
+                    sql_query = """
+                                        SELECT
+                                            pp.id AS product_id,
+                                            pt.produce_delay AS produce_delay
+                                        FROM product_product pp
+                                            LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+                                        WHERE pp.id IN %s;
+                                    """
+                    sql_params = (tuple(product_ids),)
+                    self.env.cr.execute(sql_query, sql_params)
+
+                    records = self.env.cr.dictfetchall()
+                    for record in records:
+                        delay = record.get('produce_delay')
+                        if delay is not None:
+                            result.setdefault(record.get('product_id'), []).append(delay)
 
             return result
         except Exception as e:
@@ -562,7 +584,7 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
                 "data": body_data
             }
             uuid = auth_content.get('uuid')
-            _logger.info("Call API to FE server to compute Under/Overstock Report with UUID: %r" % uuid)
+            _logger.info("Call API to FE server to recompute Reordering rules with forecast with UUID: %r" % uuid)
             json_body = json.dumps(body_data)
             _logger.info("Make request to server with UUID: %s", uuid)
             response = requests.post(direct_order_url, data=json_body,

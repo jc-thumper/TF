@@ -9,7 +9,15 @@
     ],
     'description': '',
     'data': [
+        'views/stock_picking_views.xml',
+
         'report/product_category_report.xml',
+        'report/critical_inventory_report_views.xml',
+        'report/component_usage_report_views.xml',
+        'report/production_report_views.xml',
+        'wizard/component_usage_wizard_views.xml',
+        'wizard/production_report_wizard_views.xml',
+
     ],
     'images': [],
     'demo': [],

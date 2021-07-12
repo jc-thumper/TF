@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="inherit_view_picking_type_form">
+        <field name="name">Operation Types Inherit</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='code']" position="after">
+                <field name="reservation_method" attrs="{'invisible': [('code', '!=', 'mrp_operation')]}" widget="radio"/>
+                <label for="reservation_days_before" string="Reserve before scheduled date" attrs="{'invisible': [('reservation_method', '!=', 'by_date')]}"/>
+                <div class="o_row" attrs="{'invisible': [('reservation_method', '!=', 'by_date')]}">
+                    <span><field name="reservation_days_before" style="width: 23px;"/> days before/</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

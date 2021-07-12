@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="critical_product_form_view" model="ir.ui.view">
+        <field name="name">critical.product.form</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='traceability']" position="before">
+                <group string="Stock Control" name="stock_control" attrs="{'invisible': [('type', '!=', 'product')]}">
+                    <field name="critical_threshold"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="tf_critical_inventory_report">
+        <field name="name">tf.critical.inventory.report</field>
+        <field name="model">product.product</field>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="is_qoh_critical == True">
+                <field name="display_name" string="Product"/>
+                <field name="qty_available"/>
+                <field name="virtual_available" string="Forecasted Quantity"/>
+                <field name="critical_threshold"/>
+                <field name="uom_name" string="UoM"/>
+                <button name="button_view_rfq" type="object" string="View Orders"/>
+                <field name="is_qoh_critical" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="inherit_product_product_search_view" model="ir.ui.view">
+        <field name="name">inherit.product.product.search</field>
+        <field name="model">product.product</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="product.product_search_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='consumable']" position="after">
+                <separator/>
+                <filter string="Critical" name="critical_filter" domain="[('is_qoh_critical', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_tf_critical_inventory_report" model="ir.actions.act_window">
+        <field name="name">Critical Inventory Report</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="tf_critical_inventory_report"/>
+        <field name="domain">[('type', '=', 'product')]</field>
+        <field name="context">{'search_default_critical_filter':1, 'create': False, 'edit': False}</field>
+    </record>
+
+    <menuitem id="menu_action_tf_critical_inventory_report"
+              action="action_tf_critical_inventory_report"
+              parent="stock.menu_warehouse_report" sequence="110"/>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sync_rr_mps_public,sync_rr_mps_public,tf_mrp.model_sync_rr_mps,,1,0,0,0
+access_sync_rr_mps_user,sync_rr_mps_user,tf_mrp.model_sync_rr_mps,base.group_user,1,1,1,1

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cash_flow_setting_recurring_cash_out_view" model="ir.ui.view">
+        <field name="name">cash.flow.setting.recurring.cash.out.view</field>
+        <field name="model">cash.flow.recurring.setting</field>
+        <field name="arch" type="xml">
+            <form string="Update Recurring Cash In/Out">
+                <group id="content">
+                    <div class="oe_edit_only oe_inline" style="display: inline;">
+                        <label for="amount" string="Amount:" class="oe_inline"/>
+                        <field name="amount" class="text-center oe_inline"/>
+                        per <field name="period_type" class="text-left oe_inline" readonly="1"/>
+                    </div>
+                    <div>
+                        <label for="company_id" string="Company:" class="oe_inline"/>
+                        <field name="company_id" class="oe_inline" options="{'no_create': True}" required="1"/>
+                    </div>
+                </group>
+                <footer>
+                    <button name="set_recurring_cash_in" type="object" string="Save" class="btn-primary"/>
+                    <button string="Cancel" class="btn btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

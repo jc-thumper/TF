@@ -106,6 +106,16 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             record.qty_available = record.product_id.qty_available
 
     def get_product_service_level_infos_by_keys(self, obj, model_name, tuple_keys, tuple_values, **kwargs):
+        """ The function get the dictionary of service level of items
+
+        :param obj:
+        :param model_name:
+        :param tuple_keys:
+        :param tuple_values:
+        :param kwargs:
+        :return dict:
+        """
+        result = {}
         try:
             sql_query = """
                 SELECT
@@ -116,17 +126,18 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             """
             obj.env.cr.execute(sql_query)
             raw_data = obj.env.cr.dictfetchall()
+            # if raw_data:
             df = pd.DataFrame.from_records(raw_data)
+            if df.empty is False:
+                # filter records
+                df['is_selected'] = filter_rows_by_tuple(df, list_of_keys=tuple_keys, list_of_values=tuple_values)
 
-            # filter records
-            df['is_selected'] = filter_rows_by_tuple(df, list_of_keys=tuple_keys, list_of_values=tuple_values)
-
-            records = df[df['is_selected'] == True].to_dict(orient='records')
-            result = {
-                (item.get('product_id'),
-                 item.get('company_id'),
-                 item.get('warehouse_id')): item.get('name') for item in records
-            }
+                records = df[df['is_selected'] is True].to_dict(orient='records')
+                result = {
+                    (item.get('product_id'),
+                     item.get('company_id'),
+                     item.get('warehouse_id')): item.get('name') for item in records
+                }
 
             return result
         except Exception as e:
@@ -351,9 +362,19 @@ class WarehouseLevelLogic(ForecastLevelLogic):
         return result
 
     def create_or_update_records_in_forecast_result_daily(self, obj, model_name, line_ids, **kwargs):
-        # some helper functions
+        """ Function create or update the data for table forecast result daily;
+        just compute the daily demand if that product have the product forecasting configuration
+
+        :param obj:
+        :param str model_name:
+        :param line_ids:
+        :param kwargs:
+        :return:
+        """
+
         def __compute_mean_forecast_values(series, period_type):
             factors = {
+                'daily': 1,
                 'weekly': 7,
                 'monthly': 30,
                 'quarterly': 120
@@ -364,6 +385,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             splitted_df = origin_df.copy()
             period_type = splitted_df.pop('period_type').unique()[0]
             date_diff = {
+                'daily': {'days': 1},
                 'weekly': {'weeks': 1},
                 'monthly': {'months': 1},
                 'quarterly': {'months': 3}
@@ -382,18 +404,31 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             return new_df
 
         def __get_product_forecast_config_data(obj):
+            """ The function get the period type from product forecast config
+
+            :param obj:
+            :return DataFrame:
+            column: product_id, warehouse_id, company_id, period_type
+            """
             sql_query = """
-                SELECT config.product_id, config.warehouse_id, config.company_id, g.period_type
+                SELECT config.product_id, config.warehouse_id, config.company_id, 
+                (CASE WHEN config.auto_update THEN g.period_type ELSE config.period_type_custom END) period_type
                 FROM product_forecast_config config
-                JOIN product_classification_info info ON config.product_clsf_info_id = info.id
-                JOIN forecast_group g ON info.forecast_group_id = g.id;
+                LEFT JOIN product_classification_info info ON config.product_clsf_info_id = info.id
+                LEFT JOIN forecast_group g ON info.forecast_group_id = g.id;
             """
 
             obj.env.cr.execute(sql_query)
             records = obj.env.cr.dictfetchall()
             return pd.DataFrame.from_records(records)
 
-        def __get_forecast_result_data(obj, line_ids):
+        def __get_forecast_result_adjust_line_data(obj, line_ids):
+            """
+
+            :param obj:
+            :param line_ids:
+            :return DataFrame: id, product_id, warehouse_id, company_id, period_type, start_date, adjust_value
+            """
             sql_query = """
                 SELECT 
                     fral.id, fral.product_id, fral.warehouse_id, fral.company_id, fral.period_type,
@@ -406,9 +441,14 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             return pd.DataFrame.from_records(records)
 
         def __get_records_in_forecast_result_daily(obj):
+            """
+            Get the data of all current records on the forecast result daily
+            :param obj:
+            :return DataFrame:
+            """
             sql_query = """
-                select forecast_adjust_line_id, date
-                from forecast_result_daily;
+                SELECT forecast_adjust_line_id, date
+                FROM forecast_result_daily;
             """
             obj.env.cr.execute(sql_query)
             records = obj.env.cr.dictfetchall()
@@ -416,34 +456,40 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         def __create_records_in_forecast_result_daily(obj, inserted_records):
             sql_query = """
-                insert into forecast_result_daily
+                INSERT INTO forecast_result_daily
                 (forecast_adjust_line_id, product_id, warehouse_id, company_id, period_type, active, 
                 date, daily_forecast_result)
-                values (
+                VALUES (
                     %(forecast_adjust_line_id)s, %(product_id)s, %(warehouse_id)s, 
-                    %(company_id)s, %(period_type)s, %(active)s, %(date)s, %(daily_forecast_result)s);
+                    %(company_id)s, %(period_type)s, %(active)s, %(date)s, %(daily_forecast_result)s)
+                ON CONFLICT (product_id, warehouse_id, company_id, date)
+                DO UPDATE SET
+                    forecast_adjust_line_id = EXCLUDED.forecast_adjust_line_id,
+                    period_type             = EXCLUDED.period_type,
+                    active                  = EXCLUDED.active,
+                    daily_forecast_result   = EXCLUDED.daily_forecast_result;
             """
             obj.env.cr.executemany(sql_query, inserted_records)
             obj.env.cr.commit()
 
         def __update_records_in_forecast_result_daily(obj, updated_records):
             sql_query = """
-                update forecast_result_daily
-                set 
+                UPDATE forecast_result_daily
+                SET 
                     daily_forecast_result = %(daily_forecast_result)s,
                     period_type = %(period_type)s
-                where forecast_adjust_line_id = %(forecast_adjust_line_id)s and date = %(date)s;
+                WHERE forecast_adjust_line_id = %(forecast_adjust_line_id)s AND date = %(date)s;
             """
             obj.env.cr.executemany(sql_query, updated_records)
             obj.env.cr.commit()
 
         try:
             # get product forecast config data
-            product_config_df = __get_product_forecast_config_data(obj=obj)
+            product_forecast_config_df = __get_product_forecast_config_data(obj=obj)
 
             # get forecast result data
-            forecast_result_df = __get_forecast_result_data(obj=obj, line_ids=line_ids)
-            forecast_result_df['start_date'] = pd.to_datetime(forecast_result_df['start_date'])
+            fral_df = __get_forecast_result_adjust_line_data(obj=obj, line_ids=line_ids)
+            fral_df['start_date'] = pd.to_datetime(fral_df['start_date'])
 
             # get existing records in forecast result daily
             forecast_result_daily_df = __get_records_in_forecast_result_daily(obj=obj)
@@ -451,17 +497,21 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 forecast_result_daily_df['date'] = pd.to_datetime(forecast_result_daily_df['date'])
                 forecast_result_daily_df['is_existing'] = True
 
+            lines_have_config_df = pd.merge(fral_df, product_forecast_config_df, how='inner',
+                                            left_on=['company_id', 'period_type', 'product_id', 'warehouse_id'],
+                                            right_on=['company_id', 'period_type', 'product_id', 'warehouse_id'])
+
             # convert to daily forecast value
-            daily_forecast_df = forecast_result_df.groupby(
+            new_daily_forecast_df = lines_have_config_df.groupby(
                 ['period_type', 'product_id', 'warehouse_id', 'company_id'],
                 as_index=False).apply(
                 lambda splitted_df: __convert_to_daily_forecast_values(splitted_df))
 
             # add some columns
-            daily_forecast_df['active'] = True
+            new_daily_forecast_df['active'] = True
 
             # rename some columns
-            daily_forecast_df = daily_forecast_df.rename(columns={
+            new_daily_forecast_df = new_daily_forecast_df.rename(columns={
                 'id': 'forecast_adjust_line_id',
                 'adjust_value': 'daily_forecast_result'
             })
@@ -470,15 +520,15 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 'forecast_adjust_line_id', 'product_id', 'warehouse_id', 'company_id', 'active',
                 'date', 'daily_forecast_result', 'period_type'
             ]
-            daily_forecast_df = daily_forecast_df[selected_cols]
+            new_daily_forecast_df = new_daily_forecast_df[selected_cols]
 
             if forecast_result_daily_df.empty is False:
-                result = daily_forecast_df.merge(forecast_result_daily_df, how='left',
-                                                 left_on=['forecast_adjust_line_id', 'date'],
-                                                 right_on=['forecast_adjust_line_id', 'date'])
+                result = new_daily_forecast_df.merge(forecast_result_daily_df, how='left',
+                                                     left_on=['forecast_adjust_line_id', 'date'],
+                                                     right_on=['forecast_adjust_line_id', 'date'])
                 result['is_existing'] = result['is_existing'].fillna(False)
             else:
-                result = daily_forecast_df.copy()
+                result = new_daily_forecast_df.copy()
                 result['is_existing'] = False
 
             # cast type of ID columns to integer
@@ -678,7 +728,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
 
         # sync data in table RRwF with FD table, which contain forecast data
         forecasts = obj.env['forecast.result.adjust'].sudo().search([])
-        forecasted_product_records = []
+        forecasted_product_dicts = {}
         for forecast in forecasts:
             if forecast.has_forecasted:
                 product_id = forecast.product_id.id
@@ -702,10 +752,11 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                         'location_id': location_id
                     }
                     count += 1
-                    forecasted_product_records.append(values)
+                    forecasted_product_dicts[(product_id, company_id, warehouse_id, location_id)] = values
 
+        forecasted_product_records = list(forecasted_product_dicts.values())
         # create multi records
-        _logger.info("Create multi record in RRwF for warehouse: %s", len(forecasted_product_records))
+        _logger.debug("Create multi record in RRwF for warehouse: %s", len(forecasted_product_records))
         RRwF_model.create(forecasted_product_records)
 
     def get_product_infos_for_rrwf(self, record, **kwargs):
@@ -856,7 +907,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             raise e
 
     def get_conflict_fields_for_summarize_rec_result(self, **kwargs):
-        return ['product_id', 'company_id', 'warehouse_id', 'pub_time']
+        return ['product_id', 'company_id', 'warehouse_id', 'start_date', 'period_type', 'pub_time']
 
     def get_latest_records_dict_for_summarize_rec_result(self, obj, model, created_date, **kwargs):
         data_dict = []
@@ -876,7 +927,14 @@ class WarehouseLevelLogic(ForecastLevelLogic):
             raise e
         return data_dict
 
-    def update_records_for_summarize_data_line(self, obj, model, created_date, **kwargs):
+    def update_records_for_summarize_data_line(self, obj, created_date, **kwargs):
+        """ Function update or create if it don't exist the summarize data line from the summarize record result
+
+        :param SummarizeDataLine obj:
+        :param created_date:
+        :param kwargs:
+        :return list[dict]:
+        """
         updated_ids = []
         try:
             if created_date:
@@ -909,14 +967,15 @@ class WarehouseLevelLogic(ForecastLevelLogic):
         return updated_ids
 
     def get_conflict_fields_for_forecast_result(self, **kwargs):
-        return ['product_id', 'company_id', 'warehouse_id', 'pub_time', 'start_date']
+        return ['product_id', 'company_id', 'warehouse_id', 'pub_time', 'start_date', 'period_type']
 
-    def update_records_for_forecast_result_adjust_line(self, obj, model, created_date, **kwargs):
+    def update_records_for_forecast_result_adjust_line(self, obj, model, created_date, pub_time, **kwargs):
         """ Function create/update table forecast_result_adjust_line from table forecast_result data which are
         created at ``create_date``. This logic apply for warehouse level
         :param obj:
         :param model:
         :param created_date:
+        :param pub_time:
         :param kwargs:
         :return:
         :rtype: list[int]
@@ -943,7 +1002,9 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                            %(now)s as create_date,
                            fr.write_uid as write_uid,
                            %(now)s as write_date
-                    FROM (SELECT * FROM forecast_result WHERE create_date = %(created_date)s) AS fr
+                    FROM (SELECT * FROM forecast_result 
+                            WHERE create_date = %(created_date)s 
+                                AND pub_time = %(pub_time)s) AS fr
                       LEFT OUTER JOIN (
                           SELECT *
                           FROM forecast_result_adjust_line
@@ -953,7 +1014,8 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                           fr.product_id IS NOT DISTINCT FROM fral.product_id AND
                           fr.warehouse_id IS NOT DISTINCT FROM fral.warehouse_id AND
                           fr.company_id IS NOT DISTINCT FROM fral.company_id AND
-                          fr.start_date = fral.start_date
+                          fr.start_date = fral.start_date AND
+                          fr.period_type = fral.period_type
                     WHERE fr.id IS NOT NULL
                     ON CONFLICT (product_id, company_id, warehouse_id, period_type, start_date)
                     DO UPDATE SET 
@@ -965,7 +1027,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                         forecast_line_id = EXCLUDED.forecast_line_id,
                         fore_pub_time    = EXCLUDED.fore_pub_time;
                 """
-                sql_param = {'created_date': created_date, 'now': _now}
+                sql_param = {'created_date': created_date, 'now': _now, 'pub_time': pub_time}
                 obj.env.cr.execute(sql_query, sql_param)
                 obj.env.cr.commit()
 
@@ -980,7 +1042,7 @@ class WarehouseLevelLogic(ForecastLevelLogic):
                 updated_ids = [item.get('id') for item in obj.env.cr.dictfetchall()]
 
         except Exception as e:
-            _logger.exception("Error in the function update_records_for_summarize_data_line.", exc_info=True)
+            _logger.exception("Error in the function update_records_for_forecast_result_adjust_line.", exc_info=True)
             raise e
         return updated_ids
 

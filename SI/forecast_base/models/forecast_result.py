@@ -10,6 +10,8 @@ from odoo.addons.si_core.utils.string_utils import get_table_name
 from odoo.addons.si_core.utils.database_utils import get_db_cur_time, append_log_access_fields_to_data
 from odoo.exceptions import UserError
 
+from ..utils.config_utils import ALLOW_TRIGGER_QUEUE_JOB
+
 from time import time
 from psycopg2.extensions import AsIs
 from psycopg2 import IntegrityError
@@ -63,8 +65,9 @@ class ForecastResult(models.Model):
         :return:
         :rtype: list[dict]
         """
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
             datum.update({
                 'algo': datum.pop('algorithm')
             })
@@ -97,6 +100,8 @@ class ForecastResult(models.Model):
 
             sql_params = [get_key_value_in_dict(item, inserted_fields) for item in vals]
             self.env.cr.executemany(sql_query, sql_params)
+            self.flush()
+            self.env.cr.commit()
             _logger.info("Insert/update %s rows into the model.", len(vals))
 
         except IntegrityError:
@@ -116,29 +121,46 @@ class ForecastResult(models.Model):
         :rtype: None
         """
         forecast_level = kwargs.get('forecast_level')
-        self.update_forecast_result_in_forecast_result_adjust_line(created_date=created_date,
+        pub_time = kwargs.get('pub_time')
+        self.update_forecast_result_in_forecast_result_adjust_line(created_date=created_date, pub_time=pub_time,
                                                                    **{'forecast_level': forecast_level})
 
-    def update_forecast_result_in_forecast_result_adjust_line(self, created_date, **kwargs):
+    def update_forecast_result_in_forecast_result_adjust_line(self, created_date, pub_time, **kwargs):
         """ Function update the forecast result that have the created date is ``create_date``
         to the forecast_result_adjust_line table. we will push this task to queue job to do this
         automatically
 
-        :param created_date:
-        :type created_date: str
+        :param str created_date:
+        :param str pub_time:
         :param kwargs:
         :return:
         """
         forecast_level = kwargs.get('forecast_level')
         if forecast_level:
             forecast_result_adjust_line_obj = self.env['forecast.result.adjust.line'].sudo()
-            forecast_result_adjust_line_obj.with_delay(max_retries=12)\
-                .update_forecast_adjust_line_table(
-                    created_date,
+
+            from odoo.tools import config
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
+
+            if allow_trigger_queue_job:
+                forecast_result_adjust_line_obj \
+                    .with_delay(max_retries=12, eta=10) \
+                    .update_forecast_adjust_line_table(
+                    created_date, pub_time,
                     **{
                         'forecast_level': forecast_level
                     }
-               )
+                )
+            else:
+                forecast_result_adjust_line_obj \
+                    .update_forecast_adjust_line_table(
+                    created_date, pub_time,
+                    **{
+                        'forecast_level': forecast_level
+                    }
+                )
+
         else:
             UserError('Miss the forecast_level for current company')
 
@@ -266,21 +288,18 @@ class ForecastResult(models.Model):
         try:
             sql_query = """
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_idx_forecast_result
-                ON forecast_result (product_id, pub_time, start_date)
+                ON forecast_result (product_id, pub_time, start_date, period_type)
                 WHERE company_id is NULL AND warehouse_id is NULL AND lot_stock_id is NULL;
 
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_company_idx_forecast_result
-                ON forecast_result (product_id, company_id, pub_time, start_date)
+                ON forecast_result (product_id, company_id, pub_time, start_date, period_type)
                 WHERE warehouse_id is NULL AND lot_stock_id is NULL;
 
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_company_warehouse_idx_forecast_result
-                ON forecast_result (product_id, company_id, warehouse_id, pub_time, start_date);
+                ON forecast_result (product_id, company_id, warehouse_id, pub_time, start_date, period_type);
 
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_product_company_warehouse_lot_stock_idx_forecast_result
-                ON forecast_result (product_id, company_id, warehouse_id, lot_stock_id, pub_time, start_date);
-
-                CREATE UNIQUE INDEX IF NOT EXISTS forecast_result_product_id_company_id_warehouse_id
-                ON forecast_result (product_id, company_id, warehouse_id, lot_stock_id, pub_time, start_date);                
+                ON forecast_result (product_id, company_id, warehouse_id, lot_stock_id, pub_time, start_date, period_type);                
             """
             t1 = time()
             self.env.cr.execute(sql_query)

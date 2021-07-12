@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_reordering_rules_with_forecast_tree" model="ir.ui.view">
+        <field name="name">reordering.rules.with.forecast.tree</field>
+        <field name="model">reordering.rules.with.forecast</field>
+        <field name="arch" type="xml">
+            <tree decoration-danger="forecasting_qty == '-1'" string="Reordering Rules"
+                  default_order="forecasting_qty desc"
+                  editable="bottom" create="false">
+                <field name="product_id" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="name" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="warehouse_id"/>
+                <field name="location_id" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="forecasting_qty" attrs="{'readonly':[('id','>', 0)], 'invisible':[('forecasting_qty', '=', '-1')]}"/>
+                <field name="qty_available" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="lead_days" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="total_demand" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="total_supply" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="safety_stock" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="product_min_qty" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="product_max_qty" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="new_safety_stock" readonly="0" groups="stock.group_stock_manager"/>
+                <field name="new_min_qty" readonly="0" groups="stock.group_stock_manager"/>
+                <field name="new_max_qty" readonly="0" groups="stock.group_stock_manager"/>
+                <field name="new_safety_stock_forecast" invisible="1"/>
+                <field name="new_min_forecast" invisible="1"/>
+                <field name="new_max_forecast" invisible="1"/>
+                <field name="demand_value" invisible="1"/>
+                <field name="warehouse_id" invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_reordering_rules_with_forecast_form" model="ir.ui.view">
+        <field name="name">reordering.rules.with.forecast.form</field>
+        <field name="model">reordering.rules.with.forecast</field>
+        <field name="arch" type="xml">
+            <form string="Reordering Rules Form">
+                <group>
+                    <field name="product_id" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="name" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="category_id"/>
+                    <field name="location_id" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="forecasting_qty" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="qty_available" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="lead_days" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="total_demand" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="total_supply" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="product_min_qty" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="product_max_qty" attrs="{'readonly':[('id','>', 0)]}"/>
+                    <field name="new_min_qty" groups="stock.group_stock_manager"/>
+                    <field name="new_max_qty" groups="stock.group_stock_manager"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_reordering_rules_with_forecast_filter" model="ir.ui.view">
+        <field name="name">reordering.rules.with.forecast.select</field>
+        <field name="model">reordering.rules.with.forecast</field>
+        <field name="arch" type="xml">
+            <search string="Search Reorder Rules">
+                <field name="product_id" attrs="{'readonly':[('id','>', 0)]}"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="location_id" groups="stock.group_stock_multi_locations"/>
+                <field name="forecasting_qty"/>
+                <field name="qty_available"/>
+                <field name="lead_days"/>
+                <field name="total_demand"/>
+                <field name="total_supply"/>
+                <field name="product_min_qty"/>
+                <field name="product_max_qty"/>
+                <field name="new_min_qty"/>
+                <field name="new_max_qty"/>
+
+                <field name="demand_value" invisible="1"/>
+
+                <filter name="product_lead_filter_5" string="Product Lead Time less than 5"
+                        domain="[('','&lt;',5)]"/>
+                <filter name="product_lead_filter_5_10" string="Product Lead Time between 5-10"
+                        domain="[('lead_days','&gt;=',5),('lead_days','&lt;',10)]"/>
+                <filter name="product_lead_filter_10_15" string="Product Lead Time between 10-15"
+                        domain="[('lead_days','&gt;=',10),('lead_days','&lt;',15)]"/>
+                <filter name="product_lead_filter_15_20" string="Product Lead Time between 15-20"
+                        domain="[('lead_days','&gt;=',15),('lead_days','&lt;',20)]"/>
+                <filter name="product_lead_filter_20_25" string="Product Lead Time between 20-25"
+                        domain="[('lead_days','&gt;=',20),('lead_days','&lt;',25)]"/>
+                <filter name="product_lead_filter_25_30" string="Product Lead Time between 25-30"
+                        domain="[('lead_days','&gt;=',25),('lead_days','&lt;',30)]"/>
+                <filter name="product_lead_filter_30" string="Product Lead Time more than 30"
+                        domain="[('lead_days','&gt;=',30)]"/>
+                <separator/>
+
+                <filter name="total_demand_value" string="Total Demand Value Equal Zero"
+                        domain="[('total_demand', '=', 0)]"/>
+                <separator/>
+
+                <filter name="existing_reordering_rule_filter" string="Existing Reordering rule"
+                        domain="[('orderpoint_id', '!=', None)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_location"
+                            string="Location"
+                            domain="[]"
+                            context="{'group_by':'location_id'}"/>
+                    <filter name="group_by_category"
+                            string="Category"
+                            domain="[]"
+                            context="{'group_by':'category_id'}"/>
+                    <filter name="group_by_lead_time"
+                            string="Lead Time"
+                            domain="[]"
+                            context="{'group_by': 'lead_days'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!--ACTIONS-->
+    <record model="ir.actions.server" id="action_reset_reordering_rules_action_server">
+        <field name="name">Reset new quantity</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="reordering_rules_with_forecast.model_reordering_rules_with_forecast"/>
+        <field name="state">code</field>
+        <field name="binding_model_id" ref="reordering_rules_with_forecast.model_reordering_rules_with_forecast"/>
+        <field name="code">
+            action = records.reset_reordering_rule(records)
+        </field>
+    </record>
+
+    <record model="ir.actions.server" id="action_apply_reordering_rules_action_server">
+        <field name="name">Apply</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="reordering_rules_with_forecast.model_reordering_rules_with_forecast"/>
+        <field name="state">code</field>
+        <field name="binding_model_id" ref="reordering_rules_with_forecast.model_reordering_rules_with_forecast"/>
+        <field name="code">action = records.apply_reordering_rules(records)
+        </field>
+    </record>
+
+    <record id="action_reordering_rules_with_forecast_list" model="ir.actions.act_window">
+        <field name="name">Reordering Rules with Forecasts</field>
+        <field name="res_model">reordering.rules.with.forecast</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_reordering_rules_with_forecast_filter"/>
+        <field name="target">current</field>
+    </record>
+
+    <!--MENUS-->
+    <menuitem id="reordering_rules_with_forecasts_menu"
+              name="Reordering Rules with Forecasts"
+              action="reordering_rules_with_forecast.action_reordering_rules_with_forecast_list"
+              parent="inventory_optimal_operation.menu_optimal_operations"
+              sequence="134"/>
+</odoo>

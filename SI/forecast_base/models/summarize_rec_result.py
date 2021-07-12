@@ -9,6 +9,8 @@ from odoo.addons import decimal_precision as dp
 from odoo.addons.si_core.utils.database_utils import get_db_cur_time, append_log_access_fields_to_data
 from odoo.addons.si_core.utils.request_utils import get_key_value_in_dict
 
+from ..utils.config_utils import ALLOW_TRIGGER_QUEUE_JOB
+
 from time import time
 from psycopg2 import IntegrityError
 
@@ -52,8 +54,15 @@ class SummarizeRecResult(models.Model):
         return required_fields_from_forecast_level + required_fields_of_models
 
     def transform_json_data_request(self, list_data, **kwargs):
+        """
+
+        :param list_data:
+        :param kwargs:
+        :return:
+        """
+        cur_time = get_db_cur_time(self.env.cr)
         for datum in list_data:
-            datum = append_log_access_fields_to_data(self, datum)
+            datum = append_log_access_fields_to_data(self, datum, current_time=cur_time)
 
         return list_data
 
@@ -84,9 +93,9 @@ class SummarizeRecResult(models.Model):
 
             sql_params = [get_key_value_in_dict(item, inserted_fields) for item in vals]
             self.env.cr.executemany(sql_query, sql_params)
-            _logger.info("data received %s .", vals)
-            _logger.info("SQL %s.", self.env.cr.mogrify(sql_query, sql_params[0]).decode('utf-8'))
-            _logger.info("Insert/update %s rows into the model.", len(vals))
+            _logger.debug("data received %s...", vals[:2])
+            _logger.debug("SQL %s.", self.env.cr.mogrify(sql_query, sql_params[0]).decode('utf-8'))
+            _logger.debug("Insert/update %s rows into the model.", len(vals))
 
         except IntegrityError:
             logging.exception("Duplicate key in the table %s: %s", converted_table_name, vals, exc_info=True)
@@ -96,20 +105,41 @@ class SummarizeRecResult(models.Model):
             raise
 
     def trigger_next_actions(self, created_date, **kwargs):
-        forecast_level = kwargs.get('forecast_level')
-        self.update_summarize_values_in_summarize_data_line(created_date=created_date,
-                                                            **{'forecast_level': forecast_level})
+        """
 
-    def update_summarize_values_in_summarize_data_line(self, created_date, **kwargs):
-        forecast_level = kwargs.get('forecast_level')
-        summarize_data_line_obj = self.env['summarize.data.line'].sudo()
-        summarize_data_line_obj.with_delay(max_retries=12)\
-            .update_summarize_data(
-                created_date=created_date,
-                **{
-                    'forecast_level': forecast_level
-                }
-           )
+        :param created_date:
+        :param kwargs:
+        :return:
+        """
+        company_id = kwargs.get('company_id')
+        self.update_summarize_values_in_summarize_data_line(created_date=created_date, company_id=company_id)
+
+    def update_summarize_values_in_summarize_data_line(self, created_date, company_id):
+        """
+
+        :param created_date:
+        :param int company_id:
+        :return:
+        """
+        try:
+            summarize_data_line_obj = self.env['summarize.data.line'].sudo()
+
+            from odoo.tools import config
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
+
+            if allow_trigger_queue_job:
+                summarize_data_line_obj.with_delay(max_retries=12) \
+                    .update_summarize_data(
+                    created_date=created_date,
+                    company_id=company_id
+                )
+            else:
+                summarize_data_line_obj \
+                    .update_summarize_data(created_date=created_date, company_id=company_id)
+        except Exception as e:
+            _logger.exception(e)
+            raise e
 
     ###############################
     # INITIAL FUNCTIONS
@@ -119,7 +149,7 @@ class SummarizeRecResult(models.Model):
         try:
             sql_query = """
                 CREATE UNIQUE INDEX IF NOT EXISTS unique_pid_cid_wid_summarize_rec_result_idx
-                ON summarize_rec_result (product_id, company_id, warehouse_id, start_date, pub_time, period_type);               
+                ON summarize_rec_result (product_id, company_id, warehouse_id, start_date, period_type, pub_time);               
             """
             t1 = time()
             self.env.cr.execute(sql_query)

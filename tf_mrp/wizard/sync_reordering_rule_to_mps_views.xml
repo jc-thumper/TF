@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_run_sync_rr_mps_wizard" model="ir.ui.view">
+        <field name="name">Run Sync Data From RR to MPS</field>
+        <field name="model">sync.rr.mps</field>
+        <field name="arch" type="xml">
+            <form string="Parameters">
+                <p>
+                All setting from reordering rules with of product will be synchronize to MPS if product exist on MPS
+                </p>
+                <footer>
+                    <button name="run_sync" string="Run Synchronize" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_run_sync" model="ir.actions.act_window">
+        <field name="name">Synchronize from Reordering Rules to MPS</field>
+        <field name="res_model">sync.rr.mps</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem action="action_run_sync" id="menu_run_sync" parent="mrp.menu_mrp_manufacturing" sequence="100"/>
+</odoo>

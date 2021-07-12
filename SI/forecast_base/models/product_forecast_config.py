@@ -69,8 +69,8 @@ class ProductForecastConfig(models.Model):
 
     def get_selected_field(self):
         return ['id', 'product_id', 'company_id', 'warehouse_id', 'period_type_custom',
-                           'no_periods_custom', 'frequency_custom', 'auto_update', 'create_date', 'next_call',
-                           'write_date']
+                'no_periods_custom', 'frequency_custom', 'auto_update', 'create_date', 'next_call',
+                'write_date']
 
     def get_prod_fore_conf_records(self, domain, order_by, limit):
         """
@@ -91,7 +91,7 @@ class ProductForecastConfig(models.Model):
     ###############################
     __auto_update_config = True
     _rec_name = 'warehouse_id'
-    product_clsf_info_id = fields.Many2one('product.classification.info', required=True)
+    product_clsf_info_id = fields.Many2one('product.classification.info')
 
     forecast_group_id = fields.Many2one('forecast.group',
                                         related='product_clsf_info_id.forecast_group_id',
@@ -177,7 +177,7 @@ class ProductForecastConfig(models.Model):
     @api.onchange('frequency', 'period_type')
     def _onchange_frequency_and_period_type(self):
         self.ensure_one()
-        self._check_next_call_value()
+        # self._check_next_call_value()
 
     @api.onchange('next_call')
     def _onchange_next_call(self):
@@ -292,6 +292,324 @@ class ProductForecastConfig(models.Model):
         operator = 'in' if (operator == '=' and value) or (operator == '!=' and not value) else 'not in'
         return [('id', operator, configs_have_forecasted.ids)]
 
+    ###############################
+    # GENERAL FUNCTIONS
+    ###############################
+    @api.model
+    def create(self, vals):
+        self._check_frequency_value(vals)
+        # self._check_next_call_value(vals)
+        product_clsf_info_id = vals.get('product_clsf_info_id')
+        if product_clsf_info_id:
+            prod_clsf_info = self.env['product.classification.info'] \
+                .search([('id', '=', product_clsf_info_id)], limit=1)
+            fore_group = prod_clsf_info.forecast_group_id
+
+            vals.setdefault('frequency_custom', fore_group.frequency)
+            vals.setdefault('period_type_custom', fore_group.period_type)
+            vals.setdefault('no_periods_custom', fore_group.no_periods)
+
+        res = super(ProductForecastConfig, self).create(vals)
+        return res
+
+    def write(self, vals):
+        self._check_frequency_value(vals)
+        # self._check_next_call_value(vals)
+        res = super(ProductForecastConfig, self).write(vals)
+        return res
+
+    def check_status_of_product_forecast_config(self, data_info):
+        """
+        Check product forecast config is updated in the Odoo database or not
+        :param data_info: info to check
+        :type data_info: list[dict]
+        [
+            {
+                "company_id": 1,
+                "status": True,
+                "product_clsf_info_ids": []
+            },
+            {
+                "company_id": 2,
+                "status": True,
+                "product_clsf_info_ids": []
+            }
+        ]
+        :return: a list of dict
+        [
+            {
+                "company_id": 1,
+                "status": True
+            },
+            {
+                "company_id": 2,
+                "status": True
+            }
+        ]
+        """
+        result = []
+        # the status of the final step is always True, the result of this step will be sent to FE server
+        is_continue = True
+        try:
+            for item in data_info:
+                company_id = item.get('company_id')
+                company_status = item.get('status')
+                product_clsf_info_ids = item.get('product_clsf_info_ids')
+
+                if company_status is False:
+                    _logger.info("Odoo client is still processing product classification info for company_id = %d."
+                                 % company_id)
+                    result.append({
+                        "company_id": company_id,
+                        "status": False
+                    })
+                else:
+
+                    sql_query = """
+                        SELECT count(*) as total_row
+                        FROM product_forecast_config
+                        WHERE product_clsf_info_id IN %s AND active = True;
+                    """
+                    sql_param = [tuple(product_clsf_info_ids)]
+                    self.env.cr.execute(sql_query, sql_param)
+
+                    records = self.env.cr.dictfetchall()
+                    actual_n_records = records[0].get('total_row', 0) if records else 0
+                    result.append({
+                        "company_id": company_id,
+                        "status": actual_n_records == len(product_clsf_info_ids)
+                    })
+
+        except Exception:
+            _logger.exception("An exception when check status of update classification info process.", exc_info=True)
+            raise
+        return result, is_continue
+
+    def get_product_forecast_config(self, product_domain):
+        """
+
+        :param list[tuple] product_domain:
+        :return ProductForecastConfig:
+        """
+        config_info = self.env['product.forecast.config']
+        try:
+            config_info = self.with_context(active_test=False).sudo().search(product_domain, limit=1)
+        except (Exception, ):
+            _logger.warning('Having some errors when get product forecast configuration', exc_info=True)
+        return config_info
+
+    def get_product_forecast_config_dict(self, company_id):
+        """
+
+        :param company_id:
+        :return dict:
+        Ex: {
+                (product_id, company_id, warehouse_id): config
+            }
+        """
+        product_forecast_config_dict = {}
+        company = self.env['res.company'].search([('id', '=', company_id)])
+        if company:
+            product_forecast_configs = self.search([('company_id', '=', company_id)])
+            for config in product_forecast_configs:
+                config_key = (config.product_id.id, config.company_id.id, config.warehouse_id.id)
+                product_forecast_config_dict[config_key] = config
+
+        return product_forecast_config_dict
+
+    ###############################
+    # PRIVATE FUNCTIONS
+    ###############################
+    def _get_domain_product_forecast_config(self, prod_info):
+        """
+
+        :param dict prod_info:
+        Ex: {
+                'product_id': 1,
+                'company_id': 1,
+                'warehouse_id': 1,
+            }
+        :return:
+        """
+        domain = []
+        try:
+            cid = prod_info['company_id']
+            company_id = self.env['res.company'].search([('id', '=', cid)])
+            if company_id:
+                forecast_level_id = company_id.forecast_level_id
+
+                # keys will be ['product_id', 'company_id', 'warehouse_id'] in the warehouse level
+                keys = forecast_level_id.get_list_of_extend_keys()
+                for key in keys:
+                    domain.append((key, '=', prod_info.get(key)))
+        except (Exception,):
+            _logger.warning('Having some errors when get product forecast configuration domain',
+                            exc_info=True)
+        return domain
+
+    def _gen_product_forecast_config_data(self, prod_info, fore_group, product_clsf_info_id):
+        """ Function generate Product forecast configuration data used to update to table product_forecast_config
+
+        :param dict prod_info:
+        Ex: {
+                'product_id': 1234,
+                'company_id': 1,
+                'warehouse_id': 2
+            }
+        :param ForecastGroup fore_group:
+        :param ProductClassificationInfo product_clsf_info_id:
+        :return:
+        """
+        config_data = {}
+        try:
+            cid = prod_info['company_id']
+            company_id = self.env['res.company'].search([('id', '=', cid)])
+            if company_id:
+                # initial product forecast config data
+                default_forecasting_type = self.env['forecast.item'].get_forecasting_type(prod_info)
+                period_type = default_forecasting_type or fore_group.period_type
+                frequency = default_forecasting_type or fore_group.frequency
+                no_periods = PeriodType.PERIODS_TO_FORECAST.get(default_forecasting_type, fore_group.no_periods)
+
+                config_data = {
+                    'product_id': prod_info.get('product_id'),
+                    'company_id': prod_info.get('company_id'),
+                    # 'warehouse_id': prod_info.get('warehouse_id'),
+                    'active': True,
+                    'auto_update': False if default_forecasting_type else True,
+                    'product_clsf_info_id': product_clsf_info_id.id,
+                    'period_type_custom': period_type,
+                    'period_type_origin': period_type,
+                    'no_periods_custom': no_periods,
+                    'frequency_custom': frequency
+                }
+
+                # initial key data used to update to product forecast config
+                forecast_level_id = company_id.forecast_level_id
+                pfc_keys = forecast_level_id.get_list_of_extend_keys()
+                key_config = dict([(k, prod_info.get(k)) for k in pfc_keys])
+
+                # update to config data
+                config_data.update(key_config)
+        except (Exception,):
+            _logger.warning('Having some errors when get product forecast configuration domain',
+                            exc_info=True)
+        return config_data
+
+    def _check_frequency_value(self, vals=None):
+        vals = vals or {}
+        for config in self:
+            period_type = vals.get('period_type', config.period_type)
+            frequency = vals.get('frequency', config.frequency)
+            max_idx = PeriodType.FORECASTING_FREQUENCY_RANK.get(period_type, 1)
+            current_idx = PeriodType.FORECASTING_FREQUENCY_RANK.get(frequency)
+            if max_idx and current_idx and current_idx > max_idx:
+                allow_frequency = list(map(lambda l: l[0],
+                                           filter(lambda l: l[1] <= max_idx,
+                                                  list(PeriodType.FORECASTING_FREQUENCY_RANK.items()))))
+                raise ValidationError(_('The value for the field Forecasting Frequency should be %s.',
+                                        ', '.join(allow_frequency)))
+
+    def _check_next_call_value(self, vals=None):
+        """ Function check some constrains value of the next_call, if it exist in vals
+
+        :param dict vals: create/write data of product_forecast_config table
+        :return:
+        """
+        vals = vals or {}
+        next_call = vals.get('next_call')
+        if next_call:
+            for config in self:
+                product = config.product_id
+                warehouse = config.warehouse_id
+
+                product_name = product.name_get()[0][1] if product else ''
+                warehouse_name = warehouse.name_get()[0][1] if warehouse else ''
+
+                forecast_adjust_id = config.forecast_adjust_id
+                if forecast_adjust_id:
+                    last_receive_result = forecast_adjust_id.last_receive_result
+                    if last_receive_result:
+                        gap_dates = (datetime.strptime(next_call, DEFAULT_SERVER_DATE_FORMAT).date()
+                                     - last_receive_result).days
+                        period_size = PeriodType.PERIOD_SIZE.get(config.period_type, 7)
+                        min_available_gap = 0.2 * period_size
+                        max_available_gap = 2 * period_size
+                        print(min_available_gap, max_available_gap, gap_dates, next_call, last_receive_result)
+                        if gap_dates < min_available_gap:
+                            available_date = last_receive_result + timedelta(days=math.ceil(min_available_gap))
+                            raise ValidationError(_('The Next Execution Date of product %s '
+                                                    'in warehouse "%s" current is next %s day(s), should be after %s.' %
+                                                    (product_name, warehouse_name, gap_dates,
+                                                     available_date.strftime(DEFAULT_DATE_FORMAT),)
+                                                    ))
+
+                        if gap_dates > max_available_gap:
+                            available_date = last_receive_result + timedelta(days=math.ceil(max_available_gap))
+                            raise ValidationError(_('The Next Execution Date of product %s '
+                                                    'in warehouse "%s" current is next %s day(s), '
+                                                    'it should be before %s.' %
+                                                    (product_name, warehouse_name, gap_dates,
+                                                     available_date.strftime(DEFAULT_DATE_FORMAT), )
+                                                    ))
+
+    def _is_auto_update_config(self):
+        auto_update = True
+        if not self.__auto_update_config:
+            self.__auto_update_config = True
+            auto_update = False
+        return auto_update
+
+    def _set_auto_update_config(self, auto_update):
+        self.__auto_update_config = auto_update
+
+    def _update_prod_fore_config_to_fe(self):
+        auth_content = self.sudo().env['forecasting.config.settings'].get_auth_content()
+        if auth_content:
+            request_info = auth_content
+            config_info = []
+            for config in self:
+                config_info.append({
+                    'product_id': config.product_id.id,
+                    'company_id': config.company_id.id,
+                    'warehouse_id': config.warehouse_id.id,
+                    'period_type': config.period_type,
+                    'no_periods': config.no_periods,
+                    'frequency': config.frequency,
+                    'auto_update': config.auto_update,
+                    'created_at': config.create_date,
+                    'updated_at': config.write_date
+                })
+            if len(config_info):
+                request_info.update({'data': config_info})
+                try:
+                    self._post_prod_fore_config(request_info)
+                except Exception as e:
+                    _logger.exception('Exception in Update product forecast config to FE', exc_info=True)
+                    raise e
+
+    @classmethod
+    def _post_prod_fore_config(cls, post_body):
+        return cls._post_data_to_fe(post_body, ServerAPICode.UPDATE_PROD_CONF)
+
+    @classmethod
+    def _post_next_time_run(cls, post_body):
+        return cls._post_data_to_fe(post_body, ServerAPICode.UPDATE_NEXT_TIME_RUN)
+
+    @staticmethod
+    def _post_data_to_fe(post_body, api_code):
+        direct_order_url = ServerAPIv1.get_api_url(api_code)
+
+        _logger.info("Call API to update product forecasting configuration to FE service")
+        headers = {
+            'Content-type': 'application/json'
+        }
+        return requests.post(direct_order_url, data=json.dumps(post_body, cls=DateTimeEncoder),
+                             headers=headers, timeout=60)
+
+    ###############################
+    # JOB FUNCTIONS
+    ###############################
     @job(retry_pattern={1: 1 * 60,
                         3: 5 * 60,
                         6: 10 * 60,
@@ -371,10 +689,10 @@ class ProductForecastConfig(models.Model):
         :return:
         """
         try:
-            fore_adjust_ids = self.env['forecast.result.adjust'] \
+            fore_adjusts = self.env['forecast.result.adjust'] \
                 .search([('id', 'in', fore_result_adjust_ids)])
 
-            for fore_adjust in fore_adjust_ids:
+            for fore_adjust in fore_adjusts:
                 # get the frequency to compute Next Execution Date
                 config_id = self.search([('product_id', '=', fore_adjust.product_id.id),
                                          ('company_id', '=', fore_adjust.company_id.id),
@@ -384,6 +702,7 @@ class ProductForecastConfig(models.Model):
                     period_type = config_id.forecast_group_id.period_type \
                         if config_id.auto_update \
                         else config_id.period_type_custom
+                    print(next_call, period_type, config_id.get_frequency(), execute_date)
                     config_id.write({
                         'next_call': datetime_utils.convert_from_datetime_to_str_date(next_call),
                         'forecast_adjust_id': fore_adjust.id,
@@ -393,285 +712,3 @@ class ProductForecastConfig(models.Model):
         except Exception as e:
             _logger.exception("Function update_execute_date have some exception: %s" % e)
             raise RetryableJobError('Must be retried later')
-
-    ###############################
-    # GENERAL FUNCTIONS
-    ###############################
-    @api.model
-    def create(self, vals):
-        self._check_frequency_value(vals)
-        self._check_next_call_value(vals)
-        product_clsf_info_id = vals.get('product_clsf_info_id')
-        if product_clsf_info_id:
-            prod_clsf_info = self.env['product.classification.info'] \
-                .search([('id', '=', product_clsf_info_id)], limit=1)
-            fore_group = prod_clsf_info.forecast_group_id
-
-            vals.setdefault('frequency_custom', fore_group.frequency)
-            vals.setdefault('period_type_custom', fore_group.period_type)
-            vals.setdefault('no_periods_custom', fore_group.no_periods)
-
-        res = super(ProductForecastConfig, self).create(vals)
-        return res
-
-    def write(self, vals):
-        self._check_frequency_value(vals)
-        self._check_next_call_value(vals)
-        res = super(ProductForecastConfig, self).write(vals)
-        return res
-
-    def check_status_of_product_forecast_config(self, data_info):
-        """
-        Check product forecast config is updated in the Odoo database or not
-        :param data_info: info to check
-        :type data_info: list[dict]
-        [
-            {
-                "company_id": 1,
-                "status": True,
-                "product_clsf_info_ids": []
-            },
-            {
-                "company_id": 2,
-                "status": True,
-                "product_clsf_info_ids": []
-            }
-        ]
-        :return: a list of dict
-        [
-            {
-                "company_id": 1,
-                "status": True
-            },
-            {
-                "company_id": 2,
-                "status": True
-            }
-        ]
-        """
-        result = []
-        # the status of the final step is always True, the result of this step will be sent to FE server
-        is_continue = True
-        try:
-            for item in data_info:
-                company_id = item.get('company_id')
-                company_status = item.get('status')
-                product_clsf_info_ids = item.get('product_clsf_info_ids')
-
-                if company_status is False:
-                    _logger.info("Odoo client is still processing product classification info for company_id = %d."
-                                 % company_id)
-                    result.append({
-                        "company_id": company_id,
-                        "status": False
-                    })
-                else:
-
-                    sql_query = """
-                        SELECT count(*) as total_row
-                        FROM product_forecast_config
-                        WHERE product_clsf_info_id IN %s AND active = True;
-                    """
-                    sql_param = [tuple(product_clsf_info_ids)]
-                    self.env.cr.execute(sql_query, sql_param)
-
-                    records = self.env.cr.dictfetchall()
-                    actual_n_records = records[0].get('total_row', 0) if records else 0
-                    result.append({
-                        "company_id": company_id,
-                        "status": actual_n_records == len(product_clsf_info_ids)
-                    })
-
-        except Exception:
-            _logger.exception("An exception when check status of update classification info process.", exc_info=True)
-            raise
-        return result, is_continue
-
-    def get_product_forecast_config(self, product_domain):
-        config_info = None
-        try:
-            config_info = self.with_context(active_test=False).sudo().search(product_domain, limit=1)
-        except (Exception, ):
-            _logger.warning('Having some errors when get product forecast configuration', exc_info=True)
-        return config_info
-
-    ###############################
-    # PRIVATE FUNCTIONS
-    ###############################
-    def _get_domain_product_forecast_config(self, prod_info):
-        """
-
-        :param prod_info:
-        :return:
-        """
-        domain = []
-        try:
-            cid = prod_info['company_id']
-            company_id = self.env['res.company'].search([('id', '=', cid)])
-            if company_id:
-                forecast_level_id = company_id.forecast_level_id
-                keys = forecast_level_id.get_list_of_extend_keys()
-                for key in keys:
-                    domain.append((key, '=', prod_info.get(key)))
-        except (Exception,):
-            _logger.warning('Having some errors when get product forecast configuration domain',
-                            exc_info=True)
-        return domain
-
-    def _gen_product_forecast_config_data(self, prod_info, fore_group, product_clsf_info_id):
-        """ Function generate Product forecast configuration data used to update to table product_forecast_config
-
-        :param dict prod_info:
-        Ex: {
-                'product_id': 1234,
-                'company_id': 1,
-                'warehouse_id': 2
-            }
-        :param ForecastGroup fore_group:
-        :param ProductClassificationInfo product_clsf_info_id:
-        :return:
-        """
-        config_data = {}
-        try:
-            cid = prod_info['company_id']
-            company_id = self.env['res.company'].search([('id', '=', cid)])
-            if company_id:
-                # initial product forecast config data
-                default_forecasting_type = self.env['forecast.item'].get_forecasting_type(prod_info)
-                period_type = default_forecasting_type or fore_group.period_type
-                frequency = default_forecasting_type or fore_group.frequency
-                no_periods = PeriodType.PERIODS_TO_FORECAST.get(default_forecasting_type, fore_group.no_periods)
-
-                config_data = {
-                    'product_id': prod_info.get('product_id'),
-                    'company_id': prod_info.get('company_id'),
-                    # 'warehouse_id': prod_info.get('warehouse_id'),
-                    'active': True,
-                    'auto_update': False if default_forecasting_type else True,
-                    'product_clsf_info_id': product_clsf_info_id.id,
-                    'period_type_custom': period_type,
-                    'period_type_origin': period_type,
-                    'no_periods_custom': no_periods,
-                    'frequency_custom': frequency
-                }
-
-                # initial key data used to update to product forecast config
-                forecast_level_id = company_id.forecast_level_id
-                pfc_keys = forecast_level_id.get_list_of_extend_keys()
-                key_config = dict([(k, prod_info.get(k)) for k in pfc_keys])
-
-                # update to config data
-                config_data.update(key_config)
-        except (Exception,):
-            _logger.warning('Having some errors when get product forecast configuration domain',
-                            exc_info=True)
-        return config_data
-
-    def _check_frequency_value(self, vals=None):
-        vals = vals or {}
-        for config in self:
-            period_type = vals.get('period_type', config.period_type)
-            frequency = vals.get('frequency', config.frequency)
-            max_idx = PeriodType.FORECASTING_FREQUENCY_RANK.get(period_type, 1)
-            current_idx = PeriodType.FORECASTING_FREQUENCY_RANK.get(frequency)
-            if max_idx and current_idx and current_idx > max_idx:
-                allow_frequency = list(map(lambda l: l[0],
-                                           filter(lambda l: l[1] <= max_idx,
-                                                  list(PeriodType.FORECASTING_FREQUENCY_RANK.items()))))
-                raise ValidationError(_('The value for the field Forecasting Frequency should be %s.',
-                                        ', '.join(allow_frequency)))
-
-    def _check_next_call_value(self, vals=None):
-        """ Function check some constrains value of the next_call, if it exist in vals
-
-        :param vals: create/write data of product_forecast_config table
-        :type vals: dict
-        :return:
-        """
-        vals = vals or {}
-        next_call = vals.get('next_call')
-        if next_call:
-            for config in self:
-                product_id = config.product_id
-                warehouse_id = config.warehouse_id
-
-                product_name = product_id.name_get()[0][1] if product_id else ''
-                warehouse_name = warehouse_id.name_get()[0][1] if warehouse_id else ''
-                forecast_adjust_id = config.forecast_adjust_id
-                if forecast_adjust_id:
-                    last_receive_result = forecast_adjust_id.last_receive_result
-                    if last_receive_result:
-                        gap_dates = (datetime.strptime(next_call, DEFAULT_SERVER_DATE_FORMAT).date()
-                                     - last_receive_result).days
-                        period_size = PeriodType.PERIOD_SIZE.get(config.period_type, 7)
-                        min_available_gap = 0.2 * period_size
-                        max_available_gap = 2 * period_size
-                        if gap_dates < min_available_gap:
-                            available_date = last_receive_result + timedelta(days=math.ceil(min_available_gap))
-                            raise ValidationError(_('The Next Execution Date of product %s '
-                                                  'in warehouse %s current is next %s day(s), should be after %s.',
-                                                   (product_name,
-                                                    warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT),)
-                                                ))
-
-                        if gap_dates > max_available_gap:
-                            available_date = last_receive_result + timedelta(days=math.ceil(max_available_gap))
-                            raise ValidationError(_('The Next Execution Date of product %s '
-                                                  'in warehouse "%s" current is next %s day(s), it should be before %s.',
-                                                   (product_name,
-                                                     warehouse_name, gap_dates, available_date.strftime(DEFAULT_DATE_FORMAT), )
-                                                ))
-
-    def _is_auto_update_config(self):
-        auto_update = True
-        if not self.__auto_update_config:
-            self.__auto_update_config = True
-            auto_update = False
-        return auto_update
-
-    def _set_auto_update_config(self, auto_update):
-        self.__auto_update_config = auto_update
-
-    def _update_prod_fore_config_to_fe(self):
-        auth_content = self.sudo().env['forecasting.config.settings'].get_auth_content()
-        if auth_content:
-            request_info = auth_content
-            config_info = []
-            for config in self:
-                config_info.append({
-                    'product_id': config.product_id.id,
-                    'company_id': config.company_id.id,
-                    'warehouse_id': config.warehouse_id.id,
-                    'period_type': config.period_type,
-                    'no_periods': config.no_periods,
-                    'frequency': config.frequency,
-                    'auto_update': config.auto_update,
-                    'created_at': config.create_date,
-                    'updated_at': config.write_date
-                })
-            if len(config_info):
-                request_info.update({'data': config_info})
-                try:
-                    self._post_prod_fore_config(request_info)
-                except Exception as e:
-                    _logger.exception('Exception in Update product forecast config to FE', exc_info=True)
-                    raise e
-
-    @classmethod
-    def _post_prod_fore_config(cls, post_body):
-        return cls._post_data_to_fe(post_body, ServerAPICode.UPDATE_PROD_CONF)
-
-    @classmethod
-    def _post_next_time_run(cls, post_body):
-        return cls._post_data_to_fe(post_body, ServerAPICode.UPDATE_NEXT_TIME_RUN)
-
-    @staticmethod
-    def _post_data_to_fe(post_body, api_code):
-        direct_order_url = ServerAPIv1.get_api_url(api_code)
-
-        _logger.info("Call API to update product forecasting configuration to FE service")
-        headers = {
-            'Content-type': 'application/json'
-        }
-        return requests.post(direct_order_url, data=json.dumps(post_body, cls=DateTimeEncoder),
-                             headers=headers, timeout=60)

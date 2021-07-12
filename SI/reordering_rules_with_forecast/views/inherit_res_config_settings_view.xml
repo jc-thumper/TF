@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="inherit_res_config_settings_view_form_reordering_rules_with_forecast" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.reordering.rules.with.forecast</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="stock.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('settings')]//div[@data-string='Inventory']//div[hasclass('o_settings_container')][1]" position="after">
+                    <div class="rrwf_block" groups="stock.group_stock_manager">
+                        <h2>Reordering Rules with Forecast</h2>
+                        <div class="row mt16 o_settings_container rrwf_container">
+                            <div class="col-lg-6 col-12 o_setting_box" id="days_of_buffer"
+                                 title="Automatically update the Reordering Rules each time update the recommendation.">
+                                <div class="o_setting_left_pane">
+                                    <field name="auto_apply_rule"/>
+                                </div>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Automatically Apply Reordering Rules</span>
+                                    <span class="fa fa-lg fa-building-o"
+                                          title="Values set here are company-specific."
+                                          aria-label="Values set here are company-specific."
+                                          groups="base.group_multi_company"
+                                          role="img"/>
+                                    <div class="text-muted">
+                                        The existing reordering rules will be automatically apply the recommend.
+                                    </div>
+                                    <div class="content-group" attrs="{'invisible': [('auto_apply_rule' ,'=', False)]}">
+                                        <div class="mt16">
+                                            <field name="auto_gen_rule" class="oe_inline"/>
+                                            <label for="auto_gen_rule" class="o_light_label"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="min_max_freq_box" class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Min/Max Updating Frequency</span>
+                                    <span class="fa fa-lg fa-building-o"
+                                          title="Values set here are company-specific."
+                                          aria-label="Values set here are company-specific."
+                                          groups="base.group_multi_company"
+                                          role="img"/>
+                                    <div class="text-muted">
+                                        Min/Max Updating Frequency for Reordering Rules
+                                    </div>
+                                    <div class="content-group">
+                                        <field name="min_max_update_frequency" required="1"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="service_level_box" class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Service Levels</span>
+                                    <span class="fa fa-lg fa-building-o"
+                                          title="Values set here are company-specific."
+                                          aria-label="Values set here are company-specific."
+                                          groups="base.group_multi_company"
+                                          role="img"/>
+                                    <div class="text-muted">
+                                        Service Level for Category A, B, C
+                                    </div>
+                                    <div class="row mt16">
+                                        <label for="service_level_a" class="col-md-4 o_light_label"/>
+                                        <field name="service_level_a" class="text-right" required="1"/>%%
+                                    </div>
+                                    <div class="row mt16">
+                                        <label for="service_level_b" class="col-md-4 o_light_label"/>
+                                        <field name="service_level_b" class="text-right" required="1"/>%%
+                                    </div>
+                                    <div class="row mt16">
+                                        <label for="service_level_c" class="col-md-4 o_light_label"/>
+                                        <field name="service_level_c" class="text-right" required="1"/>%%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="flat_costs_box" class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Flat costs</span>
+                                    <span class="fa fa-lg fa-building-o"
+                                          title="Values set here are company-specific."
+                                          aria-label="Values set here are company-specific."
+                                          groups="base.group_multi_company"
+                                          role="img"/>
+                                    <div class="text-muted">
+                                        Flat cost per PO (Purchase Oder), MO (Manufacturing Oder)
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="mt16">
+                                            <field name="module_forecast_preparation" class="oe_inline"/>
+                                            <label for="flat_cost_per_po" class="col-md-4 o_light_label"/>
+                                            <a attrs="{'invisible': [('module_forecast_preparation', '=', False)]}" class="oe_inline">
+                                                $<field name="flat_cost_per_po" required="1"/>
+                                            </a>
+                                        </div>
+                                        <div class="mt16">
+                                            <field name="module_forecast_preparation_with_mrp" class="oe_inline"/>
+                                            <label for="flat_cost_per_mo" class="col-md-4 o_light_label"/>
+                                            <a attrs="{'invisible': [('module_forecast_preparation_with_mrp', '=', False)]}" class="oe_inline">
+                                                $<field name="flat_cost_per_mo" required="1"/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="holding_cost_box" class="col-xs-12 col-md-6 o_setting_box">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Holding cost per inventory value</span>
+                                    <span class="fa fa-lg fa-building-o"
+                                          title="Values set here are company-specific."
+                                          aria-label="Values set here are company-specific."
+                                          groups="base.group_multi_company"
+                                          role="img"/>
+                                    <div class="text-muted">
+                                        0 - 100 %
+                                    </div>
+                                    <div class="content-group">
+                                        <div class="row mt16">
+                                            <label for="holding_cost_per_inventory_value" class="col-md-4 o_light_label"/>
+                                            <field name="holding_cost_per_inventory_value" class="text-right" required="1"/>%%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

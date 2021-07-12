@@ -37,11 +37,10 @@ class AbstractProductInfo(models.AbstractModel):
     def create_mul_rows(self, vals_list, constrain_cols=None, get_lines=False, conflict_work=None):
         """
 
-        :param conflict_work:
-        :param get_lines:
-        :param constrain_cols:
-        :param vals_list:
-        :type vals_list: list(dict)
+        :param str conflict_work:
+        :param bool get_lines:
+        :param list[str] constrain_cols:
+        :param list[dict] vals_list:
         :return:
         """
         rows = self._create_multiple_rows(self._name, vals_list,
@@ -212,6 +211,7 @@ class AbstractProductInfo(models.AbstractModel):
 
         :param dict_data: list of dict have same structure, which are used to
         create new record have been not existed before.
+        :param list[str] constrain_cols:
         :type dict_data: list(dict)
         :return: list of objects have just created
         :rtype: recordset

@@ -10,7 +10,7 @@ from odoo.addons.si_core.utils.string_utils import PeriodType
 from odoo.addons.si_core.utils import datetime_utils, database_utils
 from psycopg2.extensions import AsIs
 
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo import models, fields, api
 
@@ -301,6 +301,11 @@ class ForecastResultAdjust(models.Model):
 
     def update_adjust_related_info(self, call_from_engine=False):
         """ Function update normal fields (to separate with standard fields pid, wid, cid,...)
+        - update adjust lines
+        - update chart
+        - update the last update
+
+        called from: when update the forecast result or via the cron refresh forecast result adjust line
 
         :param call_from_engine:
         :type call_from_engine: bool
@@ -354,31 +359,15 @@ class ForecastResultAdjust(models.Model):
     ###############################
     # PRIVATE FUNCTIONS
     ###############################
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_forecast_result_base_on_lines(self, line_ids, update_time=False, call_from_engine=False):
-        try:
-            # NOTE: avoid using the method ``browse``, this function still return a record set for all record
-            # even if this record id doesn't exits in the database
-            lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])
-            self.update_forecast_result(lines, update_time, call_from_engine)
-        except Exception as e:
-            _logger.exception('function update_forecast_result_base_on_write_time have some exception: %s' % e)
-            raise RetryableJobError('Must be retried later')
-
-    def update_forecast_result(self, lines, update_time=False, call_from_engine=False):
+    def _update_forecast_result(self, lines, update_time=False, call_from_engine=False):
         """ Function update table `forecast_result_adjust` base on `lines`,
         Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
+        called from: update_forecast_result_base_on_lines
 
-        :param call_from_engine:
-        :param lines:
-        :type lines: list(forecast.result.adjust.line)
+        :param bool call_from_engine:
+        :param ForecastResultAdjustLine lines:
         :param update_time:
-        :return:
-        :rtype: recordset
+        :return ForecastResultAdjust:
         """
         fra_obj = None
         if lines:
@@ -428,8 +417,9 @@ class ForecastResultAdjust(models.Model):
 
     def _create_new_fore_res_adjust(self, keys_tuple):
         """ All the row in keys_tuple have same company
-        Function create new rows, which have been not existed before, of
+        Function create some new rows, which have been not existed before, of
         table `forecast.result.adjust`
+        called from: _update_forecast_result
 
         :param keys_tuple: list of tuples of key, which are used to
         create new record have been not existed before, having structure is:
@@ -508,61 +498,66 @@ class ForecastResultAdjust(models.Model):
             number_of_record = len(fore_result_adjust)
 
             from odoo.tools import config
-            threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                     DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+            threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                         DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+            allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                 ALLOW_TRIGGER_QUEUE_JOB)
 
-            if number_of_record < threshold_trigger_queue_job:
-                self.env['product.forecast.config'].sudo() \
-                    .update_execute_date(fore_result_adjust.ids, cur_time)
-            else:
+            if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                 self.env['product.forecast.config'].sudo() \
                     .with_delay(max_retries=12).update_execute_date(fore_result_adjust.ids, cur_time)
+            else:
+                self.env['product.forecast.config'].sudo() \
+                    .update_execute_date(fore_result_adjust.ids, cur_time)
 
         return cur_time
 
     def _gen_dict_adjust_line(self, frals):
         """
 
-        :param frals:
-        :return: tuple(dict(period_type:, {
+        :param ForecastResultAdjustLine frals:
+        :return tuple[dict, dict]:
+        Ex: {
+                period_type: {
                     'cur_first_date': cur_first_date,
                     'start_first_date': start_first_date,
                     'end_first_date': end_first_date,
-                }), dict(key_tuple, frals))
-        :rtype: tuple(dict(dict()), dict(recordset))
+                }
+            },
+            {
+                key_tuple: frals
+            }
         """
-        cur_info_dict = {}
+        period_info_dict = {}
         fral_list_dict = {}
         res_config_setting_env = self.env['res.config.settings']
+        current = datetime.now()
+        past_period = res_config_setting_env.get_past_periods()
+        future_periods = res_config_setting_env.get_future_periods()
+
         for fral in frals:
             period_type = fral.period_type
-            cur_period_info = cur_info_dict.get(period_type)
+            cur_period_info = period_info_dict.get(period_type)
 
             # init period information
             if not cur_period_info:
-                cur_first_date = datetime_utils.get_start_end_date_value(datetime.now(), period_type)[0]
-                past_period = res_config_setting_env.get_past_periods()
-                future_periods = res_config_setting_env.get_future_periods()
+                cur_first_date = datetime_utils.get_start_end_date_value(current, period_type)[0]
 
-                start_first_date = cur_first_date - datetime_utils.get_delta_time(
-                    period_type,
-                    past_period)
-                end_first_date = cur_first_date + datetime_utils.get_delta_time(
-                    period_type,
-                    future_periods - 1)
+                start_first_date = cur_first_date - datetime_utils.get_delta_time(period_type, past_period)
+                end_first_date = cur_first_date + datetime_utils.get_delta_time(period_type, future_periods - 1)
 
                 cur_period_info = {
                     'cur_first_date': cur_first_date,
                     'start_first_date': start_first_date,
                     'end_first_date': end_first_date,
                 }
-                cur_info_dict[period_type] = cur_period_info
+                period_info_dict[period_type] = cur_period_info
 
-            keys_tuple = fral._get_tuple_key() + (period_type, )
+            keys_tuple = fral.get_tuple_key() + (period_type, )
             fral_list = fral_list_dict.get(keys_tuple, self.env['forecast.result.adjust.line'])
             fral_list += fral
             fral_list_dict[keys_tuple] = fral_list
-        return cur_info_dict, fral_list_dict
+        return period_info_dict, fral_list_dict
 
     ###############################
     # CRON FUNCTIONS
@@ -588,3 +583,29 @@ class ForecastResultAdjust(models.Model):
             # Step 3: search any forecast result adjust item have been satisfied
             fras = self.search(fras_domain)
             fras.update_adjust_related_info()
+
+    ###############################
+    # JOB FUNCTIONS
+    ###############################
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_forecast_result_base_on_lines(self, line_ids, update_time=False, call_from_engine=False):
+        """ Function update table `forecast_result_adjust` base on `lines`,
+        Run when (create/adjust forecast_result_adjust_line, forecast_result_daily)
+
+        :param list[int] line_ids:
+        :param bool update_time: Update next time call
+        :param bool call_from_engine:
+        :return:
+        """
+        try:
+            # NOTE: avoid using the method ``browse``, this function still return a record set for all record
+            # even if this record id doesn't exits in the database
+            lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])
+            self._update_forecast_result(lines, update_time, call_from_engine)
+        except Exception as e:
+            _logger.exception('function update_forecast_result_base_on_lines have some exception: %s' % e)
+            raise RetryableJobError('Must be retried later')

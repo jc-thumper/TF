@@ -13,7 +13,7 @@ from odoo.addons.si_core.utils.database_utils import query, get_query_params, \
     generate_where_clause, get_db_cur_time
 from odoo.addons.si_core.utils.string_utils import get_table_name
 from odoo.addons.si_core.utils.datetime_utils import DEFAULT_DATETIME_FORMAT
-from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB
+from ..utils.config_utils import DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB, ALLOW_TRIGGER_QUEUE_JOB
 
 from time import time
 
@@ -291,18 +291,20 @@ class ProductClassificationInfo(models.Model):
                     number_of_record = len(updated_ids)
 
                     from odoo.tools import config
-                    threshold_trigger_queue_job = config.get("threshold_to_trigger_queue_job",
-                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB)
+                    threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                                 DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                    allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                         ALLOW_TRIGGER_QUEUE_JOB)
 
-                    if number_of_record < threshold_trigger_queue_job:
+                    if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                         self.env['product.forecast.config'].sudo() \
+                            .with_delay(max_retries=12) \
                             .update_comp_config_data(
                                 json_data,
                                 kwargs.get('update_active', False)
                             )
                     else:
-                        self.env['product.forecast.config'].sudo()\
-                            .with_delay(max_retries=12)\
+                        self.env['product.forecast.config'].sudo() \
                             .update_comp_config_data(
                                 json_data,
                                 kwargs.get('update_active', False)

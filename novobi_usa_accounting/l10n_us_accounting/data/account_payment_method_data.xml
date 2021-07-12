@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="account.account_payment_method_manual_in" model="account.payment.method">
+            <field name="name">Wire Transfer</field>
+        </record>
+
+        <record id="account.account_payment_method_manual_out" model="account.payment.method">
+            <field name="name">Wire Transfer</field>
+        </record>
+
+        <record id="payment.account_payment_method_electronic_in" model="account.payment.method">
+            <field name="name">Credit Card</field>
+        </record>
+
+        <record id="account_payment_method_electronic_out" model="account.payment.method">
+            <field name="name">Credit Card</field>
+            <field name="code">manual</field>
+            <field name="payment_type">outbound</field>
+        </record>
+
+        <record id="account_payment_method_ach_in" model="account.payment.method">
+            <field name="name">ACH</field>
+            <field name="code">manual</field>
+            <field name="payment_type">inbound</field>
+        </record>
+
+        <record id="account_payment_method_ach_out" model="account.payment.method">
+            <field name="name">ACH</field>
+            <field name="code">manual</field>
+            <field name="payment_type">outbound</field>
+        </record>
+
+        <record id="account_payment_method_cash_in" model="account.payment.method">
+            <field name="name">Cash</field>
+            <field name="code">manual</field>
+            <field name="payment_type">inbound</field>
+        </record>
+
+        <record id="account_payment_method_cash_out" model="account.payment.method">
+            <field name="name">Cash</field>
+            <field name="code">manual</field>
+            <field name="payment_type">outbound</field>
+        </record>
+    </data>
+</odoo>

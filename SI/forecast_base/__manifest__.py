@@ -29,10 +29,12 @@
         'data/forecast_result_data.xml',
         'data/summarize_rec_result_data.xml',
         'data/res_company_data.xml',
+        'data/ir_cron_data.xml',
 
         'views/inherit_res_config_settings_view.xml',
         'views/forecast_group_views.xml',
         'views/company_views.xml',
+        'views/product_views.xml',
         'views/demand_type_views.xml',
         'views/service_level_views.xml',
         'views/demand_forecast_tree_view.xml',
@@ -44,4 +46,6 @@
     'qweb': ['static/src/xml/*.xml'],
     'installable': True,
     'application': False,
+
+    "post_init_hook": "post_init_hook",
 }

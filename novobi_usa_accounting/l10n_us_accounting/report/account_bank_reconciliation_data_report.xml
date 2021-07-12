@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <report
+            id="account_bank_reconciliation_data_report"
+            model="account.bank.reconciliation.data"
+            string="Print"
+            report_type="qweb-pdf"
+            name="l10n_us_accounting.bank_reconciliation_data_form_report"
+            file="l10n_us_accounting.bank_reconciliation_data_form_report"
+            print_report_name="'Reconciliation Report-%s' % (object.journal_id.name)"
+            menu="False"
+    />
+
+    <template id="bank_reconciliation_data_form_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div name="title_1">
+                            <p>Date printed:
+                                <span t-esc="context_timestamp(datetime.datetime.today()).strftime('%m/%d/%y')"/></p>
+                            <h1><span t-field="o.journal_id"/></h1>
+                            <p>Statement Ending Date: <span t-field="o.statement_ending_date"/></p>
+                        </div>
+                        <div t-if="o.change_transaction_ids" name="change_report">
+                            <div name="title_3">
+                                <h2>Reconciliation Change Report</h2>
+                                <p>Since this reconciliation on <span t-field="o.reconcile_on"/>, changes were made to
+                                    the reconciled transactions in this report
+                                </p>
+                            </div>
+                            <table class="table table-sm o_main_table">
+                                <thead>
+                                    <tr>
+                                        <th name="th_date" class="text-left">
+                                            <strong>Date</strong>
+                                        </th>
+                                        <th name="th_number" class="text-left">
+                                            <strong>Number</strong>
+                                        </th>
+                                        <th name="th_payee" class="text-left">
+                                            <strong>Payee</strong>
+                                        </th>
+                                        <th name="th_original_amount" class="text-left">
+                                            <strong>Original Amount</strong>
+                                        </th>
+                                        <th name="th_current_amount" class="text-left">
+                                            <strong>Current Amount</strong>
+                                        </th>
+                                        <th name="th_amount_change" class="text-left">
+                                            <strong>Amount Change</strong>
+                                        </th>
+                                        <th name="th_change" class="text-left">
+                                            <strong>Change</strong>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.change_transaction_ids" t-as="line">
+                                        <tr class="is-subtotal text-right">
+                                            <td class="text-left">
+                                                <span t-field="line.date"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <span t-field="line.name"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <span t-field="line.payee_id"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <span t-field="line.amount"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <span t-field="line.current_amount"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <span t-field="line.amount_change"/>
+                                            </td>
+                                            <td class="text-left">
+                                                <span t-field="line.change_status"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div name="title_2">
+                            <h2>Reconciliation Report</h2>
+                            <p>Reconciled on: <span t-field="o.reconcile_on"/></p>
+                        </div>
+                        <div name="summary" class="mt16 mb32">
+                            <strong>Summary</strong>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Statement Beginning Balance</span>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.beginning_balance"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Payments Cleared </span>(<span t-field="o.payment_count"/>)
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.payments_cleared"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Deposits Cleared </span>(<span t-field="o.deposit_count"/>)
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.deposits_cleared"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Adjustment</span>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.difference"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Statement Ending Balance</span>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.ending_balance"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Uncleared Payments as at </span><span t-field="o.statement_ending_date"/>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.payments_uncleared"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Uncleared Deposits as at </span><span t-field="o.statement_ending_date"/>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.deposits_uncleared"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 offset-1">
+                                    <span>Register Balance as of </span><span t-field="o.statement_ending_date"/>
+                                </div>
+                                <div class="col-2 text-right">
+                                    <span t-field="o.register_balance"/>
+                                </div>
+                            </div>
+                        </div>
+                        <strong>Details</strong>
+                        <br/>
+                        <div class="reconciliation_header"><strong><i>Payments Cleared</i></strong> (<span t-field="o.payment_count"/>), Total amount: $ <span t-esc="round(sum(o.payments_cleared_ids.mapped('amount')),2)" /></div>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th name="th_date" class="text-left"><strong>Date</strong></th>
+                                    <th name="th_number" class="text-left"><strong>Number</strong></th>
+                                    <th name="th_batch_payment" class="text-left"><strong>Batch Payment</strong></th>
+                                    <th name="th_checks_no" class="text-left"><strong>Checks No</strong></th>
+                                    <th name="th_memo" class="text-left"><strong>Memo</strong></th>
+                                    <th name="th_payee" class="text-left"><strong>Payee</strong></th>
+                                    <th name="th_amount" class="text-left"><strong>Amount</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.payments_cleared_ids" t-as="line">
+                                    <tr class="is-subtotal text-right">
+                                        <td class="text-left">
+                                            <span t-field="line.date"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.check_number"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.memo"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.payee_id"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.amount"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="reconciliation_header"><strong><i>Deposits Cleared</i></strong> (<span t-field="o.deposit_count"/>), Total amount: $ <span t-esc="round(sum(o.deposits_cleared_ids.mapped('amount')),2)" /></div>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th name="th_date" class="text-left"><strong>Date</strong></th>
+                                    <th name="th_number" class="text-left"><strong>Number</strong></th>
+                                    <th name="th_batch_payment" class="text-left"><strong>Batch Payment</strong></th>
+                                    <th name="th_memo" class="text-left"><strong>Memo</strong></th>
+                                    <th name="th_payee" class="text-left"><strong>Payee</strong></th>
+                                    <th name="th_amount" class="text-left"><strong>Amount</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.deposits_cleared_ids" t-as="line">
+                                    <tr class="is-subtotal text-right">
+                                        <td class="text-left">
+                                            <span t-field="line.date"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.memo"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.payee_id"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.amount"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="reconciliation_header"><strong><i>Uncleared payments as of</i></strong> <span t-field="o.statement_ending_date"/>, Total amount: $ <span t-esc="round(sum(o.payments_uncleared_ids.mapped('amount')),2)" /></div>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th name="th_date" class="text-left"><strong>Date</strong></th>
+                                    <th name="th_number" class="text-left"><strong>Number</strong></th>
+                                    <th name="th_batch_payment" class="text-left"><strong>Batch Payment</strong></th>
+                                    <th name="th_checks_no" class="text-left"><strong>Checks No</strong></th>
+                                    <th name="th_memo" class="text-left"><strong>Memo</strong></th>
+                                    <th name="th_payee" class="text-left"><strong>Payee</strong></th>
+                                    <th name="th_amount" class="text-left"><strong>Amount</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.payments_uncleared_ids" t-as="line">
+                                    <tr class="is-subtotal text-right">
+                                        <td class="text-left">
+                                            <span t-field="line.date"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.check_number"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.memo"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.payee_id"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.amount"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="reconciliation_header"><strong><i>Uncleared deposits as of</i></strong> <span t-field="o.statement_ending_date"/>, Total amount: $ <span t-esc="round(sum(o.deposits_uncleared_ids.mapped('amount')),2)" /></div>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th name="th_date" class="text-left"><strong>Date</strong></th>
+                                    <th name="th_number" class="text-left"><strong>Number</strong></th>
+                                    <th name="th_batch_payment" class="text-left"><strong>Batch Payment</strong></th>
+                                    <th name="th_checks_no" class="text-left"><strong>Checks No</strong></th>
+                                    <th name="th_memo" class="text-left"><strong>Memo</strong></th>
+                                    <th name="th_payee" class="text-left"><strong>Payee</strong></th>
+                                    <th name="th_amount" class="text-left"><strong>Amount</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.deposits_uncleared_ids" t-as="line">
+                                    <tr class="is-subtotal text-right">
+                                        <td class="text-left">
+                                            <span t-field="line.date"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.check_number"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.memo"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.payee_id"/>
+                                        </td>
+                                        <td class="text-left">
+                                            <span t-field="line.amount"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

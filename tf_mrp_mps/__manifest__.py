@@ -1,5 +1,5 @@
 {
-    'name': 'TF MPS',
+    'name': 'TF Master Production Scheduler',
     'version': '1.0',
     'website': 'https://www.novobi.com',
     'category': '',

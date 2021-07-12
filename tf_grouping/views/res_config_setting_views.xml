@@ -13,9 +13,9 @@
                             <field name="allow_grouping_bom"/>
                         </div>
                         <div class="o_setting_right_pane">
-                            <label for="allow_grouping_bom" string="RFQ Grouping"/>
+                            <label for="allow_grouping_bom" string="Allow group RFQs by BoM"/>
                             <div class="text-muted">
-                                Allow group RFQs by BOM
+                                List of vendors who can group RFQs by BoM
                             </div>
                             <div class="content-group" attrs="{'invisible': [('allow_grouping_bom', '=', False)]}">
                                 <div class="row mt16">

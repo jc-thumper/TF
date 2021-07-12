@@ -15,6 +15,7 @@ from odoo.addons.si_core.utils.datetime_utils import DEFAULT_DATE_FORMAT
 
 from odoo.addons.resource.models.resource import float_to_time
 from odoo.addons.si_core.utils.database_utils import query
+from odoo.addons.si_core.utils.string_utils import PeriodType
 
 
 class ResCompany(models.Model):
@@ -94,6 +95,8 @@ class ResCompany(models.Model):
                                                     "ordered quantity in a special quotation will be treated as the "
                                                     "sales order quantity when running forecast.",
                                                digits=dp.get_precision('Adjust Percentage'))
+
+    default_period_type = fields.Selection(PeriodType.LIST_PERIODS, default=PeriodType.MONTHLY_TYPE)
 
     ###############################
     # ONCHANGE FIELDS

@@ -361,10 +361,10 @@ class InheritForecastResultDaily(models.Model):
                         if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
                             self.env['product.forecast.config'].sudo() \
                                 .with_delay(max_retries=12, eta=10) \
-                                .generate_forecast_config_from_indirect_demand(updated_ids)
+                                .generate_forecast_config_from_indirect_demand(updated_ids, company_id)
                         else:
                             self.env['product.forecast.config'].sudo() \
-                                .generate_forecast_config_from_indirect_demand(updated_ids)
+                                .generate_forecast_config_from_indirect_demand(updated_ids, company_id)
 
                 else:
                     UserError('Can not find the Company %s When compute the daily indirect demand', company_id)

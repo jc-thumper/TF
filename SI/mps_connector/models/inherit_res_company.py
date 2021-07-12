@@ -17,6 +17,8 @@ class ResCompany(models.Model):
         :return:
         :rtype:
         """
+        if 'manufacturing_period' in values:
+            values.update({'default_period_type': '%sly' % values.get('manufacturing_period')})
         res = super(ResCompany, self).write(values)
         if 'manufacturing_period' in values:
             # If the user change the manufacturing_period and it different from company' manufacturing_period

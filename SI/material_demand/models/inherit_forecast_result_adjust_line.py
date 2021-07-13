@@ -259,7 +259,7 @@ class InheritForecastResultAdjustLine(models.Model):
         pfc_ids = self.env['product.forecast.config'].search(domain)
         for pfc in pfc_ids:
             product_forecast_config_dict[(pfc.product_id.id, pfc.company_id.id, pfc.warehouse_id.id)] = pfc
-        return pfc_ids
+        return product_forecast_config_dict
 
     def _get_detail_stock_demand_insert_data(self, indirect_demand_dict, pub_time):
         """ The function convert the data in variable indirect_demand_dict to the list of dictionary
@@ -439,7 +439,7 @@ class InheritForecastResultAdjustLine(models.Model):
                         AND frd.company_id = %(company_id)s AND frd.warehouse_id = %(warehouse_id)s 
                         AND frd.date >= %(start_date)s AND frd.date >= %(end_date)s;
         """
-        self.env.execute(query, {
+        self.env.cr.execute(query, {
             'product_id': product_id,
             'company_id': company_id,
             'warehouse_id': warehouse_id,

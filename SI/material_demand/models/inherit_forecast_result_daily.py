@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import json
 import logging
 
@@ -30,6 +31,15 @@ class InheritForecastResultDaily(models.Model):
     include_indirect_demand = fields.Boolean(default=False, readonly=True)
     indirect_demand = fields.Float(default=0)
     detail_indirect_demand = fields.Char('Detail Indirect Demand')
+
+    ###################################
+    # COMPUTE FUNCTIONS
+    ###################################
+    @api.depends('daily_forecast_result', 'indirect_demand')
+    def _compute_total_daily_forecast(self):
+        super(InheritForecastResultDaily, self)._compute_total_daily_forecast()
+        for demand in self:
+            demand.total_daily_forecast += demand.indirect_demand
 
     ###################################
     # PRIVATE FUNCTIONS

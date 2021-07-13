@@ -176,10 +176,10 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
                                                        get_key_value_in_dict(product_values,
                                                                              product_keys))]
         forecasts = self.env['forecast.result.daily'].sudo().search_read(
-            domain, ['daily_forecast_result'],
+            domain, ['total_daily_forecast'],
             order='date', limit=rounded_lead_days)
         if forecasts:
-            demand_data = [item.get('daily_forecast_result') for item in forecasts]
+            demand_data = [item.get('total_daily_forecast') for item in forecasts]
 
         return demand_data
 
@@ -599,9 +599,10 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         return result
 
     def trigger_next_actions(self, created_date, **kwargs):
-        self.update_latest_records_in_monitor_model(created_date=created_date)
+        company_id = kwargs.get('company_id')
+        self.update_latest_records_in_monitor_model(created_date=created_date, company_id=company_id)
 
-    def update_latest_records_in_monitor_model(self, created_date):
+    def update_latest_records_in_monitor_model(self, created_date, company_id):
         """ update records in the tracker, which have the created date as defined in the parameter,
          to the monitor model (reordering.rules.with.forecast model)
 
@@ -612,9 +613,9 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         monitor_obj = self.env[self._monitor_model].sudo()
         n_rows = monitor_obj.search_count([('create_date', '=', created_date)])
         if self._active_queue_job and n_rows >= self._threshold:
-            monitor_obj.delay().update_latest_records(created_date)
+            monitor_obj.delay().update_latest_records(created_date, company_id)
         else:
-            monitor_obj.update_latest_records(created_date)
+            monitor_obj.update_latest_records(created_date, company_id)
 
     def create_or_update_records(self, vals, forecast_level, **kwargs):
         converted_table_name = get_table_name(self._name)

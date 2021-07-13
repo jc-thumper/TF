@@ -57,33 +57,38 @@ class ProductForecastConfig(models.Model):
                 # Step 3: get company info
                 company = self.env['res.company'].browse(company_id)
                 if company:
-                    default_period_type = company.period_type
+                    default_period_type = company.default_period_type
                     # Step 2: if the updated_ids is not empty, we find all forecast result daily from updated_ids
-                    daily_demands = self.env['forecast.result_daily'].browse(updated_ids)
+                    daily_demands = self.env['forecast.result.daily'].browse(updated_ids)
                     parsed_data = []
+                    parsed_data_dict = {}
                     for demand in daily_demands:
-                        parsed_data.append({
-                            'product_id': demand.product_id.id,
-                            'company_id': demand.company_id.id,
-                            'warehouse_id': demand.warehouse_id.id,
+                        product_id = demand.product_id.id,
+                        company_id = demand.company_id.id,
+                        warehouse_id = demand.warehouse_id.id
+                        tuple_key = (product_id, company_id, warehouse_id)
+                        if not parsed_data_dict.get(tuple_key):
+                            config_data = parsed_data_dict.setdefault(tuple_key, {
+                                'product_id': product_id,
+                                'company_id': company_id,
+                                'warehouse_id': warehouse_id,
+                                'active': True,
+                                'auto_update': False,
+                                'period_type_custom': default_period_type,
+                                'frequency_custom': default_period_type,
+                                'no_periods_custom': 0
+                            })
+                            parsed_data.append(config_data)
 
-                            'auto_update': False,
-                            'period_type_custom': default_period_type,
-                            'period_type': default_period_type,
-                            'frequency_custom': default_period_type,
-                            'frequency': default_period_type,
-                            'no_periods_custom': 0
-                        })
 
-                    inserted_fields = ['product_id', 'company_id', 'warehouse_id', 'auto_update',
-                                       'period_type_custom', 'period_type', 'frequency_custom',
-                                       'frequency', 'no_periods_custom']
+                    inserted_fields = ['product_id', 'company_id', 'warehouse_id', 'active', 'auto_update',
+                                       'period_type_custom', 'frequency_custom',
+                                       'no_periods_custom']
                     no_columns = len(inserted_fields)
 
                     query = """
                     INSERT INTO product_forecast_config
-                            (product_id, company_id, warehouse_id, auto_update, period_type_custom, period_type, 
-                            frequency_custom, frequency, no_periods_custom)
+                            (%s)
                             VALUES 
                             (%s)
                             ON CONFLICT (product_id, company_id, warehouse_id)
@@ -93,7 +98,7 @@ class ProductForecastConfig(models.Model):
                         ','.join(["%s"] * no_columns)
                     )
                     sql_params = [get_key_value_in_dict(item, inserted_fields) for item in parsed_data]
-                    self.env.cur.executemany(query, sql_params)
+                    self.env.cr.executemany(query, sql_params)
 
                     from odoo.tools import config
                     threshold_trigger_queue_job = int(config.get('threshold_to_trigger_queue_job',

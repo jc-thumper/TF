@@ -536,7 +536,6 @@ class ProductForecastConfig(models.Model):
                         period_size = PeriodType.PERIOD_SIZE.get(config.period_type, 7)
                         min_available_gap = 0.2 * period_size
                         max_available_gap = 2 * period_size
-                        print(min_available_gap, max_available_gap, gap_dates, next_call, last_receive_result)
                         if gap_dates < min_available_gap:
                             available_date = last_receive_result + timedelta(days=math.ceil(min_available_gap))
                             raise ValidationError(_('The Next Execution Date of product %s '
@@ -710,7 +709,6 @@ class ProductForecastConfig(models.Model):
                     period_type = config_id.forecast_group_id.period_type \
                         if config_id.auto_update \
                         else config_id.period_type_custom
-                    print(next_call, period_type, config_id.get_frequency(), execute_date)
                     config_id.write({
                         'next_call': datetime_utils.convert_from_datetime_to_str_date(next_call),
                         'forecast_adjust_id': fore_adjust.id,

@@ -36,7 +36,9 @@ class ForecastResultDaily(models.Model):
     period_type = fields.Selection(PeriodType.LIST_PERIODS, readonly=True)
     date = fields.Datetime(readonly=True)
     daily_forecast_result = fields.Float(default=0.0, readonly=True,
-                                         help='The total demand on this date')
+                                         help='The forecast demand on this date')
+    total_daily_forecast = fields.Float(readonly=True, compute='_compute_total_daily_forecast',
+                                        help='The total daily demand')
     daily_sale_forecast_result = fields.Float(default=0.0, readonly=True,
                                               help='The sale demand on this date')
     active = fields.Boolean(default=False, readonly=True)
@@ -46,6 +48,14 @@ class ForecastResultDaily(models.Model):
         ('unique_pwc_date_forecast_result_daily_idx', 'unique (product_id, warehouse_id, company_id, date)',
          'the set of company, warehouse, and product info combine with Date must be unique.'),
     ]
+
+    ###################################
+    # COMPUTE FUNCTIONS
+    ###################################
+    @api.depends('daily_forecast_result')
+    def _compute_total_daily_forecast(self):
+        for demand in self:
+            demand.total_daily_forecast = demand.daily_forecast_result
 
     ###################################
     # MODEL FUNCTIONS

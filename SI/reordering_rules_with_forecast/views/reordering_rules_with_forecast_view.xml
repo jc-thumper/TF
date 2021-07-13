@@ -4,18 +4,18 @@
         <field name="name">reordering.rules.with.forecast.tree</field>
         <field name="model">reordering.rules.with.forecast</field>
         <field name="arch" type="xml">
-            <tree decoration-danger="forecasting_qty == '-1'" string="Reordering Rules"
-                  default_order="forecasting_qty desc"
+            <tree string="Reordering Rules"
                   editable="bottom" create="false">
+                <!--default_order="forecasting_qty desc" decoration-danger="forecasting_qty == '-1'" -->
                 <field name="product_id" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="name" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="warehouse_id"/>
                 <field name="location_id" attrs="{'readonly':[('id','>', 0)]}"/>
-                <field name="forecasting_qty" attrs="{'readonly':[('id','>', 0)], 'invisible':[('forecasting_qty', '=', '-1')]}"/>
+                <!--<field name="forecasting_qty" attrs="{'readonly':[('id','>', 0)], 'invisible':[('forecasting_qty', '=', '-1')]}"/>-->
                 <field name="qty_available" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="lead_days" attrs="{'readonly':[('id','>', 0)]}"/>
-                <field name="total_demand" attrs="{'readonly':[('id','>', 0)]}"/>
-                <field name="total_supply" attrs="{'readonly':[('id','>', 0)]}"/>
+                <!--<field name="total_demand" attrs="{'readonly':[('id','>', 0)]}"/>-->
+                <!--<field name="total_supply" attrs="{'readonly':[('id','>', 0)]}"/>-->
                 <field name="safety_stock" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="product_min_qty" attrs="{'readonly':[('id','>', 0)]}"/>
                 <field name="product_max_qty" attrs="{'readonly':[('id','>', 0)]}"/>
@@ -25,7 +25,6 @@
                 <field name="new_safety_stock_forecast" invisible="1"/>
                 <field name="new_min_forecast" invisible="1"/>
                 <field name="new_max_forecast" invisible="1"/>
-                <field name="demand_value" invisible="1"/>
                 <field name="warehouse_id" invisible="1"/>
             </tree>
         </field>

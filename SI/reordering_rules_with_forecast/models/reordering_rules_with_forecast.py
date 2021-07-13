@@ -134,71 +134,6 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
             raise e
         return data_dict
 
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_latest_records(self, created_date):
-        """ The job support sync the new min max from the tracker table (reordering.rules.with.forecast.tracker)
-        to the monitor (reordering.rule.with.forecast)
-
-        :param created_date:
-        :return:
-        """
-        try:
-            latest_records = self.get_latest_records_dict(created_date)
-            # create new record if it doesn't exist and update the existing records with
-            # the new min/max suggested quantity
-            sql_query = """
-                INSERT INTO reordering_rules_with_forecast AS monitor (
-                    tracker_id, eoq, create_time, pub_time, 
-                    new_min_forecast, new_max_forecast, new_safety_stock_forecast, 
-                    new_min_qty, new_max_qty, new_safety_stock,
-                    product_id, company_id, warehouse_id, location_id, master_product_id, lot_stock_id, 
-                    create_uid, create_date, write_uid, write_date)
-                SELECT id,
-                       eoq,
-                       create_time,
-                       pub_time,
-                       new_min_forecast,
-                       new_max_forecast,
-                       new_safety_stock_forecast,
-                       new_min_qty,
-                       new_max_qty,
-                       new_safety_stock,
-                       product_id, company_id, warehouse_id, location_id, master_product_id,
-                       lot_stock_id, create_uid, create_date, write_uid, write_date
-                FROM reordering_rules_with_forecast_tracker tracker
-                WHERE tracker.create_date = %(create_date)s
-                ON CONFLICT (product_id, company_id, warehouse_id)
-                DO UPDATE SET
-                    tracker_id = excluded.tracker_id,
-                    eoq = excluded.eoq,
-                    create_time = excluded.create_time,
-                    pub_time = excluded.pub_time,
-                    new_min_forecast = excluded.new_min_forecast,
-                    new_max_forecast = excluded.new_max_forecast,
-                    new_safety_stock_forecast = excluded.new_safety_stock_forecast,
-                    new_min_qty = excluded.new_min_qty,
-                    new_max_qty = excluded.new_max_qty,
-                    new_safety_stock = excluded.new_safety_stock,
-                    create_uid = excluded.create_uid,
-                    create_date = excluded.create_date,
-                    write_uid = excluded.write_uid,
-                    write_date = excluded.write_date; 
-            """
-
-            self.env.cr.execute(sql_query, {
-                'create_date': created_date
-            })
-            updated_ids = [item.get('tracker_id') for item in latest_records]
-            self.env.cr.commit()
-            self._auto_update_new_changes_to_rr(updated_ids)
-        except Exception:
-            _logger.exception("Error in the function update_latest_records.", exc_info=True)
-            raise
-
     ###############################
     # ONCHANGE FUNCTIONS
     ###############################
@@ -515,9 +450,37 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
         :param list[int] rrwf_ids:
         :return:
         """
-        if self.env.user.company_id.auto_apply_rule:
-            rrwf_ids = self.search([('tracker_id', 'in', rrwf_ids)])
-            rrwf_ids.generate_new_reordering_rules(auto_generate_new_rr=False, allow_max_is_zero=True)
+        rrwf_ids = self.search([('tracker_id', 'in', rrwf_ids)])
+        rrwf_ids.generate_new_reordering_rules(auto_generate_new_rr=False, allow_max_is_zero=True)
+
+    def _rounding_rule_values(self, rrwf_ids=None):
+        """ The function rounding some quantity in rules:
+            - new_min_forecast
+            - new_max_forecast
+            - new_safety_stock_forecast
+            - new_min_qty
+            - new_max_qty
+            - new_safety_stock
+
+        :return:
+        """
+        if rrwf_ids:
+            self._cr.execute("""
+                    UPDATE reordering_rules_with_forecast rrwf
+                    SET new_min_forecast = round(new_min_forecast/rounding) * rounding, 
+                        new_max_forecast = round(new_max_forecast/rounding) * rounding,
+                        new_safety_stock_forecast = round(new_safety_stock_forecast/rounding) * rounding,
+                        new_min_qty = round(new_min_qty/rounding) * rounding, 
+                        new_max_qty = round(new_max_qty/rounding) * rounding,
+                        new_safety_stock = round(new_safety_stock/rounding) * rounding
+                    FROM product_product prod
+                      JOIN product_template tmpl
+                        ON prod.product_tmpl_id = tmpl.id
+                      JOIN uom_uom uu
+                        ON tmpl.uom_id = uu.id
+                    WHERE rrwf.product_id = prod.id AND rrwf.id IN %s;""",
+                             (tuple(rrwf_ids),))
+            self._cr.commit()
 
     @api.model
     def cal_forecast_qty(self, end_date, period_type, no_digits=None):
@@ -583,3 +546,76 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
             _logger.exception("Another error occur when creating index in the table %s: %s" % (self._name, e),
                               exc_info=True)
             raise e
+
+    ###############################
+    # JOB FUNCTION
+    ###############################
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_latest_records(self, created_date, company_id):
+        """ The job support sync the new min max from the tracker table (reordering.rules.with.forecast.tracker)
+        to the monitor (reordering.rule.with.forecast)
+
+        :param created_date:
+        :return:
+        """
+        try:
+            latest_records = self.get_latest_records_dict(created_date)
+            # create new record if it doesn't exist and update the existing records with
+            # the new min/max suggested quantity
+            sql_query = """
+                    INSERT INTO reordering_rules_with_forecast AS monitor (
+                        tracker_id, eoq, create_time, pub_time, 
+                        new_min_forecast, new_max_forecast, new_safety_stock_forecast, 
+                        new_min_qty, new_max_qty, new_safety_stock,
+                        product_id, company_id, warehouse_id, location_id, master_product_id, lot_stock_id, 
+                        create_uid, create_date, write_uid, write_date)
+                    SELECT id,
+                           eoq,
+                           create_time,
+                           pub_time,
+                           new_min_forecast,
+                           new_max_forecast,
+                           new_safety_stock_forecast,
+                           new_min_qty,
+                           new_max_qty,
+                           new_safety_stock,
+                           product_id, company_id, warehouse_id, location_id, master_product_id,
+                           lot_stock_id, create_uid, create_date, write_uid, write_date
+                    FROM reordering_rules_with_forecast_tracker tracker
+                    WHERE tracker.create_date = %(create_date)s
+                    ON CONFLICT (product_id, company_id, warehouse_id)
+                    DO UPDATE SET
+                        tracker_id = excluded.tracker_id,
+                        eoq = excluded.eoq,
+                        create_time = excluded.create_time,
+                        pub_time = excluded.pub_time,
+                        new_min_forecast = excluded.new_min_forecast,
+                        new_max_forecast = excluded.new_max_forecast,
+                        new_safety_stock_forecast = excluded.new_safety_stock_forecast,
+                        new_min_qty = excluded.new_min_qty,
+                        new_max_qty = excluded.new_max_qty,
+                        new_safety_stock = excluded.new_safety_stock,
+                        create_uid = excluded.create_uid,
+                        create_date = excluded.create_date,
+                        write_uid = excluded.write_uid,
+                        write_date = excluded.write_date; 
+                """
+
+            self.env.cr.execute(sql_query, {
+                'create_date': created_date
+            })
+            updated_ids = [item.get('tracker_id') for item in latest_records]
+            self.env.cr.commit()
+
+            self._rounding_rule_values(updated_ids)
+
+            company = self.env['res.company'].browse(company_id)
+            if company.auto_apply_rule:
+                self._auto_update_new_changes_to_rr(updated_ids)
+        except Exception:
+            _logger.exception("Error in the function update_latest_records.", exc_info=True)
+            raise

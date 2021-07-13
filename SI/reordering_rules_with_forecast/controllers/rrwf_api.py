@@ -9,7 +9,6 @@ from odoo.addons.si_core.utils.request_utils import check_format_data_array, che
     handle_push_data_request
 
 _logger = logging.getLogger(__name__)
-print('-----------------------------------------')
 
 
 class ReorderingRuleWithForecastAPI(http.Controller):

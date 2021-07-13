@@ -373,7 +373,8 @@ def handle_push_data_request(request, model):
                     if hasattr(model, 'trigger_next_actions'):
                         model.trigger_next_actions(**{
                             'created_date': created_date,
-                            'forecast_level': forecast_level
+                            'forecast_level': forecast_level,
+                            'company_id': company_id
                         })
             else:
                 _logger.warning('The format of data used to import to %s is the wrong format', model.name)

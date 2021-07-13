@@ -108,13 +108,22 @@ class ProductForecastConfig(models.Model):
 
                     number_of_record = len(updated_ids)
 
-                    if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
-                        self.env['forecast.result.adjust.line'].sudo() \
-                            .with_delay(max_retries=12, eta=10) \
-                            .update_indirect_demand_line(updated_ids)
-                    else:
-                        self.env['forecast.result.adjust.line'].sudo() \
-                            .update_indirect_demand_line(updated_ids)
+                    chunk_size = 100
+                    i = 0
+                    chunks = math.ceil(number_of_record / chunk_size)
+
+                    while i < chunks:
+                        i += 1
+                        upper_bound = chunk_size * i if i < chunks else len(updated_ids)
+                        sub_updated_ids = updated_ids[chunk_size * (i - 1): upper_bound]
+
+                        if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                            self.env['forecast.result.adjust.line'].sudo() \
+                                .with_delay(max_retries=12, eta=10) \
+                                .update_indirect_demand_line(sub_updated_ids)
+                        else:
+                            self.env['forecast.result.adjust.line'].sudo() \
+                                .update_indirect_demand_line(sub_updated_ids)
 
         except Exception:
             _logger.exception('Function generate_forecast_config_from_indirect_demand have some exception',

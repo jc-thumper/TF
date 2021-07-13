@@ -81,16 +81,26 @@ class InheritForecastResultAdjustLine(models.Model):
         """
         list_domain_items = []
         product_forecast_config_dict = {}
-        for key in tuple_keys:
-            list_domain_items.append(expression.AND([
-                [('product_id', '=', key[0])],
-                [('company_id', '=', key[1])],
-                [('warehouse_id', '=', key[2])]
-            ]))
-        domain = expression.OR(list_domain_items)
-        pfc_ids = self.env['product.forecast.config'].search(domain)
-        for pfc in pfc_ids:
-            product_forecast_config_dict[(pfc.product_id.id, pfc.company_id.id, pfc.warehouse_id.id)] = pfc
+
+        chunk_size = 50
+        i = 0
+        chunks = math.ceil(len(tuple_keys) / chunk_size)
+
+        while i < chunks:
+            i += 1
+            upper_bound = chunk_size * i if i < chunks else len(tuple_keys)
+            sub_records = tuple_keys[chunk_size * (i - 1): upper_bound]
+            for key in sub_records:
+                list_domain_items.append(expression.AND([
+                    [('product_id', '=', key[0])],
+                    [('company_id', '=', key[1])],
+                    [('warehouse_id', '=', key[2])]
+                ]))
+            domain = expression.OR(list_domain_items)
+            pfcs = self.env['product.forecast.config'].search(domain)
+            for pfc in pfcs:
+                product_forecast_config_dict[(pfc.product_id.id, pfc.company_id.id, pfc.warehouse_id.id)] = pfc
+
         return product_forecast_config_dict
 
     def _compute_indirect_demand_in_range(self, product_id, company_id, warehouse_id, start_date, end_date):

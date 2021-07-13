@@ -467,12 +467,12 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
         if rrwf_ids:
             self._cr.execute("""
                     UPDATE reordering_rules_with_forecast rrwf
-                    SET new_min_forecast = round(new_min_forecast/rounding) * rounding, 
-                        new_max_forecast = round(new_max_forecast/rounding) * rounding,
-                        new_safety_stock_forecast = round(new_safety_stock_forecast/rounding) * rounding,
-                        new_min_qty = round(new_min_qty/rounding) * rounding, 
-                        new_max_qty = round(new_max_qty/rounding) * rounding,
-                        new_safety_stock = round(new_safety_stock/rounding) * rounding
+                    SET new_min_forecast = ceil(new_min_forecast/rounding) * rounding, 
+                        new_max_forecast = ceil(new_max_forecast/rounding) * rounding,
+                        new_safety_stock_forecast = ceil(new_safety_stock_forecast/rounding) * rounding,
+                        new_min_qty = ceil(new_min_qty/rounding) * rounding, 
+                        new_max_qty = ceil(new_max_qty/rounding) * rounding,
+                        new_safety_stock = ceil(new_safety_stock/rounding) * rounding
                     FROM product_product prod
                       JOIN product_template tmpl
                         ON prod.product_tmpl_id = tmpl.id

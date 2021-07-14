@@ -329,10 +329,13 @@ class InheritForecastResultDaily(models.Model):
         :return None:
         """
         try:
+
+            _logger.info('update_daily_material_indirect_demand with %s forecast result lines, company %s' %
+                         (len(fral_ids), company_id))
             indirect_demand_dict = {}
 
             # Step 1: get the list of forecast result adjust lines are writen at ``write_time``
-            daily_results = self.search([('forecast_adjust_line_id', '=', fral_ids), ('company_id', '=', company_id)])
+            daily_results = self.search([('forecast_adjust_line_id', 'in', fral_ids), ('company_id', '=', company_id)])
             if daily_results:
                 # The fist line always have the company info and the forecast pub time because
                 # this function is just triggered right after the forecast result adjust line update the forecast result
@@ -398,6 +401,8 @@ class InheritForecastResultDaily(models.Model):
         :return:
         """
         try:
+            _logger.info('update_forecast_result_daily with %s forecast result lines, company %s' %
+                         (len(line_ids), company_id))
             super(InheritForecastResultDaily, self) \
                 .update_forecast_result_daily(line_ids, company_id, call_from_engine)
 

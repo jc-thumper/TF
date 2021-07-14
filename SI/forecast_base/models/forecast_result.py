@@ -102,7 +102,7 @@ class ForecastResult(models.Model):
             self.env.cr.executemany(sql_query, sql_params)
             self.flush()
             self.env.cr.commit()
-            _logger.info("Insert/update %s rows into the model.", len(vals))
+            _logger.info("Insert/update %s rows into the model forecast result.", len(vals))
 
         except IntegrityError:
             logging.exception("Duplicate key in the table %s: %s", converted_table_name, vals, exc_info=True)

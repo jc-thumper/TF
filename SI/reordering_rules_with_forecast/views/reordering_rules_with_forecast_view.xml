@@ -12,8 +12,8 @@
                 <field name="warehouse_id"/>
                 <field name="location_id" attrs="{'readonly':[('id','>', 0)]}"/>
                 <!--<field name="forecasting_qty" attrs="{'readonly':[('id','>', 0)], 'invisible':[('forecasting_qty', '=', '-1')]}"/>-->
-                <field name="qty_available" attrs="{'readonly':[('id','>', 0)]}"/>
-                <field name="lead_days" attrs="{'readonly':[('id','>', 0)]}"/>
+                <!--<field name="qty_available" attrs="{'readonly':[('id','>', 0)]}"/>-->
+                <!--<field name="lead_days" attrs="{'readonly':[('id','>', 0)]}"/>-->
                 <!--<field name="total_demand" attrs="{'readonly':[('id','>', 0)]}"/>-->
                 <!--<field name="total_supply" attrs="{'readonly':[('id','>', 0)]}"/>-->
                 <field name="safety_stock" attrs="{'readonly':[('id','>', 0)]}"/>
@@ -26,6 +26,7 @@
                 <field name="new_min_forecast" invisible="1"/>
                 <field name="new_max_forecast" invisible="1"/>
                 <field name="warehouse_id" invisible="1"/>
+                <field name="product_uom_id"/>
             </tree>
         </field>
     </record>
@@ -147,9 +148,15 @@
     </record>
 
     <!--MENUS-->
+    <!--<menuitem id="reordering_rules_with_forecasts_menu"-->
+              <!--name="Reordering Rules with Forecasts"-->
+              <!--action="reordering_rules_with_forecast.action_reordering_rules_with_forecast_list"-->
+              <!--parent="inventory_optimal_operation.menu_optimal_operations"-->
+              <!--sequence="134"/>-->
+
     <menuitem id="reordering_rules_with_forecasts_menu"
               name="Reordering Rules with Forecasts"
-              action="reordering_rules_with_forecast.action_reordering_rules_with_forecast_list"
-              parent="inventory_optimal_operation.menu_optimal_operations"
-              sequence="134"/>
+              parent="stock.menu_warehouse_report"
+              sequence="121"
+              action="reordering_rules_with_forecast.action_reordering_rules_with_forecast_list"/>
 </odoo>

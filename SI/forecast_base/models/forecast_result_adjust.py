@@ -264,8 +264,8 @@ class ForecastResultAdjust(models.Model):
     def recompute_forecast_chart_data(self):
         self._compute_forecast_chart_data()
 
-    def update_adjust_line_ids(self):
-        """
+    def update_forecast_result_adjust_line_ids(self):
+        """ Assign the id of forecast result adjust to the forecast result adjust line
 
         :return: None
         """
@@ -313,7 +313,7 @@ class ForecastResultAdjust(models.Model):
         :rtype:
         """
         date_now = datetime.now().date()
-        self.update_adjust_line_ids()
+        self.update_forecast_result_adjust_line_ids()
 
         update_data = {'last_update': date_now}
         if call_from_engine:
@@ -602,6 +602,7 @@ class ForecastResultAdjust(models.Model):
         :return:
         """
         try:
+            _logger.info('update_forecast_result_base_on_lines: %s lines - %s' % (len(line_ids), line_ids[:30]))
             # NOTE: avoid using the method ``browse``, this function still return a record set for all record
             # even if this record id doesn't exits in the database
             lines = self.sudo().env['forecast.result.adjust.line'].search([('id', 'in', line_ids)])

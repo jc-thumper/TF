@@ -23,6 +23,7 @@ from odoo.addons.si_core.utils.string_utils import PeriodType
 from odoo.addons.si_core.utils import datetime_utils
 
 from odoo import models, fields, api, _
+from psycopg2 import IntegrityError
 
 _logger = logging.getLogger(__name__)
 
@@ -66,8 +67,46 @@ class InheritForecastResultAdjustLine(models.Model):
     ###############################
 
     ###############################
-    # GENERAL FUNCTIONS
+    # HELP FUNCTIONS
     ###############################
+    def create_or_update_forecast_result_adjust_records(self, vals):
+        """
+
+        :param vals:
+        :return:
+        """
+        try:
+            if vals:
+                # Run SQL code to update new data into the table
+                # get insert fields from the data
+                inserted_fields = list(vals[0].keys())
+
+                # get conflict fields from forecast level
+                conflict_fields = ['product_id', 'company_id', 'warehouse_id', 'period_type', 'start_date']
+                updated_fields = list(set(inserted_fields) - set(conflict_fields))
+
+                sql_query = """
+                    INSERT INTO forecast_result_adjust_line (%s)
+                    VALUES (%s)
+                    ON CONFLICT (%s)
+                    DO UPDATE SET
+                """ % (','.join(inserted_fields),
+                       ','.join(["%s"] * len(inserted_fields)),
+                       ','.join(conflict_fields))
+
+                sql_query += ", ".join(["%s = EXCLUDED.%s" % (field, field) for field in updated_fields])
+                sql_query += ";"
+
+                sql_params = [get_key_value_in_dict(item, inserted_fields) for item in vals]
+                self.env.cr.executemany(sql_query, sql_params)
+                # _logger.info("Insert/update %s rows into the model.", len(vals))
+
+        except IntegrityError:
+            logging.exception("Duplicate key in the table forecast_result_adjust_line: %s", vals, exc_info=True)
+            raise
+        except Exception:
+            _logger.exception("Error in the function create_or_update_forecast_result_adjust_records.", exc_info=True)
+            raise
 
     ###############################
     # PRIVATE FUNCTIONS
@@ -82,7 +121,7 @@ class InheritForecastResultAdjustLine(models.Model):
         list_domain_items = []
         product_forecast_config_dict = {}
 
-        chunk_size = 50
+        chunk_size = 100
         i = 0
         chunks = math.ceil(len(tuple_keys) / chunk_size)
 
@@ -225,6 +264,8 @@ class InheritForecastResultAdjustLine(models.Model):
         :return datetime: the create_date/write_date of the created/updated records
         """
         try:
+            _logger.info('update_indirect_demand_line with %s daily demand record' %
+                         (len(daily_demand_ids), ))
             # Step 1: Generate the list of tuple keys from the daily indirect forecast demand
             frds = self.env['forecast.result.daily'].browse(daily_demand_ids)
             tuple_keys = [(frd.product_id.id, frd.company_id.id, frd.warehouse_id.id) for frd in frds]
@@ -287,7 +328,7 @@ class InheritForecastResultAdjustLine(models.Model):
             self._update_indirect_dict_from_daily_demand(update_ids)
 
             # Step 3.7: Create the list of lines
-            self.create(create_data)
+            self.create_or_update_forecast_result_adjust_records(create_data)
 
         except Exception:
             _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)

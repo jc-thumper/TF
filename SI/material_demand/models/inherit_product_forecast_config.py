@@ -48,6 +48,8 @@ class ProductForecastConfig(models.Model):
         :rtype:
         """
         try:
+            _logger.info('generate_forecast_config_from_indirect_demand with %s daily demand record, company: %s' %
+                         (len(updated_ids), company_id))
             # Step 1: check updated_ids whether is empty or not
             if updated_ids:
 
@@ -108,7 +110,7 @@ class ProductForecastConfig(models.Model):
 
                     number_of_record = len(updated_ids)
 
-                    chunk_size = 100
+                    chunk_size = 1000
                     i = 0
                     chunks = math.ceil(number_of_record / chunk_size)
 

@@ -86,6 +86,9 @@ class ReorderingRulesWithForecast(models.Model, MonitorModel):
         'Reordering Rule', copy=False,
         readonly=True, related='orderpoint_id.name')
 
+    product_uom_id = fields.Many2one('uom.uom', string='UoM',
+                                     related='product_id.uom_id')
+
     probably_trigger = fields.Boolean('Probably Trigger', store=False, search='_search_probably_trigger')
     demand_value = fields.Float('Demand Value', store=False, search='_search_demand_value')
     eoq = fields.Float('EOQ', required=False, default=0)

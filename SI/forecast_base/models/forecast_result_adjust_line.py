@@ -317,6 +317,7 @@ class ForecastResultAdjustLine(models.Model):
         return lines
 
     def write(self, values):
+        _logger.info('write products: %s' % self.mapped('product_id').ids)
         if 'product_id' not in values and 'company_id' not in values \
                 and 'warehouse_id' not in values and 'period_type' not in values \
                 and 'start_date' not in values and 'end_date' not in values:
@@ -327,21 +328,22 @@ class ForecastResultAdjustLine(models.Model):
                 company_id = self.company_id.id
                 self.rounding_forecast_value(line_ids)
 
-                number_of_record = len(line_ids)
+                if 'adjust_value' in values:
+                    number_of_record = len(line_ids)
 
-                from odoo.tools import config
-                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
-                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
-                                                     ALLOW_TRIGGER_QUEUE_JOB)
+                    from odoo.tools import config
+                    threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                                 DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                    allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                         ALLOW_TRIGGER_QUEUE_JOB)
 
-                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .with_delay(max_retries=12, eta=10) \
-                        .update_forecast_result_daily(line_ids, company_id, call_from_engine=True)
-                else:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(line_ids, company_id, call_from_engine=True)
+                    if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                        self.env['forecast.result.daily'].sudo() \
+                            .with_delay(max_retries=12, eta=10) \
+                            .update_forecast_result_daily(line_ids, company_id, call_from_engine=True)
+                    else:
+                        self.env['forecast.result.daily'].sudo() \
+                            .update_forecast_result_daily(line_ids, company_id, call_from_engine=True)
 
             return res
         else:
@@ -664,6 +666,7 @@ class ForecastResultAdjustLine(models.Model):
         :return datetime: the create_date/write_date of the created/updated records
         """
         try:
+            _logger.info('update_forecast_adjust_line_table')
             cur_time = database_utils.get_db_cur_time(self.env.cr)
             forecast_level = kwargs.get('forecast_level')
             forecast_level_obj = self.env['forecast.level.strategy'].sudo().create_obj(forecast_level=forecast_level)
@@ -727,6 +730,7 @@ class ForecastResultAdjustLine(models.Model):
         :return:
         """
         try:
+            _logger.info('update_validation_val')
             cur_time = database_utils.get_db_cur_time(self.env.cr)
             # Step 1 update old records with any record have existed
             update_query_param = {
@@ -807,31 +811,6 @@ class ForecastResultAdjustLine(models.Model):
             })
             virtual_lines += line
         return virtual_lines
-
-    def update_values_by_ids(self, new_values):
-        """
-        Update value in Forecast Result Adjust Line using record id
-        :param new_values: New values to update. Each item has the same format bellow
-        - field_name is the column name of the table in database
-        - field_value is the new value of this field
-        {
-            'id': 1,
-            <field_name>: <field_value>,
-            ...
-        }
-        :type new_values: List[dict]
-        """
-        if new_values:
-            copied_values = new_values.copy()
-            updated_values = {
-                item.pop('id'): item for item in copied_values
-            }
-            record_ids = list(updated_values.keys())
-            records = self.search([('id', 'in', record_ids)])
-            for record in records:
-                vals = updated_values.get(record.id)
-                if vals:
-                    record.write(vals)
 
     @staticmethod
     def check_condition_to_update_forecast_result_adjust(values):

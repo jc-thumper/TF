@@ -16,7 +16,7 @@ _logger = logging.getLogger()
 
 
 class MrpProductionSchedule(models.Model):
-    _inherit = "mrp.production.schedule"
+    _inherit = 'mrp.production.schedule'
 
     ###############################
     # CONSTANT FUNCTION
@@ -49,6 +49,7 @@ class MrpProductionSchedule(models.Model):
         :return:
         :rtype:
         """
+        print('create mrp.production.schedule')
         res = super(MrpProductionSchedule, self).create(values)
 
         # After creating a MPS, the demand forecast value of the MPS is empty,
@@ -256,6 +257,7 @@ class MrpProductionSchedule(models.Model):
         :return:
         :rtype:
         """
+        _logger.info('create_fore_res_for_all_periods_based_on_product_fore')
         now = datetime.now()
         fore_result_env = self.env['forecast.result']
 
@@ -401,6 +403,8 @@ class MrpProductionSchedule(models.Model):
 
                 # Create the summarize_rec_result records and trigger for the next action
                 if summarize_rec_result_data:
+                    _logger.info('generate_summarized_historical_demand -> '
+                                 '_create_or_update_model_data(summarized_rec_result_env)')
                     self._create_or_update_model_data(company=company,
                                                       data=summarize_rec_result_data,
                                                       model=summarized_rec_result_env)
@@ -882,6 +886,7 @@ class MrpProductionSchedule(models.Model):
         :return:
         :rtype:
         """
+        _logger.info('_create_or_update_model_data company %s data len %s model %s' % (company.id, len(data), model))
         model = model.sudo()
 
         # 1. Transform data
@@ -953,7 +958,7 @@ class MrpProductionSchedule(models.Model):
 
 
 class MrpProductForecast(models.Model):
-    _inherit = "mrp.product.forecast"
+    _inherit = 'mrp.product.forecast'
 
     ###############################
     # FUNCTION
@@ -967,6 +972,7 @@ class MrpProductForecast(models.Model):
         :return:
         :rtype:
         """
+        print('create mrp product forecast', values)
         res = super(MrpProductForecast, self).create(values)
         res.update_forecast_result()
         return res
@@ -979,6 +985,7 @@ class MrpProductForecast(models.Model):
         :return:
         :rtype:
         """
+        print('write mrp product forecast', values)
         res = super(MrpProductForecast, self).write(values)
         self.update_forecast_result()
         return res

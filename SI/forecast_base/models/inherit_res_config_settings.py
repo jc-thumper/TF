@@ -153,7 +153,7 @@ class ResConfigSettings(models.TransientModel):
             self.env['ir.config_parameter'].sudo() \
                 .set_param('forecasting.past_periods', self.past_periods)
             fras = self.env['forecast.result.adjust'].search([])
-            fras.update_adjust_line_ids()
+            fras.update_forecast_result_adjust_line_ids()
             has_updated = True
             fras.recompute_actual_chart_data()
 
@@ -163,5 +163,5 @@ class ResConfigSettings(models.TransientModel):
                 .set_param('forecasting.future_periods', self.future_periods)
             fras = self.env['forecast.result.adjust'].search([])
             if not has_updated:
-                fras.update_adjust_line_ids()
+                fras.update_forecast_result_adjust_line_ids()
             fras.recompute_forecast_chart_data()

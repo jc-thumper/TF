@@ -5,11 +5,9 @@
         <field name="model">wizard.rrwf.confirm.box</field>
         <field name="arch" type="xml">
             <form string="Confirmation Form">
-                <center>
-                    <field name="message" readonly="1"/>
-                    <field name="auto_generate_new_rr"/>
-                    <label for="auto_generate_new_rr"/>
-                </center>
+                <field name="message" readonly="1"/>
+                <field name="auto_generate_new_rr"/>
+                <label for="auto_generate_new_rr"/>
                 <footer>
                     <button name="accept_confirmation" type="object" string="YES" class="oe_highlight"/>
                     <button name="cancel_confirmation" type="object" string="NO"/>

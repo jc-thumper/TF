@@ -19,8 +19,10 @@ class ResCompany(models.Model):
         """
         if 'manufacturing_period' in values:
             values.update({'default_period_type': '%sly' % values.get('manufacturing_period')})
+        previous_period = self.manufacturing_period
         res = super(ResCompany, self).write(values)
-        if 'manufacturing_period' in values:
+        print(values.get('manufacturing_period', None), previous_period)
+        if 'manufacturing_period' in values and values.get('manufacturing_period') != previous_period:
             # If the user change the manufacturing_period and it different from company' manufacturing_period
             mps_env = self.env['mrp.production.schedule'].sudo()
             demand_fore_data_dict = mps_env.get_demand_fore_data_dict(company_id=self.id)

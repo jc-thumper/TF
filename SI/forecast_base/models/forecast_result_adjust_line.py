@@ -648,136 +648,6 @@ class ForecastResultAdjustLine(models.Model):
         self.env.cr.commit()
         self.env.cache.invalidate()
 
-    @api.model
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_forecast_adjust_line_table(self, created_date, pub_time, **kwargs):
-        """ Create/Update forecast_result_adjust_line from data in forecast result table.
-        All the new records will have a same create_date and write_date.
-        Then, the forecast result daily will be updated
-
-        :param str created_date: the created date of the rows in forecast_result table
-        that we use to update update to the forecast_result_adjust_line table
-        :param str pub_time:
-        :param kwargs:
-        :return datetime: the create_date/write_date of the created/updated records
-        """
-        try:
-            _logger.info('update_forecast_adjust_line_table')
-            cur_time = database_utils.get_db_cur_time(self.env.cr)
-            forecast_level = kwargs.get('forecast_level')
-            forecast_level_obj = self.env['forecast.level.strategy'].sudo().create_obj(forecast_level=forecast_level)
-
-            updated_ids = forecast_level_obj \
-                .update_records_for_forecast_result_adjust_line(
-                obj=self,
-                model=self.env['forecast.result.adjust.line'],
-                created_date=created_date, pub_time=pub_time,
-                **{
-                    'current_time': cur_time,
-                    'create_uid': self.env.ref('base.partner_root').id,
-                    'create_date': cur_time,
-                    'write_uid': self.env.ref('base.partner_root').id,
-                    'write_date': cur_time
-                })
-
-            _logger.info("%s records have been updated in Forecast Result Adjust Line table: %s",
-                         len(updated_ids), updated_ids)
-            if updated_ids:
-                self.rounding_forecast_value(updated_ids)
-                company_id = self.browse(updated_ids[0]).company_id.id
-                # Step 3 update the daily forecasting result
-
-                number_of_record = len(updated_ids)
-
-                from odoo.tools import config
-                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
-                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
-                                                     ALLOW_TRIGGER_QUEUE_JOB)
-
-                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .with_delay(max_retries=12, eta=10) \
-                        .update_forecast_result_daily(updated_ids, company_id, call_from_engine=True)
-                else:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(updated_ids, company_id, call_from_engine=True)
-
-            # commit new change to the database
-            self.env.cr.commit()
-
-        except Exception:
-            _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)
-            raise RetryableJobError('Must be retried later')
-        return cur_time
-
-    @api.model
-    @job(retry_pattern={1: 1 * 60,
-                        3: 5 * 60,
-                        6: 10 * 60,
-                        9: 30 * 60},
-         default_channel='root.forecasting')
-    def update_validation_val(self, val_res_create_date, company_id):
-        """
-        Function update forecast result adjust line table from
-        new forecast result received from Forecast Engine
-        :param str val_res_create_date:
-        :param int company_id:
-        :return:
-        """
-        try:
-            _logger.info('update_validation_val')
-            cur_time = database_utils.get_db_cur_time(self.env.cr)
-            # Step 1 update old records with any record have existed
-            update_query_param = {
-                'now': cur_time,
-                'val_res_create_date': val_res_create_date
-            }
-            if val_res_create_date:
-                self.update_validation_adjust_line(update_query_param)
-
-            # Step 2 insert new records
-            insert_query_param = {
-                **update_query_param,
-                **{
-                    'create_uid': self.env.ref('base.partner_root').id,
-                    'create_date': cur_time,
-                    'write_uid': self.env.ref('base.partner_root').id,
-                    'write_date': cur_time
-                }
-            }
-            self.insert_new_validation_data(insert_query_param, company_id)
-
-            lines = self.search([('write_date', '=', cur_time)])
-            _logger.info("Processing %s records in Forecast Result Adjust Line: %s", len(lines.ids), lines.ids)
-            if lines:
-                line_ids = lines.ids
-                self.rounding_forecast_value(line_ids)
-                # Step 3 update the daily forecasting result
-                number_of_record = len(line_ids)
-
-                from odoo.tools import config
-                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
-                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
-                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
-                                                     ALLOW_TRIGGER_QUEUE_JOB)
-
-                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
-                    self.env['forecast.result.daily'].sudo() \
-                        .with_delay(max_retries=12, eta=10) \
-                        .update_forecast_result_daily(lines.ids, company_id, call_from_engine=True)
-                else:
-                    self.env['forecast.result.daily'].sudo() \
-                        .update_forecast_result_daily(lines.ids, company_id, call_from_engine=True)
-
-        except Exception:
-            _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)
-            raise RetryableJobError('Must be retried later')
-
     def create_history_points(self, product_id, warehouse_id, company_id,
                               period_type, no_points=6):
         """ Create old 6 periods from now
@@ -930,3 +800,137 @@ class ForecastResultAdjustLine(models.Model):
             self._cr.execute(
                 """CREATE UNIQUE INDEX forcasting_fral_rule_id ON forecast_result_adjust_line 
                 (product_id, company_id, warehouse_id, period_type, start_date)""")
+
+    ###############################
+    # JOB FUNCTIONS
+    ###############################
+    @api.model
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_forecast_adjust_line_table(self, created_date, pub_time, **kwargs):
+        """ Create/Update forecast_result_adjust_line from data in forecast result table.
+        All the new records will have a same create_date and write_date.
+        Then, the forecast result daily will be updated
+
+        :param str created_date: the created date of the rows in forecast_result table
+        that we use to update update to the forecast_result_adjust_line table
+        :param str pub_time:
+        :param kwargs:
+        :return datetime: the create_date/write_date of the created/updated records
+        """
+        try:
+            _logger.info('update_forecast_adjust_line_table')
+            cur_time = database_utils.get_db_cur_time(self.env.cr)
+            forecast_level = kwargs.get('forecast_level')
+            forecast_level_obj = self.env['forecast.level.strategy'].sudo().create_obj(forecast_level=forecast_level)
+
+            updated_ids = forecast_level_obj \
+                .update_records_for_forecast_result_adjust_line(
+                obj=self,
+                model=self.env['forecast.result.adjust.line'],
+                created_date=created_date, pub_time=pub_time,
+                **{
+                    'current_time': cur_time,
+                    'create_uid': self.env.ref('base.partner_root').id,
+                    'create_date': cur_time,
+                    'write_uid': self.env.ref('base.partner_root').id,
+                    'write_date': cur_time
+                })
+
+            _logger.info("%s records have been updated in Forecast Result Adjust Line table: %s",
+                         len(updated_ids), updated_ids)
+            if updated_ids:
+                self.rounding_forecast_value(updated_ids)
+                company_id = self.browse(updated_ids[0]).company_id.id
+                # Step 3 update the daily forecasting result
+
+                number_of_record = len(updated_ids)
+
+                from odoo.tools import config
+                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
+
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                    self.env['forecast.result.daily'].sudo() \
+                        .with_delay(max_retries=12, eta=10) \
+                        .update_forecast_result_daily(updated_ids, company_id, call_from_engine=True)
+                else:
+                    self.env['forecast.result.daily'].sudo() \
+                        .update_forecast_result_daily(updated_ids, company_id, call_from_engine=True)
+
+            # commit new change to the database
+            self.env.cr.commit()
+
+        except Exception:
+            _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)
+            raise RetryableJobError('Must be retried later')
+        return cur_time
+
+    @api.model
+    @job(retry_pattern={1: 1 * 60,
+                        3: 5 * 60,
+                        6: 10 * 60,
+                        9: 30 * 60},
+         default_channel='root.forecasting')
+    def update_validation_val(self, val_res_create_date, company_id):
+        """
+        Function update forecast result adjust line table from
+        new forecast result received from Forecast Engine
+        :param str val_res_create_date:
+        :param int company_id:
+        :return:
+        """
+        try:
+            _logger.info('update_validation_val')
+            cur_time = database_utils.get_db_cur_time(self.env.cr)
+            # Step 1 update old records with any record have existed
+            update_query_param = {
+                'now': cur_time,
+                'val_res_create_date': val_res_create_date
+            }
+            if val_res_create_date:
+                self.update_validation_adjust_line(update_query_param)
+
+            # Step 2 insert new records
+            insert_query_param = {
+                **update_query_param,
+                **{
+                    'create_uid': self.env.ref('base.partner_root').id,
+                    'create_date': cur_time,
+                    'write_uid': self.env.ref('base.partner_root').id,
+                    'write_date': cur_time
+                }
+            }
+            self.insert_new_validation_data(insert_query_param, company_id)
+
+            lines = self.search([('write_date', '=', cur_time)])
+            _logger.info("Processing %s records in Forecast Result Adjust Line: %s", len(lines.ids), lines.ids)
+            if lines:
+                line_ids = lines.ids
+                self.rounding_forecast_value(line_ids)
+                # Step 3 update the daily forecasting result
+                number_of_record = len(line_ids)
+
+                from odoo.tools import config
+                threshold_trigger_queue_job = int(config.get("threshold_to_trigger_queue_job",
+                                                             DEFAULT_THRESHOLD_TO_TRIGGER_QUEUE_JOB))
+                allow_trigger_queue_job = config.get('allow_trigger_queue_job',
+                                                     ALLOW_TRIGGER_QUEUE_JOB)
+
+                if allow_trigger_queue_job and number_of_record >= threshold_trigger_queue_job:
+                    self.env['forecast.result.daily'].sudo() \
+                        .with_delay(max_retries=12, eta=10) \
+                        .update_forecast_result_daily(lines.ids, company_id, call_from_engine=True)
+                else:
+                    self.env['forecast.result.daily'].sudo() \
+                        .update_forecast_result_daily(lines.ids, company_id, call_from_engine=True)
+
+        except Exception:
+            _logger.exception('Function update_forecast_adjust_table have some exception', exc_info=True)
+            raise RetryableJobError('Must be retried later')
+

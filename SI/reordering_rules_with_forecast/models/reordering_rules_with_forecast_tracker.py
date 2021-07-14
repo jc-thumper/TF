@@ -70,12 +70,12 @@ class ReorderingRulesWithForecastTracker(models.Model, TrackerModel):
         help="The value is copied from the field `new_max_forecast` and allow the user to update value in the UI",
         default=0)
 
-    product_id = fields.Many2one('product.product', required=True, ondelete='cascade')
-    company_id = fields.Many2one('res.company', required=True, ondelete='cascade')
-    warehouse_id = fields.Many2one('stock.warehouse', 'Warehouse', required=False, ondelete="cascade")
-    location_id = fields.Many2one('stock.location', 'Location', required=False, ondelete="cascade")
-    master_product_id = fields.Many2one('product.product', required=False, ondelete='cascade')
-    lot_stock_id = fields.Many2one('stock.location', required=False, ondelete='cascade')
+    product_id = fields.Many2one('product.product', required=True, ondelete='cascade', readonly=True)
+    company_id = fields.Many2one('res.company', required=True, ondelete='cascade', readonly=True)
+    warehouse_id = fields.Many2one('stock.warehouse', 'Warehouse', required=False, ondelete="cascade", readonly=True)
+    location_id = fields.Many2one('stock.location', 'Location', required=False, ondelete="cascade", readonly=True)
+    master_product_id = fields.Many2one('product.product', required=False, ondelete='cascade', readonly=True)
+    lot_stock_id = fields.Many2one('stock.location', required=False, ondelete='cascade', readonly=True)
 
     service_level_name = fields.Char(required=False)
     service_level = fields.Float(required=False)

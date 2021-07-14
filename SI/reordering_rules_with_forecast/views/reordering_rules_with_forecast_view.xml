@@ -76,25 +76,25 @@
 
                 <field name="demand_value" invisible="1"/>
 
-                <filter name="product_lead_filter_5" string="Product Lead Time less than 5"
-                        domain="[('','&lt;',5)]"/>
-                <filter name="product_lead_filter_5_10" string="Product Lead Time between 5-10"
-                        domain="[('lead_days','&gt;=',5),('lead_days','&lt;',10)]"/>
-                <filter name="product_lead_filter_10_15" string="Product Lead Time between 10-15"
-                        domain="[('lead_days','&gt;=',10),('lead_days','&lt;',15)]"/>
-                <filter name="product_lead_filter_15_20" string="Product Lead Time between 15-20"
-                        domain="[('lead_days','&gt;=',15),('lead_days','&lt;',20)]"/>
-                <filter name="product_lead_filter_20_25" string="Product Lead Time between 20-25"
-                        domain="[('lead_days','&gt;=',20),('lead_days','&lt;',25)]"/>
-                <filter name="product_lead_filter_25_30" string="Product Lead Time between 25-30"
-                        domain="[('lead_days','&gt;=',25),('lead_days','&lt;',30)]"/>
-                <filter name="product_lead_filter_30" string="Product Lead Time more than 30"
-                        domain="[('lead_days','&gt;=',30)]"/>
-                <separator/>
+                <!--<filter name="product_lead_filter_5" string="Product Lead Time less than 5"-->
+                        <!--domain="[('','&lt;',5)]"/>-->
+                <!--<filter name="product_lead_filter_5_10" string="Product Lead Time between 5-10"-->
+                        <!--domain="[('lead_days','&gt;=',5),('lead_days','&lt;',10)]"/>-->
+                <!--<filter name="product_lead_filter_10_15" string="Product Lead Time between 10-15"-->
+                        <!--domain="[('lead_days','&gt;=',10),('lead_days','&lt;',15)]"/>-->
+                <!--<filter name="product_lead_filter_15_20" string="Product Lead Time between 15-20"-->
+                        <!--domain="[('lead_days','&gt;=',15),('lead_days','&lt;',20)]"/>-->
+                <!--<filter name="product_lead_filter_20_25" string="Product Lead Time between 20-25"-->
+                        <!--domain="[('lead_days','&gt;=',20),('lead_days','&lt;',25)]"/>-->
+                <!--<filter name="product_lead_filter_25_30" string="Product Lead Time between 25-30"-->
+                        <!--domain="[('lead_days','&gt;=',25),('lead_days','&lt;',30)]"/>-->
+                <!--<filter name="product_lead_filter_30" string="Product Lead Time more than 30"-->
+                        <!--domain="[('lead_days','&gt;=',30)]"/>-->
+                <!--<separator/>-->
 
-                <filter name="total_demand_value" string="Total Demand Value Equal Zero"
-                        domain="[('total_demand', '=', 0)]"/>
-                <separator/>
+                <!--<filter name="total_demand_value" string="Total Demand Value Equal Zero"-->
+                        <!--domain="[('total_demand', '=', 0)]"/>-->
+                <!--<separator/>-->
 
                 <filter name="existing_reordering_rule_filter" string="Existing Reordering rule"
                         domain="[('orderpoint_id', '!=', None)]"/>

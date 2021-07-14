@@ -3,23 +3,16 @@
 import logging
 import math
 
-import pandas as pd
-
 from datetime import timedelta, datetime
 
-from odoo.addons.si_core.utils import database_utils
-
 from odoo.addons.si_core.utils.request_utils import get_key_value_in_dict
-from odoo.addons.forecast_base.utils.config_utils import ALLOW_TRIGGER_QUEUE_JOB
 
 from odoo.addons.queue_job.job import job
 from odoo.addons.queue_job.exception import RetryableJobError
 from odoo.addons import decimal_precision as dp
 from odoo.osv import expression
-from odoo.exceptions import UserError
 from odoo.tools.float_utils import float_round
 
-from odoo.addons.si_core.utils.string_utils import PeriodType
 from odoo.addons.si_core.utils import datetime_utils
 
 from odoo import models, fields, api, _
@@ -45,6 +38,14 @@ class InheritForecastResultAdjustLine(models.Model):
                                    digits=dp.get_precision('Product Unit of Measure'),
                                    help='The total indirect history demand that we use this product as a raw material'
                                         ' or semi product used to produce other finished products in the Actual')
+    detail_indirect_demand = fields.Char(string=_('Detail Indirect Actual Demand'), store=True,
+                                         readonly=True, required=False,
+                                         help='Detail of the total indirect history demand that we use this product as '
+                                              'a raw material or semi product used to produce other finished products '
+                                              'in the Actual')
+    indirect_demand_from = fields.Char(string=_('Indirect Actual Demand From'), store=True,
+                                       readonly=True, required=False,
+                                       help='List of lines used to compute the indirect demand for this line')
 
     stock_demand = fields.Float(string=_('Total Forecast Demand'), readonly=True, required=False,
                                 compute='_compute_stock_demand',
